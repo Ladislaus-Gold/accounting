@@ -4601,11 +4601,48 @@
     .checkRow input{width:20px;height:20px;margin:1px 0 0;flex:0 0 auto}
     #editHint{margin:8px 4px 0}
     .opsHeadRight{display:flex;align-items:flex-start;gap:10px}
-    .dangerBtn{color:#D70015}
-    .dangerSolid{background:#D70015 !important}
     .deleteConfirm{margin-top:12px;padding:14px;border-radius:14px;background:rgba(215,0,21,.06);display:grid;gap:6px}
     .deleteConfirmTitle{font-size:16px;font-weight:800}
     #editSummary[hidden],#fieldTransfer[hidden]{display:none !important}
+
+    /* ============================================================
+       Кнопки и элементы форм в духе iOS:
+       лёгкий шрифт, спокойные размеры, заливка или мягкая подложка.
+       ============================================================ */
+    .btn,.btnPrimary,.btnGhost,.btnTint,.btnTintRed{
+      min-height:48px;height:48px;padding:0 20px;border:0;border-radius:14px;
+      font-size:16px;font-weight:600;letter-spacing:-.011em;line-height:1;
+      transition:opacity .15s ease,transform .12s ease,filter .15s ease;
+      -webkit-tap-highlight-color:transparent;
+    }
+    .btn,.btnPrimary{background:var(--saldo-blue);color:#fff;box-shadow:none}
+    .btnGhost{background:rgba(120,120,128,.12);color:var(--text);border:0}
+    .btnTint{background:var(--saldo-blue-soft);color:var(--saldo-blue)}
+    .btnTintRed{background:rgba(255,59,48,.10);color:#D70015}
+    .btn:active,.btnPrimary:active,.btnGhost:active,.btnTint:active,.btnTintRed:active{transform:scale(.985);filter:brightness(.94)}
+    .btn:disabled,.btnPrimary:disabled,.btnGhost:disabled,.btnTint:disabled,.btnTintRed:disabled{opacity:.4;filter:none;transform:none}
+    .btnFull{width:100%}
+    .btnSmall{min-height:34px;height:34px;padding:0 16px;border-radius:999px;font-size:14px}
+    .btnRow{gap:10px;margin-top:16px}
+    .dangerSolid{background:#D70015 !important}
+
+    /* Лист: ручка сверху, заголовок и кнопка закрытия */
+    .sheet::before{content:"";display:block;width:36px;height:5px;margin:0 auto 6px;border-radius:3px;background:rgba(60,60,67,.18)}
+    .sheetTitle{font-size:17px;font-weight:600;letter-spacing:-.015em}
+    .xbtn{width:30px;height:30px;border-radius:50%;background:rgba(120,120,128,.16);color:rgba(60,60,67,.65);font-size:18px;font-weight:400}
+    .xbtn:active{opacity:.6}
+
+    /* Переключатель типа операции */
+    .seg{background:rgba(120,120,128,.12);border-radius:10px;padding:2px;gap:2px;margin:8px 0 12px}
+    .seg button,#txSeg.txCrudSeg button{height:34px;border-radius:8px;font-size:14px;font-weight:600;letter-spacing:-.01em;color:var(--text)}
+    .seg button.active{background:#fff;box-shadow:0 3px 8px rgba(0,0,0,.12),0 0 0 .5px rgba(0,0,0,.04)}
+
+    /* Суммарная плашка в листе и подписи */
+    .editAmount{font-size:22px;font-weight:700;letter-spacing:-.02em}
+    .label{font-weight:600}
+    .checkRow input{accent-color:var(--saldo-blue)}
+    .deleteConfirmTitle{font-weight:600}
+    .budMsgLine{margin-top:8px;text-align:center}
     #budOverlay{z-index:1500 !important}
     .budCatBtn{display:block;width:100%;padding:12px 0;background:none;border:0;border-bottom:1px solid rgba(0,0,0,.06);text-align:left;color:inherit;cursor:pointer}
     .budCatBtn:last-child{border-bottom:0}
@@ -4800,7 +4837,7 @@
             <div class="authError" id="txError" role="alert"></div>
 
             <div class="field">
-              <button class="btnGhost btnFull" id="txMore" type="button" hidden>Показать ещё</button>
+              <button class="btnTint btnFull" id="txMore" type="button" hidden>Показать ещё</button>
             </div>
 
           </section>
@@ -4820,10 +4857,10 @@
               </div>
               <button class="repNav" id="budgetNext" type="button" aria-label="Следующий месяц">›</button>
             </div>
-            <div class="field" style="margin-bottom:0">
-              <button class="btnGhost btnFull" id="budCopy" type="button">Скопировать бюджет с прошлого месяца</button>
+            <div style="margin-top:12px;text-align:center">
+              <button class="btnTint btnSmall" id="budCopy" type="button">Скопировать с прошлого месяца</button>
             </div>
-            <div class="muted" id="budMsg" style="margin-top:8px;text-align:center"></div>
+            <div class="muted budMsgLine" id="budMsg"></div>
           </section>
 
           <section class="card">
@@ -4897,7 +4934,7 @@
           <h2 class="h1">Ещё</h2>
           <p class="p" id="moreUser">—</p>
           <div class="field">
-            <button class="btnGhost btnFull" id="logoutBtn" type="button">Выйти</button>
+            <button class="btnTintRed btnFull" id="logoutBtn" type="button">Выйти</button>
           </div>
         </div>
       </section>
@@ -5014,7 +5051,7 @@
       </div>
 
       <div class="field" id="editDeleteWrap" hidden>
-        <button class="btnGhost btnFull dangerBtn" id="editDelete" type="button">Удалить операцию</button>
+        <button class="btnTintRed btnFull" id="editDelete" type="button">Удалить операцию</button>
       </div>
 
       <div class="deleteConfirm" id="editDeleteConfirm" hidden>
