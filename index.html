@@ -4600,6 +4600,12 @@
     .checkRow{display:flex;align-items:flex-start;gap:10px;margin:12px 4px 4px;font-size:14px;line-height:1.35;cursor:pointer}
     .checkRow input{width:20px;height:20px;margin:1px 0 0;flex:0 0 auto}
     #editHint{margin:8px 4px 0}
+    .opsHeadRight{display:flex;align-items:flex-start;gap:10px}
+    .dangerBtn{color:#D70015}
+    .dangerSolid{background:#D70015 !important}
+    .deleteConfirm{margin-top:12px;padding:14px;border-radius:14px;background:rgba(215,0,21,.06);display:grid;gap:6px}
+    .deleteConfirmTitle{font-size:16px;font-weight:800}
+    #editSummary[hidden],#fieldTransfer[hidden]{display:none !important}
   </style>
 </head>
 
@@ -4740,7 +4746,10 @@
                   <div class="opsTitle">Операции</div>
                   <div class="opsSubtitle">Нажми на операцию, чтобы изменить категорию или заметку</div>
                 </div>
-                <div class="opsCount" id="opsCount">0</div>
+                <div class="opsHeadRight">
+                  <button class="saldoRoundBtn" id="txAdd" type="button" aria-label="Добавить операцию">＋</button>
+                  <div class="opsCount" id="opsCount">0</div>
+                </div>
               </div>
 
               <div class="opsSearch">
@@ -4850,27 +4859,70 @@
     </nav>
   </div>
 
-  <!-- ===================== ИЗМЕНИТЬ ОПЕРАЦИЮ ===================== -->
+  <!-- ===================== ОПЕРАЦИЯ: НОВАЯ / ИЗМЕНИТЬ ===================== -->
   <div class="sheetOverlay" id="editOverlay">
-    <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="editTitle">
+    <div class="sheet txCrudSheet" role="dialog" aria-modal="true" aria-labelledby="editTitle">
       <div class="sheetHeader">
-        <div class="sheetTitle" id="editTitle">Операция</div>
+        <div class="sheetTitle" id="editTitle">Новая операция</div>
         <div class="xbtn" id="editClose" role="button" tabindex="0" aria-label="Закрыть">×</div>
       </div>
 
-      <div class="editSummary">
+      <div class="editSummary" id="editSummary" hidden>
         <div class="editAmount" id="editAmount">—</div>
         <div class="editMeta" id="editMeta">—</div>
       </div>
 
-      <div class="field">
+      <div class="seg txCrudSeg" id="txSeg">
+        <button type="button" data-action="EXPENSE" class="active">Расход</button>
+        <button type="button" data-action="INCOME">Доход</button>
+        <button type="button" data-action="RETURN">Возврат</button>
+        <button type="button" data-action="TRANSFER">Перевод</button>
+      </div>
+
+      <div class="row2" id="fieldAmountDate">
+        <div class="field">
+          <div class="label">Сумма</div>
+          <input class="input" id="txAmount" type="number" min="0" step="0.01" inputmode="decimal" placeholder="0,00">
+        </div>
+        <div class="field">
+          <div class="label">Дата</div>
+          <input class="input" id="txDate" type="date">
+        </div>
+      </div>
+
+      <div class="field" id="fieldAccount">
+        <div class="label">Счёт</div>
+        <select class="select" id="txAccount"></select>
+      </div>
+
+      <div class="row2" id="fieldTransfer" hidden>
+        <div class="field">
+          <div class="label">Со счёта</div>
+          <select class="select" id="txFrom"></select>
+        </div>
+        <div class="field">
+          <div class="label">На счёт</div>
+          <select class="select" id="txTo"></select>
+        </div>
+      </div>
+
+      <div class="field" id="fieldCategory">
         <div class="label">Категория</div>
         <select class="select" id="editCategory"></select>
       </div>
 
+      <div class="field" id="fieldCurrency">
+        <div class="label">Валюта</div>
+        <select class="select" id="txCurrency">
+          <option value="UAH">UAH</option>
+          <option value="USD">USD</option>
+          <option value="EUR">EUR</option>
+        </select>
+      </div>
+
       <div class="field">
         <div class="label">Заметка</div>
-        <textarea class="textarea" id="editNote" maxlength="500" placeholder="Например: Сильпо"></textarea>
+        <textarea class="textarea" id="editNote" maxlength="500" placeholder="Необязательно"></textarea>
       </div>
 
       <label class="checkRow" id="editRuleRow">
@@ -4881,9 +4933,23 @@
       <div class="muted" id="editHint"></div>
       <div class="authError" id="editError" role="alert"></div>
 
-      <div class="btnRow">
+      <div class="btnRow" id="editButtons">
         <button class="btnGhost" id="editCancel" type="button">Отмена</button>
         <button class="btnPrimary" id="editSave" type="button">Сохранить</button>
+      </div>
+
+      <div class="field" id="editDeleteWrap" hidden>
+        <button class="btnGhost btnFull dangerBtn" id="editDelete" type="button">Удалить операцию</button>
+      </div>
+
+      <div class="deleteConfirm" id="editDeleteConfirm" hidden>
+        <div class="deleteConfirmTitle">Удалить операцию?</div>
+        <div class="muted" id="editDeleteSummary">—</div>
+        <div class="muted">Это действие нельзя отменить.</div>
+        <div class="btnRow">
+          <button class="btnGhost" id="editDeleteNo" type="button">Отмена</button>
+          <button class="btnPrimary dangerSolid" id="editDeleteYes" type="button">Удалить</button>
+        </div>
       </div>
     </div>
   </div>
@@ -5385,62 +5451,137 @@
     }
 
     // ---------------------------------------------------------------
-    // Изменение операции: категория и заметка
+    // Операция: создание, изменение, удаление
     // ---------------------------------------------------------------
-    function openEdit(id) {
-      var row = tx.rows.find(function (r) { return r.id === id; });
-      if (!row) return;
-      tx.editing = row;
+    // mode: 'create'   — новая операция, все поля
+    //       'manual'   — ручная операция, все поля + удаление
+    //       'bank'     — операция Monobank: только категория и заметка
+    var form = { mode: 'create', row: null, action: 'EXPENSE', busy: false };
 
-      var isTransfer = row.action === 'TRANSFER';
-      var isBank = Boolean(row.mono_op_id);
-      var type = row.action === 'INCOME' ? 'INCOME' : 'EXPENSE';
+    function pad(n) { return String(n).padStart(2, '0'); }
 
-      qs('editTitle').textContent = isTransfer ? 'Перевод' : 'Изменить операцию';
+    function toDateInput(d) {
+      return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
+    }
 
-      var amountEl = qs('editAmount');
-      amountEl.textContent = txAmountText(row);
-      amountEl.className = 'editAmount' +
-        (row.action === 'EXPENSE' ? ' expense' : (row.action === 'INCOME' || row.action === 'RETURN' ? ' income' : ''));
+    // Дата из поля + время суток из исходной даты (чтобы порядок внутри дня сохранялся)
+    function dateFromInput(value, base) {
+      var m = String(value || '').match(/^(\d{4})-(\d{2})-(\d{2})$/);
+      if (!m) return null;
+      var t = base || new Date();
+      return new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]),
+                      t.getHours(), t.getMinutes(), t.getSeconds());
+    }
 
-      var when = new Date(row.date);
-      qs('editMeta').textContent = [
-        isNaN(when.getTime()) ? '' : when.toLocaleString('ru-RU', {
-          day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit'
-        }),
-        accText(row)
-      ].filter(Boolean).join(' · ');
+    function fillAccountSelect(select, selectedId, withPlaceholder) {
+      select.innerHTML = '';
+      if (withPlaceholder) {
+        var ph = document.createElement('option');
+        ph.value = '';
+        ph.textContent = 'Выбери счёт';
+        select.appendChild(ph);
+      }
+      refs.accounts.forEach(function (a) {
+        var opt = document.createElement('option');
+        opt.value = String(a.id);
+        opt.textContent = a.name;
+        select.appendChild(opt);
+      });
+      select.value = selectedId ? String(selectedId) : '';
+      if (select.value !== (selectedId ? String(selectedId) : '')) select.value = '';
+    }
 
+    function fillCategorySelect(action, selectedId) {
+      var type = action === 'INCOME' ? 'INCOME' : 'EXPENSE';
       var select = qs('editCategory');
       select.innerHTML = '';
-      if (isTransfer) {
-        var only = document.createElement('option');
-        only.value = '';
-        only.textContent = 'У перевода нет категории';
-        select.appendChild(only);
-        select.disabled = true;
-      } else {
-        select.disabled = false;
-        var placeholder = document.createElement('option');
-        placeholder.value = '';
-        placeholder.textContent = 'Выбери категорию';
-        select.appendChild(placeholder);
-        categoriesOfType(type).forEach(function (c) {
-          var opt = document.createElement('option');
-          opt.value = String(c.id);
-          opt.textContent = c.name;
-          select.appendChild(opt);
-        });
-        select.value = row.category_id ? String(row.category_id) : '';
-        if (select.value !== (row.category_id ? String(row.category_id) : '')) select.value = '';
+      var ph = document.createElement('option');
+      ph.value = '';
+      ph.textContent = 'Выбери категорию';
+      select.appendChild(ph);
+      categoriesOfType(type).forEach(function (c) {
+        var opt = document.createElement('option');
+        opt.value = String(c.id);
+        opt.textContent = c.name;
+        select.appendChild(opt);
+      });
+      var want = selectedId ? String(selectedId) : '';
+      select.value = want;
+      if (select.value !== want) select.value = '';
+    }
+
+    function setFormAction(action) {
+      form.action = action;
+      var isTransfer = action === 'TRANSFER';
+
+      qs('txSeg').querySelectorAll('button').forEach(function (b) {
+        b.classList.toggle('active', b.getAttribute('data-action') === action);
+      });
+
+      var full = form.mode !== 'bank';
+      qs('fieldAccount').hidden = !full || isTransfer;
+      qs('fieldTransfer').hidden = !full || !isTransfer;
+      qs('fieldCategory').hidden = isTransfer;
+      qs('editRuleRow').hidden = isTransfer;
+    }
+
+    function openForm(mode, row) {
+      form.mode = mode;
+      form.row = row || null;
+      form.busy = false;
+
+      var isBank = mode === 'bank';
+      var isCreate = mode === 'create';
+      var action = row ? row.action : 'EXPENSE';
+
+      qs('editTitle').textContent = isCreate ? 'Новая операция' : 'Изменить операцию';
+
+      // Сводка показывается только для банковской операции
+      qs('editSummary').hidden = !isBank;
+      if (isBank) {
+        var amountEl = qs('editAmount');
+        amountEl.textContent = txAmountText(row);
+        amountEl.className = 'editAmount' +
+          (row.action === 'EXPENSE' ? ' expense'
+            : (row.action === 'INCOME' || row.action === 'RETURN' ? ' income' : ''));
+        var when = new Date(row.date);
+        qs('editMeta').textContent = [
+          isNaN(when.getTime()) ? '' : when.toLocaleString('ru-RU', {
+            day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit'
+          }),
+          accText(row)
+        ].filter(Boolean).join(' · ');
       }
 
-      qs('editNote').value = row.note || '';
+      qs('txSeg').hidden = isBank;
+      qs('fieldAmountDate').hidden = isBank;
+      qs('fieldCurrency').hidden = isBank;
+
+      // Значения полей
+      var defaultAccount = (refs.accounts.filter(function (a) { return !a.is_monobank; })[0] || refs.accounts[0] || {}).id;
+
+      qs('txAmount').value = row ? String(Math.abs(Number(row.amount || 0))) : '';
+      qs('txDate').value = toDateInput(row ? new Date(row.date) : new Date());
+      fillAccountSelect(qs('txAccount'), row && row.account_id ? row.account_id : (isCreate ? defaultAccount : null), true);
+      fillAccountSelect(qs('txFrom'), row ? row.from_account_id : null, true);
+      fillAccountSelect(qs('txTo'), row ? row.to_account_id : null, true);
+      fillCategorySelect(action, row ? row.category_id : null);
+      qs('txCurrency').value = row && row.currency ? String(row.currency).toUpperCase() : 'UAH';
+      qs('editNote').value = row ? (row.note || '') : '';
       qs('editRule').checked = false;
-      qs('editRuleRow').hidden = isTransfer;
+
+      setFormAction(action);
+
+      // Банковский перевод: категория не меняется
+      qs('editCategory').disabled = isBank && action === 'TRANSFER';
+
       qs('editHint').textContent = isBank
         ? 'Банковская операция: сумма, дата и счёт защищены. Меняются только категория и заметка.'
         : '';
+
+      qs('editDeleteWrap').hidden = mode !== 'manual';
+      qs('editDeleteConfirm').hidden = true;
+      qs('editButtons').hidden = false;
       qs('editError').textContent = '';
       qs('editSave').disabled = false;
       qs('editSave').textContent = 'Сохранить';
@@ -5448,73 +5589,185 @@
       qs('editOverlay').classList.add('open');
     }
 
-    function closeEdit() {
-      qs('editOverlay').classList.remove('open');
-      tx.editing = null;
-    }
-
-    async function saveEdit() {
-      var row = tx.editing;
-      if (!row) return;
-
-      var isTransfer = row.action === 'TRANSFER';
-      var note = qs('editNote').value.trim();
-      var categoryId = qs('editCategory').value ? Number(qs('editCategory').value) : null;
-      var wantRule = qs('editRule').checked;
-      var errorBox = qs('editError');
-      var button = qs('editSave');
-
-      errorBox.textContent = '';
-
-      if (!isTransfer && !categoryId) {
-        errorBox.textContent = 'Выбери категорию.';
+    async function openCreate() {
+      try {
+        if (!refs.loaded) await loadRefs();
+      } catch (err) {
+        qs('txError').textContent = 'Не удалось загрузить справочники: ' + (err && err.message ? err.message : '');
         return;
       }
+      openForm('create', null);
+    }
 
-      if (wantRule && !isTransfer) {
-        var chosen = refs.catById[categoryId];
+    function openEdit(id) {
+      var row = tx.rows.find(function (r) { return r.id === id; });
+      if (!row) return;
+      openForm(row.mono_op_id ? 'bank' : 'manual', row);
+    }
+
+    function closeEdit() {
+      qs('editOverlay').classList.remove('open');
+      form.row = null;
+      form.busy = false;
+    }
+
+    function setBusy(on, label) {
+      form.busy = on;
+      qs('editSave').disabled = on;
+      qs('editSave').textContent = on ? label : 'Сохранить';
+    }
+
+    function readForm() {
+      var isBank = form.mode === 'bank';
+      var action = form.action;
+      var isTransfer = action === 'TRANSFER';
+      var out = { note: qs('editNote').value.trim() };
+      var err = '';
+
+      var categoryId = qs('editCategory').value ? Number(qs('editCategory').value) : null;
+
+      if (!isBank) {
+        var amount = Number(String(qs('txAmount').value).replace(',', '.'));
+        if (!isFinite(amount) || amount <= 0) err = 'Введи сумму больше нуля.';
+        else if (amount > 1000000000) err = 'Сумма слишком большая.';
+        out.amount = Math.round(amount * 100) / 100;
+
+        if (!err) {
+          var base = form.row ? new Date(form.row.date) : new Date();
+          var d = dateFromInput(qs('txDate').value, base);
+          if (!d || isNaN(d.getTime())) err = 'Укажи дату.';
+          out.date = d ? d.toISOString() : null;
+        }
+
+        out.action = action;
+        out.currency = qs('txCurrency').value || 'UAH';
+
+        if (!err && isTransfer) {
+          var from = qs('txFrom').value ? Number(qs('txFrom').value) : null;
+          var to = qs('txTo').value ? Number(qs('txTo').value) : null;
+          if (!from || !to) err = 'Выбери оба счёта для перевода.';
+          else if (from === to) err = 'Счета перевода должны отличаться.';
+          out.from_account_id = from;
+          out.to_account_id = to;
+          out.account_id = null;
+          out.category_id = null;
+        } else if (!err) {
+          var acc = qs('txAccount').value ? Number(qs('txAccount').value) : null;
+          if (!acc) err = 'Выбери счёт.';
+          else if (!categoryId) err = 'Выбери категорию.';
+          out.account_id = acc;
+          out.category_id = categoryId;
+          out.from_account_id = null;
+          out.to_account_id = null;
+        }
+      } else if (action !== 'TRANSFER') {
+        if (!categoryId) err = 'Выбери категорию.';
+        out.category_id = categoryId;
+      }
+
+      out.error = err;
+      return out;
+    }
+
+    async function saveForm() {
+      if (form.busy) return;
+      var data = readForm();
+      var errorBox = qs('editError');
+      errorBox.textContent = '';
+
+      if (data.error) { errorBox.textContent = data.error; return; }
+
+      var isTransfer = form.action === 'TRANSFER';
+      var wantRule = qs('editRule').checked && !isTransfer;
+
+      if (wantRule) {
+        var chosen = refs.catById[data.category_id];
         if (chosen && /^Uncategorized/.test(chosen.name)) {
           errorBox.textContent = 'Для правила выбери конкретную категорию.';
           return;
         }
-        if (!note) {
+        if (!data.note) {
           errorBox.textContent = 'Для правила нужна заметка.';
           return;
         }
       }
 
-      button.disabled = true;
-      button.textContent = 'Сохраняем…';
+      setBusy(true, 'Сохраняем…');
 
       try {
-        var patch = { note: note, updated_at: new Date().toISOString() };
-        if (!isTransfer) patch.category_id = categoryId;
+        var payload = {};
+        Object.keys(data).forEach(function (k) { if (k !== 'error') payload[k] = data[k]; });
 
-        var upd = await sb.from('transactions').update(patch).eq('id', row.id).select('id');
-        if (upd.error) throw upd.error;
-        if (!upd.data || !upd.data.length) {
-          throw new Error('Операция не найдена или нет доступа.');
+        if (form.mode === 'create') {
+          var ins = await sb.from('transactions').insert(payload).select('id');
+          if (ins.error) throw ins.error;
+        } else {
+          payload.updated_at = new Date().toISOString();
+          var upd = await sb.from('transactions').update(payload).eq('id', form.row.id).select('id');
+          if (upd.error) throw upd.error;
+          if (!upd.data || !upd.data.length) throw new Error('Операция не найдена или нет доступа.');
         }
 
-        if (wantRule && !isTransfer) {
+        if (wantRule) {
           var rule = await sb.from('rules').upsert(
-            { action: row.action, category_id: categoryId, note: note },
+            { action: form.action, category_id: data.category_id, note: data.note },
             { onConflict: 'action,note' }
           );
           if (rule.error) throw rule.error;
         }
 
-        row.note = note;
-        if (!isTransfer) row.category_id = categoryId;
-
         closeEdit();
-        renderTransactions();
+        lastLoadAt = 0;
+        loadTransactions(false);
       } catch (err) {
-        console.error('[ACCOUNTING][TX_EDIT]', err);
+        console.error('[ACCOUNTING][TX_SAVE]', err);
         errorBox.textContent =
           'Не удалось сохранить: ' + (err && err.message ? err.message : 'неизвестная ошибка');
-        button.disabled = false;
-        button.textContent = 'Сохранить';
+        setBusy(false);
+      }
+    }
+
+    function askDelete() {
+      var row = form.row;
+      if (!row || form.mode !== 'manual') return;
+      qs('editDeleteSummary').textContent =
+        [txTitle(row), txAmountText(row), accText(row)].filter(Boolean).join(' · ');
+      qs('editDeleteWrap').hidden = true;
+      qs('editButtons').hidden = true;
+      qs('editDeleteConfirm').hidden = false;
+      qs('editError').textContent = '';
+    }
+
+    function cancelDelete() {
+      qs('editDeleteConfirm').hidden = true;
+      qs('editDeleteWrap').hidden = form.mode !== 'manual';
+      qs('editButtons').hidden = false;
+    }
+
+    async function doDelete() {
+      var row = form.row;
+      if (!row || form.mode !== 'manual' || form.busy) return;
+      form.busy = true;
+      qs('editDeleteYes').disabled = true;
+      qs('editDeleteYes').textContent = 'Удаляем…';
+
+      try {
+        var res = await sb.from('transactions').delete().eq('id', row.id).select('id');
+        if (res.error) throw res.error;
+        if (!res.data || !res.data.length) throw new Error('Операция не найдена или нет доступа.');
+
+        closeEdit();
+        lastLoadAt = 0;
+        loadTransactions(false);
+      } catch (err) {
+        console.error('[ACCOUNTING][TX_DELETE]', err);
+        cancelDelete();
+        qs('editError').textContent =
+          'Не удалось удалить: ' + (err && err.message ? err.message : 'неизвестная ошибка');
+        form.busy = false;
+      } finally {
+        qs('editDeleteYes').disabled = false;
+        qs('editDeleteYes').textContent = 'Удалить';
       }
     }
 
@@ -5537,9 +5790,25 @@
       renderTransactions();
     });
 
-    qs('editSave').addEventListener('click', saveEdit);
+    qs('txAdd').addEventListener('click', openCreate);
+    qs('editSave').addEventListener('click', saveForm);
     qs('editCancel').addEventListener('click', closeEdit);
     qs('editClose').addEventListener('click', closeEdit);
+    qs('editDelete').addEventListener('click', askDelete);
+    qs('editDeleteNo').addEventListener('click', cancelDelete);
+    qs('editDeleteYes').addEventListener('click', doDelete);
+
+    qs('txSeg').querySelectorAll('button').forEach(function (b) {
+      b.addEventListener('click', function () {
+        if (form.mode === 'bank') return;
+        var action = b.getAttribute('data-action');
+        var keepCategory = qs('editCategory').value;
+        setFormAction(action);
+        // Категории расходов и доходов разные: обновляем список, выбор сохраняем если он подходит
+        fillCategorySelect(action, keepCategory);
+      });
+    });
+
     qs('editOverlay').addEventListener('click', function (event) {
       if (event.target === qs('editOverlay')) closeEdit();
     });
