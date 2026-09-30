@@ -4606,6 +4606,10 @@
     .deleteConfirm{margin-top:12px;padding:14px;border-radius:14px;background:rgba(215,0,21,.06);display:grid;gap:6px}
     .deleteConfirmTitle{font-size:16px;font-weight:800}
     #editSummary[hidden],#fieldTransfer[hidden]{display:none !important}
+    #budOverlay{z-index:1500 !important}
+    .budCatBtn{display:block;width:100%;padding:12px 0;background:none;border:0;border-bottom:1px solid rgba(0,0,0,.06);text-align:left;color:inherit;cursor:pointer}
+    .budCatBtn:last-child{border-bottom:0}
+    .budCatBtn:active{opacity:.6}
   </style>
 </head>
 
@@ -4746,10 +4750,7 @@
                   <div class="opsTitle">Операции</div>
                   <div class="opsSubtitle">Нажми на операцию, чтобы изменить категорию или заметку</div>
                 </div>
-                <div class="opsHeadRight">
-                  <button class="saldoRoundBtn" id="txAdd" type="button" aria-label="Добавить операцию">＋</button>
-                  <div class="opsCount" id="opsCount">0</div>
-                </div>
+                <div class="opsCount" id="opsCount">0</div>
               </div>
 
               <div class="opsSearch">
@@ -4806,10 +4807,81 @@
         </div>
       </section>
 
+      <!-- Бюджет -->
       <section class="page" id="page-budget">
-        <div class="card stubCard">
-          <h2 class="h1">Бюджет</h2>
-          <p class="p">Бюджет по месяцам с копированием на следующий месяц появится на следующем этапе.</p>
+        <div class="budgetShell" style="display:grid;gap:14px;width:100%;">
+
+          <section class="card" style="padding:14px 16px;">
+            <div style="display:grid;grid-template-columns:40px minmax(0,1fr) 40px;align-items:center;gap:8px;">
+              <button class="repNav" id="budgetPrev" type="button" aria-label="Предыдущий месяц">‹</button>
+              <div style="text-align:center;min-width:0;">
+                <div class="dashEyebrow">БЮДЖЕТ НА МЕСЯЦ</div>
+                <div id="budgetMonthLabel" style="margin-top:4px;font-size:18px;font-weight:800;">—</div>
+              </div>
+              <button class="repNav" id="budgetNext" type="button" aria-label="Следующий месяц">›</button>
+            </div>
+            <div class="field" style="margin-bottom:0">
+              <button class="btnGhost btnFull" id="budCopy" type="button">Скопировать бюджет с прошлого месяца</button>
+            </div>
+            <div class="muted" id="budMsg" style="margin-top:8px;text-align:center"></div>
+          </section>
+
+          <section class="card">
+            <div class="cardHead">
+              <div>
+                <div class="cardTitle">Расходы</div>
+                <div class="muted" style="margin-top:3px;">Факт относительно плана</div>
+              </div>
+              <div class="saldoBudgetPercent" id="budgetExpensePct">0%</div>
+            </div>
+            <div id="budgetExpenseText" style="margin-top:14px;font-size:17px;font-weight:800;">—</div>
+            <div class="budBar" style="margin-top:11px;"><div class="budFill" id="budgetExpenseFill"></div></div>
+            <div class="row2" style="margin-top:14px;">
+              <div>
+                <div class="muted">Осталось</div>
+                <div id="budgetExpenseRemain" style="margin-top:4px;font-weight:800;">—</div>
+              </div>
+              <div style="text-align:right;">
+                <div class="muted">Статус</div>
+                <div id="budgetExpenseStatus" style="margin-top:4px;font-weight:800;">—</div>
+              </div>
+            </div>
+          </section>
+
+          <div class="row2">
+            <section class="card" style="padding:14px;">
+              <div class="muted">Доходы</div>
+              <div id="budgetIncomeActual" style="margin-top:7px;font-size:17px;font-weight:800;color:var(--green);">—</div>
+              <div class="muted" style="margin-top:7px;">План: <strong id="budgetIncomePlan">—</strong></div>
+            </section>
+            <section class="card" style="padding:14px;">
+              <div class="muted">Результат</div>
+              <div id="budgetProfitActual" style="margin-top:7px;font-size:17px;font-weight:800;">—</div>
+              <div class="muted" style="margin-top:7px;">План: <strong id="budgetProfitPlan">—</strong></div>
+            </section>
+          </div>
+
+          <section class="card">
+            <div class="cardHead">
+              <div>
+                <div class="cardTitle">Категории расходов</div>
+                <div class="muted" style="margin-top:3px;">Нажми на категорию, чтобы изменить план</div>
+              </div>
+            </div>
+            <div id="budgetCats"><div class="saldoEmpty">Загрузка…</div></div>
+          </section>
+
+          <section class="card">
+            <div class="cardHead">
+              <div>
+                <div class="cardTitle">Категории доходов</div>
+                <div class="muted" style="margin-top:3px;">План и факт по доходам</div>
+              </div>
+            </div>
+            <div id="budgetIncomeCats"><div class="saldoEmpty">Загрузка…</div></div>
+          </section>
+
+          <div class="authError" id="budError" role="alert"></div>
         </div>
       </section>
 
@@ -4831,6 +4903,9 @@
       </section>
 
     </main>
+
+    <!-- Плавающая кнопка «Добавить операцию» (главная и операции) -->
+    <button class="fab" id="fab" type="button" aria-label="Добавить операцию">+</button>
 
     <!-- Нижняя навигация -->
     <nav class="tabbar" aria-label="Нижняя навигация">
@@ -4954,6 +5029,34 @@
     </div>
   </div>
 
+  <!-- ===================== БЮДЖЕТ КАТЕГОРИИ ===================== -->
+  <div class="sheetOverlay" id="budOverlay">
+    <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="budTitle">
+      <div class="sheetHeader">
+        <div class="sheetTitle" id="budTitle">Бюджет</div>
+        <div class="xbtn" id="budClose" role="button" tabindex="0" aria-label="Закрыть">×</div>
+      </div>
+
+      <div class="editSummary">
+        <div class="editAmount" id="budSheetCat">—</div>
+        <div class="editMeta" id="budSheetMeta">—</div>
+      </div>
+
+      <div class="field">
+        <div class="label">План на месяц, ₴</div>
+        <input class="input" id="budAmount" type="number" min="0" step="0.01" inputmode="decimal" placeholder="0,00">
+      </div>
+
+      <div class="muted" id="budSheetHint">Меняется только этот месяц. Другие месяцы остаются как были.</div>
+      <div class="authError" id="budSheetError" role="alert"></div>
+
+      <div class="btnRow">
+        <button class="btnGhost" id="budCancel" type="button">Отмена</button>
+        <button class="btnPrimary" id="budSave" type="button">Сохранить</button>
+      </div>
+    </div>
+  </div>
+
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
   (function () {
@@ -5003,6 +5106,8 @@
       loadDashboard();
     }
 
+    var currentPage = 'dashboard';
+
     function setPage(name) {
       document.querySelectorAll('.page').forEach(function (p) {
         p.classList.toggle('active', p.id === 'page-' + name);
@@ -5011,8 +5116,18 @@
         t.classList.toggle('active', t.getAttribute('data-page') === name);
       });
       window.scrollTo(0, 0);
+      currentPage = name;
+      qs('fab').hidden = !(name === 'dashboard' || name === 'transactions');
       if (name === 'dashboard') loadDashboard();
       if (name === 'transactions') loadTransactions(false);
+      if (name === 'budget') loadBudget();
+    }
+
+    // Перезагрузить то, что видно на экране, после изменения операции
+    function refreshAfterChange() {
+      lastLoadAt = 0;
+      if (currentPage === 'transactions') loadTransactions(false);
+      else if (currentPage === 'dashboard') loadDashboard();
     }
 
     // ---------------------------------------------------------------
@@ -5717,8 +5832,7 @@
         }
 
         closeEdit();
-        lastLoadAt = 0;
-        loadTransactions(false);
+        refreshAfterChange();
       } catch (err) {
         console.error('[ACCOUNTING][TX_SAVE]', err);
         errorBox.textContent =
@@ -5757,8 +5871,7 @@
         if (!res.data || !res.data.length) throw new Error('Операция не найдена или нет доступа.');
 
         closeEdit();
-        lastLoadAt = 0;
-        loadTransactions(false);
+        refreshAfterChange();
       } catch (err) {
         console.error('[ACCOUNTING][TX_DELETE]', err);
         cancelDelete();
@@ -5790,7 +5903,7 @@
       renderTransactions();
     });
 
-    qs('txAdd').addEventListener('click', openCreate);
+    qs('fab').addEventListener('click', openCreate);
     qs('editSave').addEventListener('click', saveForm);
     qs('editCancel').addEventListener('click', closeEdit);
     qs('editClose').addEventListener('click', closeEdit);
@@ -5814,6 +5927,307 @@
     });
     document.addEventListener('keydown', function (event) {
       if (event.key === 'Escape' && qs('editOverlay').classList.contains('open')) closeEdit();
+    });
+
+    // ---------------------------------------------------------------
+    // Бюджет по месяцам
+    // ---------------------------------------------------------------
+    var bud = {
+      year: new Date().getFullYear(),
+      month: new Date().getMonth(),
+      req: 0,
+      budgets: {},
+      actual: {},
+      totals: { expense: 0, returns: 0, income: 0 },
+      editing: null,
+      busy: false
+    };
+
+    function budFirst(year, month) { return year + '-' + pad2(month + 1) + '-01'; }
+    function budMonthKey() { return budFirst(bud.year, bud.month); }
+    function budLabel() { return MONTHS[bud.month] + ' ' + bud.year; }
+    function budShift(delta) {
+      var d = new Date(bud.year, bud.month + delta, 1);
+      bud.year = d.getFullYear();
+      bud.month = d.getMonth();
+    }
+
+    function budError(err) {
+      var text = err && err.message ? err.message : 'неизвестная ошибка';
+      if (/month_category_totals/.test(text)) {
+        return 'В базе нет функции для бюджета. Запусти файл stage4.sql в Supabase (SQL Editor).';
+      }
+      return text;
+    }
+
+    function factFor(cat) {
+      var a = bud.actual[cat.id];
+      if (!a) return 0;
+      if (cat.type === 'INCOME') return a.income;
+      return Math.max(0, a.expense - a.returns);
+    }
+
+    async function loadBudget() {
+      var reqId = ++bud.req;
+      qs('budError').textContent = '';
+      qs('budgetMonthLabel').textContent = budLabel();
+
+      try {
+        if (!refs.loaded) await loadRefs();
+        if (reqId !== bud.req) return;
+
+        var first = budMonthKey();
+        var res = await Promise.all([
+          sb.rpc('month_category_totals', { p_month: first }),
+          sb.from('budgets').select('id,category_id,amount').eq('month', first)
+        ]);
+        if (reqId !== bud.req) return;
+        if (res[0].error) throw res[0].error;
+        if (res[1].error) throw res[1].error;
+
+        var actual = {};
+        var totals = { expense: 0, returns: 0, income: 0 };
+
+        (res[0].data || []).forEach(function (r) {
+          var amt = Number(r.total || 0);
+          if (r.action === 'EXPENSE') totals.expense += amt;
+          else if (r.action === 'RETURN') totals.returns += amt;
+          else if (r.action === 'INCOME') totals.income += amt;
+
+          if (r.category_id === null || r.category_id === undefined) return;
+          var a = actual[r.category_id] || (actual[r.category_id] = { expense: 0, returns: 0, income: 0 });
+          if (r.action === 'EXPENSE') a.expense += amt;
+          else if (r.action === 'RETURN') a.returns += amt;
+          else a.income += amt;
+        });
+
+        var budgets = {};
+        (res[1].data || []).forEach(function (b) { budgets[b.category_id] = Number(b.amount || 0); });
+
+        bud.actual = actual;
+        bud.totals = totals;
+        bud.budgets = budgets;
+        renderBudget();
+      } catch (err) {
+        if (reqId !== bud.req) return;
+        console.error('[ACCOUNTING][BUDGET]', err);
+        qs('budError').textContent = 'Не удалось загрузить бюджет: ' + budError(err);
+      }
+    }
+
+    function sumPlan(cats) {
+      return cats.reduce(function (sum, c) { return sum + Number(bud.budgets[c.id] || 0); }, 0);
+    }
+
+    function renderBudget() {
+      var expCats = categoriesOfType('EXPENSE');
+      var incCats = categoriesOfType('INCOME');
+
+      var planExp = sumPlan(expCats);
+      var planInc = sumPlan(incCats);
+      var actExp = bud.totals.expense - bud.totals.returns;
+      var actInc = bud.totals.income;
+
+      qs('budgetMonthLabel').textContent = budLabel();
+
+      // Расходы
+      var pct = planExp > 0 ? (actExp / planExp) * 100 : 0;
+      if (!isFinite(pct)) pct = 0;
+      var remain = planExp - actExp;
+
+      qs('budgetExpensePct').textContent = (Math.round(pct * 10) / 10) + '%';
+      qs('budgetExpenseText').textContent = money(actExp) + ' из ' + money(planExp);
+      var fill = qs('budgetExpenseFill');
+      fill.style.width = Math.max(0, Math.min(100, pct)) + '%';
+      fill.classList.toggle('bad', planExp > 0 && remain < 0);
+      qs('budgetExpenseRemain').textContent = money(remain);
+
+      var status = qs('budgetExpenseStatus');
+      if (planExp <= 0) { status.textContent = 'План не задан'; status.style.color = 'var(--muted)'; }
+      else if (remain < 0) { status.textContent = 'Перерасход'; status.style.color = 'var(--red)'; }
+      else if (pct >= 90) { status.textContent = 'Почти лимит'; status.style.color = 'var(--orange)'; }
+      else { status.textContent = 'В рамках плана'; status.style.color = 'var(--green)'; }
+
+      // Доходы и результат
+      qs('budgetIncomeActual').textContent = money(actInc);
+      qs('budgetIncomePlan').textContent = money(planInc);
+
+      var profit = actInc - actExp;
+      var profitEl = qs('budgetProfitActual');
+      profitEl.textContent = signedMoney(profit);
+      profitEl.style.color = profit >= 0 ? 'var(--green)' : 'var(--red)';
+      qs('budgetProfitPlan').textContent = signedMoney(planInc - planExp);
+
+      renderBudgetList('budgetCats', expCats);
+      renderBudgetList('budgetIncomeCats', incCats);
+    }
+
+    function renderBudgetList(boxId, cats) {
+      var box = qs(boxId);
+      box.innerHTML = '';
+
+      if (!cats.length) {
+        box.innerHTML = '<div class="saldoEmpty">Нет категорий</div>';
+        return;
+      }
+
+      cats.forEach(function (cat) {
+        var isIncome = cat.type === 'INCOME';
+        var hasPlan = Object.prototype.hasOwnProperty.call(bud.budgets, cat.id);
+        var plan = hasPlan ? bud.budgets[cat.id] : 0;
+        var fact = factFor(cat);
+
+        var btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'budCatBtn';
+
+        var top = document.createElement('div');
+        top.className = 'budCatTop';
+        var name = document.createElement('div');
+        name.className = 'budCatName';
+        name.textContent = cat.name;
+        var val = document.createElement('div');
+        val.className = 'budCatVal';
+        val.textContent = hasPlan ? (money(fact) + ' / ' + money(plan)) : money(fact);
+        top.append(name, val);
+
+        var bar = document.createElement('div');
+        bar.className = 'budBar';
+        var fillEl = document.createElement('div');
+        var over = !isIncome && plan > 0 && fact > plan;
+        fillEl.className = 'budFill' + (over ? ' bad' : '');
+        var w = plan > 0 ? Math.min(100, (fact / plan) * 100) : 0;
+        fillEl.style.width = w + '%';
+        bar.appendChild(fillEl);
+
+        var hint = document.createElement('div');
+        hint.className = 'budCatHint';
+        if (plan > 0) {
+          if (isIncome) hint.textContent = fact >= plan ? 'План выполнен' : 'Не хватает ' + money(plan - fact);
+          else hint.textContent = fact > plan ? 'Перерасход ' + money(fact - plan) : 'Осталось ' + money(plan - fact);
+        } else {
+          hint.textContent = 'План не задан. Нажми, чтобы задать';
+        }
+
+        btn.append(top, bar, hint);
+        btn.addEventListener('click', function () { openBudEdit(cat); });
+        box.appendChild(btn);
+      });
+    }
+
+    function openBudEdit(cat) {
+      bud.editing = cat;
+      bud.busy = false;
+      qs('budSheetCat').textContent = cat.name;
+      qs('budSheetMeta').textContent =
+        budLabel() + ' · ' + (cat.type === 'INCOME' ? 'доходы' : 'расходы') + ' · факт ' + money(factFor(cat));
+      qs('budAmount').value = Object.prototype.hasOwnProperty.call(bud.budgets, cat.id)
+        ? String(bud.budgets[cat.id]) : '';
+      qs('budSheetError').textContent = '';
+      qs('budSave').disabled = false;
+      qs('budSave').textContent = 'Сохранить';
+      qs('budOverlay').classList.add('open');
+    }
+
+    function closeBudEdit() {
+      qs('budOverlay').classList.remove('open');
+      bud.editing = null;
+      bud.busy = false;
+    }
+
+    async function saveBud() {
+      var cat = bud.editing;
+      if (!cat || bud.busy) return;
+
+      var raw = String(qs('budAmount').value).replace(',', '.').trim();
+      var amount = raw === '' ? 0 : Number(raw);
+      var errorBox = qs('budSheetError');
+      errorBox.textContent = '';
+
+      if (!isFinite(amount) || amount < 0) { errorBox.textContent = 'Введи сумму не меньше нуля.'; return; }
+      if (amount > 1000000000) { errorBox.textContent = 'Сумма слишком большая.'; return; }
+      amount = Math.round(amount * 100) / 100;
+
+      bud.busy = true;
+      qs('budSave').disabled = true;
+      qs('budSave').textContent = 'Сохраняем…';
+
+      try {
+        var res = await sb.from('budgets').upsert(
+          { category_id: cat.id, month: budMonthKey(), amount: amount },
+          { onConflict: 'category_id,month' }
+        ).select('id');
+        if (res.error) throw res.error;
+        if (!res.data || !res.data.length) throw new Error('Не удалось сохранить бюджет.');
+
+        bud.budgets[cat.id] = amount;
+        closeBudEdit();
+        renderBudget();
+      } catch (err) {
+        console.error('[ACCOUNTING][BUDGET_SAVE]', err);
+        errorBox.textContent = 'Не удалось сохранить: ' + budError(err);
+        bud.busy = false;
+        qs('budSave').disabled = false;
+        qs('budSave').textContent = 'Сохранить';
+      }
+    }
+
+    async function copyBudget() {
+      var msg = qs('budMsg');
+      var button = qs('budCopy');
+      msg.textContent = '';
+      qs('budError').textContent = '';
+
+      var prev = new Date(bud.year, bud.month - 1, 1);
+      var prevFirst = budFirst(prev.getFullYear(), prev.getMonth());
+      var prevName = MONTHS[prev.getMonth()] + ' ' + prev.getFullYear();
+
+      button.disabled = true;
+      try {
+        var src = await sb.from('budgets').select('category_id,amount').eq('month', prevFirst);
+        if (src.error) throw src.error;
+
+        var rows = (src.data || []).map(function (r) {
+          return { category_id: r.category_id, month: budMonthKey(), amount: r.amount };
+        });
+        if (!rows.length) {
+          msg.textContent = 'В прошлом месяце (' + prevName + ') бюджета нет.';
+          return;
+        }
+
+        var ins = await sb.from('budgets')
+          .upsert(rows, { onConflict: 'category_id,month', ignoreDuplicates: true })
+          .select('id');
+        if (ins.error) throw ins.error;
+
+        var n = (ins.data || []).length;
+        msg.textContent = n
+          ? 'Скопировано категорий: ' + n + '. Уже заданные суммы не менялись.'
+          : 'Во всех категориях план уже задан, копировать нечего.';
+        if (n) await loadBudget();
+      } catch (err) {
+        console.error('[ACCOUNTING][BUDGET_COPY]', err);
+        qs('budError').textContent = 'Не удалось скопировать: ' + budError(err);
+      } finally {
+        button.disabled = false;
+      }
+    }
+
+    qs('budgetPrev').addEventListener('click', function () {
+      budShift(-1); qs('budMsg').textContent = ''; loadBudget();
+    });
+    qs('budgetNext').addEventListener('click', function () {
+      budShift(1); qs('budMsg').textContent = ''; loadBudget();
+    });
+    qs('budCopy').addEventListener('click', copyBudget);
+    qs('budSave').addEventListener('click', saveBud);
+    qs('budCancel').addEventListener('click', closeBudEdit);
+    qs('budClose').addEventListener('click', closeBudEdit);
+    qs('budOverlay').addEventListener('click', function (event) {
+      if (event.target === qs('budOverlay')) closeBudEdit();
+    });
+    document.addEventListener('keydown', function (event) {
+      if (event.key === 'Escape' && qs('budOverlay').classList.contains('open')) closeBudEdit();
     });
 
     // ---------------------------------------------------------------
@@ -5857,6 +6271,7 @@
       await sb.auth.signOut();
       tx.rows = [];
       tx.req++;
+      bud.req++;
       refs.loaded = false;
       setPage('dashboard');
       showAuth();
