@@ -1,0 +1,5033 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <meta name="color-scheme" content="light dark">
+  <title>Accounting</title>
+
+  <link rel="apple-touch-icon" sizes="180x180" href="https://ladislaus-gold.github.io/accounting-icon/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="https://ladislaus-gold.github.io/accounting-icon/icon-512.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Accounting">
+  <meta name="application-name" content="Accounting">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+
+<style>
+  :root{
+    --bg:#F2F2F7;
+    --card:#FFFFFF;
+    --text:#111111;
+    --muted:#6B7280;
+    --accent:#007AFF;
+    --green:#248A3D;
+    --red:#D70015;
+    --orange:#FF9500;
+    --radius:16px;
+    --shadow:0 8px 24px rgba(0,0,0,.08);
+    --appvh:100vh;
+    --app-layout-width:min(100vw,56.25vh);
+  }
+
+  *{box-sizing:border-box}
+  html,body{min-height:100%;margin:0}
+  html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","SF Pro Display","Segoe UI",Roboto,Arial,sans-serif;
+    -webkit-font-smoothing:antialiased;
+    -moz-osx-font-smoothing:grayscale;
+    overscroll-behavior-y:none;
+  }
+  button,input,select,textarea{font:inherit}
+  button{-webkit-tap-highlight-color:transparent}
+
+  .safe{
+    width:var(--app-layout-width);
+    max-width:var(--app-layout-width);
+    min-height:100vh;
+    min-height:var(--appvh,100vh);
+    margin:0 auto;
+    padding-top:env(safe-area-inset-top);
+    padding-right:env(safe-area-inset-right);
+    padding-bottom:env(safe-area-inset-bottom);
+    padding-left:env(safe-area-inset-left);
+  }
+
+  /* Исправлена опечатка (было ..frame) */
+  .frame {
+    max-width: var(--app-layout-width) !important;
+    margin: 0 auto !important; 
+    padding: 16px 18px calc(104px + env(safe-area-inset-bottom));
+  }
+
+  .card{
+    background:var(--card);
+    border-radius:var(--radius);
+    box-shadow:var(--shadow);
+    padding:16px;
+  }
+  .h1{font-size:20px;font-weight:800;margin:0 0 8px}
+  .p{font-size:14px;color:var(--muted);margin:0}
+  .muted{font-size:13px;color:var(--muted);line-height:1.4}
+  .mt8{margin-top:8px}
+
+  /* Top bar */
+  .topbar{
+    position:sticky;
+    top:0;
+    z-index:20;
+    padding-top:env(safe-area-inset-top);
+    background:rgba(242,242,247,.90);
+    -webkit-backdrop-filter:blur(14px);
+    backdrop-filter:blur(14px);
+    border-bottom:1px solid rgba(0,0,0,.035);
+  }
+  .topbar__inner {
+  max-width: var(--app-layout-width) !important;
+  margin: 0 auto; 
+  min-height: 64px;
+  padding: 0 18px;
+}
+  .brand{display:inline-flex;align-items:center;gap:8px;font-size:17px;font-weight:800;min-width:0}
+  .badge{
+    width:28px;height:28px;border-radius:8px;background:#fff;
+    box-shadow:0 6px 16px rgba(0,0,0,.08);
+    display:grid;place-items:center;font-weight:900;flex:0 0 auto;
+  }
+  .actions{display:inline-flex;align-items:center;gap:8px;color:var(--muted);user-select:none}
+  .iconbtn{
+    width:36px;height:36px;border-radius:11px;display:grid;place-items:center;
+    background:rgba(255,255,255,.76);border:1px solid rgba(0,0,0,.06);
+    cursor:pointer;transition:transform .15s ease,opacity .15s ease;
+  }
+  .iconbtn:active{transform:scale(.96)}
+  .iconbtn.spin{animation:accountingSpin .7s linear infinite}
+  @keyframes accountingSpin{to{transform:rotate(360deg)}}
+
+  /* Pages */
+  .page{display:none}
+  .page.active{display:block}
+  .sectionTitle{margin:12px 6px 8px;font-size:13px;font-weight:700;color:rgba(0,0,0,.45)}
+
+  /* Generic list */
+  .list{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
+  .row{
+    min-height:56px;display:flex;align-items:center;justify-content:space-between;
+    padding:0 14px;border-bottom:1px solid rgba(0,0,0,.06);
+  }
+  .row:last-child{border-bottom:0}
+  .row__left{display:inline-flex;align-items:center;gap:12px;font-size:15px;font-weight:600}
+  .dot{width:28px;height:28px;border-radius:10px;background:rgba(0,122,255,.12);display:grid;place-items:center;color:var(--accent);font-weight:800}
+  .chev{color:rgba(0,0,0,.25);font-size:18px}
+  .pill{display:inline-flex;align-items:center;gap:8px;padding:8px 10px;border-radius:999px;font-size:12px;background:rgba(0,0,0,.06);color:var(--muted)}
+  .pill.ok{background:rgba(52,199,89,.16);color:#1f7a35}
+  .pill.bad{background:rgba(255,59,48,.16);color:#8a1f18}
+
+  /* Dashboard overview */
+  .dashOverview{margin-bottom:12px}
+  .dashOverviewHead{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:14px}
+  .dashEyebrow{font-size:10px;line-height:1.2;font-weight:800;letter-spacing:.08em;color:rgba(0,0,0,.38);text-transform:uppercase}
+  .dashMonth{margin-top:3px;font-size:18px;line-height:1.2;font-weight:800}
+  .dashFresh{font-size:11px;line-height:1.2;color:rgba(0,0,0,.42);white-space:nowrap}
+  .dashMono{padding:15px;border-radius:16px;background:#111;color:#fff}
+  .dashMonoTop{display:flex;align-items:center;justify-content:space-between;gap:10px}
+  .dashMonoName{font-size:14px;font-weight:700}
+  .dashMonoStatus{padding:4px 7px;border-radius:999px;font-size:10px;font-weight:800;background:rgba(255,255,255,.14)}
+  .dashMonoStatus.stale{background:rgba(255,149,0,.20)}
+  .dashMonoBalance{margin-top:8px;font-size:30px;line-height:1.05;font-weight:800;letter-spacing:-.03em;white-space:nowrap}
+  .dashMonoMeta{margin-top:6px;font-size:11px;line-height:1.35;color:rgba(255,255,255,.55)}
+  .dashKpiGrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+  .dashKpi{padding:12px;border-radius:14px;background:rgba(0,0,0,.035);border:1px solid rgba(0,0,0,.05);min-width:0}
+  .dashKpiLabel{font-size:11px;color:rgba(0,0,0,.45)}
+  .dashKpiValue{margin-top:4px;font-size:16px;line-height:1.2;font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .dashPositive{color:var(--green)}
+  .dashNegative{color:var(--red)}
+  .dashBudget{margin-top:14px}
+  .dashBudgetRow{display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:12px;font-weight:700}
+  .dashBudgetTrack{height:7px;margin-top:8px;border-radius:999px;background:rgba(0,0,0,.07);overflow:hidden}
+  .dashBudgetFill{width:0;height:100%;border-radius:inherit;background:var(--accent);transition:width .25s ease}
+  .dashBudgetFill.over{background:#FF3B30}
+
+  /* Transactions */
+  .filters{margin-bottom:10px}
+  .filtersRow{display:grid;grid-template-columns:1fr 1fr 1.4fr;gap:8px}
+  .selectSmall{
+    width:100%;height:44px;border-radius:14px;border:1px solid rgba(0,0,0,.08);
+    background:rgba(0,0,0,.03);padding:0 10px;font-size:16px;outline:none;min-width:0;
+  }
+  .txList{display:grid;gap:10px}
+  .txItem{
+    min-height:60px;border-radius:14px;background:rgba(0,0,0,.03);border:1px solid rgba(0,0,0,.06);
+    padding:9px 12px;display:flex;align-items:center;justify-content:space-between;gap:12px;cursor:pointer;user-select:none;
+  }
+  .txItem:active{transform:scale(.995)}
+  .txLeft{display:grid;gap:3px;min-width:0;flex:1 1 auto}
+  .txTitle{font-size:15px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .txMeta{font-size:12px;color:rgba(0,0,0,.45);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .txRight{text-align:right;display:grid;gap:3px;flex:0 0 auto}
+  .txAmount{font-size:15px;font-weight:800;white-space:nowrap}
+  .txAmountExpense{color:var(--red)}
+  .txAmountIncome{color:var(--green)}
+  .txAmountTransfer{
+  color: #2F5BFF;
+}
+  .txBadge{font-size:11px;color:rgba(0,0,0,.45);white-space:nowrap}
+
+  /* Donut / legend */
+  .cardHead{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
+  .cardTitle{font-size:14px;font-weight:800}
+  .cardHeadBtn{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;background:rgba(0,0,0,.06);color:rgba(0,0,0,.55);user-select:none}
+  .donutWrap{display:grid;grid-template-columns:164px minmax(0,1fr);gap:14px;align-items:center}
+  .donutBox{position:relative;width:164px;height:164px;border-radius:999px;display:grid;place-items:center}
+  #donutSvg,#repIncomeSvg,#repExpenseSvg{width:164px;height:164px;display:grid;place-items:center;cursor:pointer}
+  #donutSvg svg,#repIncomeSvg svg,#repExpenseSvg svg{display:block;width:164px;height:164px}
+  .donutCenter{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;pointer-events:none;padding:24px}
+  .donutSum{font-size:18px;font-weight:900;line-height:1.05;white-space:nowrap;letter-spacing:.1px}
+  .donutSub{font-size:12px;color:rgba(0,0,0,.45);font-weight:800;margin-top:2px}
+  .donutLegend{display:grid;gap:10px;min-width:0}
+  .legRow{display:flex;align-items:center;justify-content:flex-start;gap:12px;min-width:0}
+  .legLeft{display:flex;align-items:center;gap:10px;min-width:0;flex:1 1 auto}
+  .legDot{width:10px;height:10px;border-radius:999px;flex:0 0 auto}
+  .legName{font-size:12px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+  .legValue{font-size:12px;font-weight:800;white-space:nowrap;flex:0 0 auto}
+
+  /* Accounts */
+  .accList{display:grid;gap:10px}
+  .accItem{
+    min-height:56px;border-radius:14px;background:rgba(0,0,0,.03);border:1px solid rgba(0,0,0,.06);
+    padding:0 12px;display:flex;align-items:center;justify-content:space-between;gap:12px;cursor:pointer;
+  }
+  .accItem:active{transform:scale(.995)}
+  .accName{font-size:14px;font-weight:700;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .accBal{font-size:14px;font-weight:800;white-space:nowrap}
+  .accBal.pos{color:var(--green)}
+  .accBal.neg{color:var(--red)}
+  .accBal.zero{color:var(--muted)}
+
+  /* Reports menu */
+  .repList{display:grid}
+  .repItem{
+    min-height:60px;border:0;border-bottom:1px solid rgba(0,0,0,.06);background:transparent;
+    display:grid;grid-template-columns:38px 1fr auto;align-items:center;gap:10px;text-align:left;padding:0 4px;cursor:pointer;color:var(--text);
+  }
+  .repItem:last-child{border-bottom:0}
+  .repIcon{font-size:22px}
+  .repText{font-size:15px;font-weight:700}
+  .repChevron{font-size:28px;font-weight:300;color:rgba(0,0,0,.28)}
+  .repHead{display:grid;grid-template-columns:38px 1fr auto;align-items:center;gap:10px}
+  .repBack,.repNav{
+    width:36px;height:36px;border:0;border-radius:11px;background:rgba(0,0,0,.055);color:var(--text);font-size:24px;cursor:pointer;
+  }
+  .repMonth{text-align:center;font-size:16px;font-weight:800}
+  .repNavs{display:flex;gap:6px}
+
+  /* Budget */
+  .budRow{display:flex;align-items:center;justify-content:space-between;gap:12px}
+  .budLabel{font-size:13px;font-weight:700;color:rgba(0,0,0,.55)}
+  .budVal{font-size:13px;font-weight:800;text-align:right}
+  .budVal.pos{color:var(--green)}
+  .budVal.neg{color:var(--red)}
+  .budVal.zero{color:var(--muted)}
+  .budBar{height:8px;margin-top:7px;border-radius:999px;background:rgba(0,0,0,.07);overflow:hidden}
+  .budFill{width:0;height:100%;border-radius:999px;background:var(--accent);transition:width .25s ease}
+  .budFill.bad{background:#FF3B30}
+  .budHint,.budCatHint{margin-top:6px;font-size:11px;color:rgba(0,0,0,.45)}
+  .budWarn{margin-top:8px;font-size:12px;font-weight:800;color:var(--red)}
+  .budCat{padding:12px 0;border-bottom:1px solid rgba(0,0,0,.06)}
+  .budCat:last-child{border-bottom:0}
+  .budCatTop{display:flex;align-items:center;justify-content:space-between;gap:12px}
+  .budCatName{font-size:13px;font-weight:700;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .budCatVal{font-size:12px;font-weight:800;white-space:nowrap}
+
+  /* Forms */
+  .field{margin:10px 0}
+  .label{font-size:12px;font-weight:700;color:rgba(0,0,0,.45);margin:0 0 6px 4px}
+  .input,.select{
+    width:100%;height:48px;border-radius:14px;border:1px solid rgba(0,0,0,.08);
+    background:rgba(0,0,0,.03);padding:0 12px;font-size:16px;outline:none;color:var(--text);
+  }
+  .input:focus,.select:focus,.selectSmall:focus{border-color:rgba(0,122,255,.55);box-shadow:0 0 0 4px rgba(0,122,255,.12)}
+  .input:disabled,.select:disabled{opacity:.55}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .textarea{
+    width:100%;min-height:72px;border-radius:14px;border:1px solid rgba(0,0,0,.08);
+    background:rgba(0,0,0,.03);padding:10px 12px;font-size:16px;line-height:1.3;outline:none;resize:none;color:var(--text);
+  }
+  .textarea:focus{border-color:rgba(0,122,255,.55);box-shadow:0 0 0 4px rgba(0,122,255,.12)}
+  .formRow{margin-top:10px}
+  .btnRow{display:flex;gap:8px;margin-top:10px}
+  .btnRow > *{flex:1 1 0}
+  #monoCard{margin-top:12px}
+  .btn,.btnPrimary,.btnGhost{
+    min-height:48px;border-radius:14px;font-size:14px;font-weight:800;cursor:pointer;
+  }
+  .btn,.btnPrimary{border:0;background:var(--text);color:#fff}
+  .btnGhost{border:1px solid rgba(0,0,0,.08);background:rgba(0,0,0,.045);color:var(--text)}
+  .btnFull{width:100%}
+  .btnPrimary:disabled,.btn:disabled,.btnGhost:disabled{opacity:.45;cursor:not-allowed}
+  .ctaBar{margin-top:10px;display:grid;grid-template-columns:1fr;gap:8px}
+  .errorBox{
+    display:none;background:rgba(255,59,48,.12);border:1px solid rgba(255,59,48,.22);color:#8a1f18;
+    border-radius:14px;padding:10px 12px;font-size:13px;white-space:pre-wrap;
+  }
+  .errorBox.show{display:block}
+
+  /* Bottom sheet */
+  .sheetOverlay{
+    position:fixed;inset:0;background:rgba(0,0,0,.35);display:none;align-items:flex-end;z-index:60;
+    padding-top:env(safe-area-inset-top);
+  }
+  .sheetOverlay.open{display:flex}
+  .sheet{
+    width:100%;max-width:var(--app-layout-width);margin:0 auto;background:var(--card);
+    border-top-left-radius:22px;border-top-right-radius:22px;box-shadow:0 -14px 40px rgba(0,0,0,.22);
+    padding:12px 12px calc(12px + env(safe-area-inset-bottom));max-height:90vh;overflow:auto;
+  }
+  .sheetHeader{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:6px 4px 10px}
+  .sheetTitle{font-size:16px;font-weight:800}
+  .xbtn{width:36px;height:36px;border-radius:12px;display:grid;place-items:center;background:rgba(0,0,0,.06);cursor:pointer;user-select:none}
+  .seg{display:grid;grid-template-columns:repeat(3,1fr);background:rgba(0,0,0,.06);border-radius:14px;padding:4px;gap:4px;margin:6px 0 10px}
+  .seg button{height:40px;border:0;border-radius:12px;background:transparent;font-weight:800;cursor:pointer;color:var(--text)}
+  .seg button.active{background:#fff;box-shadow:0 6px 16px rgba(0,0,0,.10)}
+  .seg.disabled{opacity:.6}
+
+  /* Transaction action sheet */
+  .actionSheet{position:fixed;inset:0;background:rgba(0,0,0,.35);display:none;align-items:flex-end;z-index:70}
+  .actionSheet.open{display:flex}
+  .actionPanel{width:100%;max-width:var(--app-layout-width);margin:0 auto;padding:10px 12px calc(12px + env(safe-area-inset-bottom))}
+  .actionGroup{background:var(--card);border-radius:18px;box-shadow:0 -14px 40px rgba(0,0,0,.22);overflow:hidden;margin-bottom:10px}
+  .actionBtn{min-height:56px;display:grid;place-items:center;font-size:16px;font-weight:800;border-bottom:1px solid rgba(0,0,0,.06);user-select:none;cursor:pointer}
+  .actionBtn:last-child{border-bottom:0}
+  .actionBtn.danger{color:#ff3b30}
+  .actionBtn.cancel{font-weight:700}
+
+  /* Month / account transaction overlays */
+  .mTxOverlay{
+    position:fixed;inset:0;z-index:65;background:rgba(0,0,0,.35);align-items:flex-end;
+    padding-top:env(safe-area-inset-top);
+  }
+  .mTxOverlay.open{display:flex !important}
+  .mTxSheet{
+    width:100%;max-width:var(--app-layout-width);margin:0 auto;background:var(--card);
+    border-top-left-radius:22px;border-top-right-radius:22px;box-shadow:0 -14px 40px rgba(0,0,0,.22);
+    max-height:88vh;display:flex;flex-direction:column;padding-bottom:env(safe-area-inset-bottom);
+  }
+  .mTxHead{min-height:58px;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 14px;border-bottom:1px solid rgba(0,0,0,.06)}
+  .mTxTitle{font-size:15px;font-weight:800;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .mTxClose{width:36px;height:36px;border:0;border-radius:12px;background:rgba(0,0,0,.06);font-size:18px;cursor:pointer}
+  .mTxList{overflow:auto;padding:12px;display:grid;gap:9px}
+  .mTxItem{padding:11px 12px;border-radius:14px;background:rgba(0,0,0,.03);border:1px solid rgba(0,0,0,.06)}
+  .mTxTop{display:flex;align-items:center;justify-content:space-between;gap:12px}
+  .mTxName{font-size:14px;font-weight:700;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .mTxAmt{font-size:14px;font-weight:800;white-space:nowrap}
+  .mTxMeta{margin-top:4px;font-size:11px;color:rgba(0,0,0,.45);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+  /* Loading */
+  .loadingOverlay{
+    position:fixed;inset:0;z-index:100;display:none;align-items:center;justify-content:center;
+    background:rgba(242,242,247,.50);-webkit-backdrop-filter:blur(5px);backdrop-filter:blur(5px);
+  }
+  .loadingOverlay.open{display:flex}
+  .loadingOverlay.nonblock{pointer-events:none;background:transparent;align-items:flex-start;padding-top:calc(70px + env(safe-area-inset-top))}
+  .loadingCard{display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:16px;background:rgba(255,255,255,.96);box-shadow:0 12px 38px rgba(0,0,0,.14)}
+  .loadingSpinner{width:20px;height:20px;border:2px solid rgba(0,0,0,.12);border-top-color:rgba(0,0,0,.72);border-radius:999px;animation:accountingSpin .7s linear infinite}
+  .loadingText{font-size:13px;font-weight:700;color:rgba(0,0,0,.68)}
+
+  /* Rule confirm */
+  .ruleConfirmSheet{max-width:var(--app-layout-width)}
+  .ruleConfirmBody{padding:4px 4px 10px}
+  .ruleConfirmText{font-size:15px;font-weight:800;line-height:1.35}
+  .ruleConfirmHint{margin-top:7px;font-size:12px;line-height:1.4;color:var(--muted)}
+
+  /* Bottom tabs */
+  .tabbar{
+    position:fixed;left:0;right:0;bottom:0;z-index:40;padding-bottom:env(safe-area-inset-bottom);
+    background:rgba(255,255,255,.92);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);
+    border-top:1px solid rgba(0,0,0,.08);
+  }
+  .tabbar__inner{
+    width:var(--app-layout-width);max-width:var(--app-layout-width);margin:0 auto;display:grid;grid-template-columns:repeat(4,1fr);height:60px;
+  }
+  .tab{
+    height:60px;border:0;background:transparent;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;
+    font-size:11px;color:var(--muted);user-select:none;
+  }
+  .tab.active{color:var(--accent);font-weight:700}
+  .tabIcon{width:22px;height:22px;display:grid;place-items:center}
+  .tabIcon svg{width:22px;height:22px;display:block;fill:currentColor}
+  .tabLabel{font-size:11px;line-height:1}
+  .tab.active .tabIcon{transform:translateY(-1px)}
+  .tab:active{transform:scale(.98)}
+
+  /* FAB */
+  .fab{
+    position:fixed;right:16px;
+    bottom:calc(76px + env(safe-area-inset-bottom));width:56px;height:56px;border-radius:999px;background:var(--text);color:#fff;
+    display:grid;place-items:center;font-size:28px;box-shadow:0 14px 34px rgba(0,0,0,.22);cursor:pointer;user-select:none;z-index:45;
+  }
+  .fab:active{transform:scale(.98)}
+
+  @media (max-width:390px){
+    .donutWrap{grid-template-columns:142px minmax(0,1fr);gap:10px}
+    .donutBox,#donutSvg,#repIncomeSvg,#repExpenseSvg{width:142px;height:142px}
+    #donutSvg svg,#repIncomeSvg svg,#repExpenseSvg svg{width:142px;height:142px}
+    .donutSum{font-size:16px}
+    .legRow{gap:8px}
+    .legLeft{gap:7px}
+    .legName,.legValue{font-size:11px}
+    .filtersRow{grid-template-columns:1fr 1fr}
+    #fCategory{grid-column:1 / -1}
+    .dashMonoBalance{font-size:27px}
+  }
+
+  @media (prefers-reduced-motion:reduce){
+    *,*::before,*::after{scroll-behavior:auto!important;transition:none!important}
+  }
+
+
+  /* ======================================================================
+     SALDO-INSPIRED UI — Stage 9B.2
+     UX reference only; original Accounting implementation.
+     ====================================================================== */
+  :root{
+    --saldo-bg:#F6F7FB;
+    --saldo-surface:#FFFFFF;
+    --saldo-text:#14151A;
+    --saldo-muted:#8A8F9C;
+    --saldo-line:#E9EBF1;
+    --saldo-blue:#3157F6;
+    --saldo-blue-soft:#EEF1FF;
+    --saldo-green:#1A9B5A;
+    --saldo-green-soft:#EAF8F1;
+    --saldo-red:#E5484D;
+    --saldo-red-soft:#FFF0F0;
+    --saldo-radius:22px;
+  }
+
+  body{background:var(--saldo-bg);color:var(--saldo-text)}
+  .safe{background:var(--saldo-bg)}
+  .frame{
+    max-width:100%!important;
+    padding:16px 18px calc(104px + env(safe-area-inset-bottom));
+  }
+  .topbar{background:rgba(246,247,251,.84);border-bottom:0}
+  .topbar__inner{max-width:100%!important;min-height:64px;padding:0 18px}
+  .brand{font-size:17px;letter-spacing:-.01em}
+  .badge{background:var(--saldo-blue);color:#fff;box-shadow:none;border-radius:10px}
+  .iconbtn{background:#fff;border:1px solid var(--saldo-line);box-shadow:0 4px 14px rgba(32,38,57,.05)}
+  .card{border:1px solid var(--saldo-line);box-shadow:0 7px 24px rgba(23,27,38,.045);border-radius:var(--saldo-radius)}
+
+  #page-dashboard {
+  max-width: var(--app-layout-width);
+  margin: 0 auto;
+}
+  .saldoDashShell{display:grid;gap:18px}
+  .saldoDashTop{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;padding:3px 2px 0}
+  .saldoOverline{font-size:10px;line-height:1.2;font-weight:850;letter-spacing:.11em;color:#A1A5AF}
+  .saldoPageTitle{margin-top:5px;font-size:29px;line-height:1;font-weight:860;letter-spacing:-.045em}
+  .saldoMonthBtn{border:0;background:#fff;border:1px solid var(--saldo-line);border-radius:14px;padding:9px 12px;display:inline-flex;align-items:center;gap:7px;color:var(--saldo-text);font-size:13px;font-weight:750;cursor:default;box-shadow:0 4px 14px rgba(32,38,57,.04)}
+  .saldoChevron{color:var(--saldo-muted);font-size:14px}
+
+  .saldoBalanceCard{background:linear-gradient(135deg,#2E55F5 0%,#5B72F8 100%);color:#fff;border-radius:26px;padding:22px 22px 21px;box-shadow:0 18px 36px rgba(49,87,246,.20);overflow:hidden;position:relative}
+  .saldoBalanceCard:after{content:"";position:absolute;width:230px;height:230px;border-radius:999px;background:rgba(255,255,255,.08);right:-105px;top:-125px}
+  .saldoBalanceHead{display:flex;align-items:center;justify-content:space-between;gap:16px;font-size:12px;font-weight:650;color:rgba(255,255,255,.76);position:relative;z-index:1}
+  .saldoLiveStamp{padding:5px 8px;border-radius:999px;background:rgba(255,255,255,.13);font-size:10px;font-weight:780;letter-spacing:.02em}
+  .saldoBalanceValue{margin-top:16px;font-size:38px;line-height:1;font-weight:860;letter-spacing:-.05em;position:relative;z-index:1}
+  .saldoBalanceCaption{margin-top:10px;font-size:11px;line-height:1.4;color:rgba(255,255,255,.68);position:relative;z-index:1}
+
+  .saldoSection{display:grid;gap:11px}
+  .saldoSectionHead{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:0 2px}
+  .saldoSectionHead.compact{margin-bottom:2px}
+  .saldoSectionTitle{font-size:17px;line-height:1.15;font-weight:830;letter-spacing:-.025em}
+  .saldoSectionSub{margin-top:3px;font-size:11px;color:var(--saldo-muted)}
+  .saldoLinkBtn{border:0;background:transparent;color:var(--saldo-blue);font-size:13px;font-weight:760;padding:8px;cursor:pointer}
+  .saldoRoundBtn{width:38px;height:38px;border:0;border-radius:13px;background:var(--saldo-blue);color:#fff;font-size:24px;line-height:1;display:grid;place-items:center;cursor:pointer;box-shadow:0 8px 18px rgba(49,87,246,.18)}
+
+  .saldoAccountStrip{display:flex;gap:10px;overflow-x:auto;scroll-snap-type:x proximity;padding:1px 1px 7px;scrollbar-width:none}
+  .saldoAccountStrip::-webkit-scrollbar{display:none}
+  .saldoAccountCard{flex:0 0 190px;min-height:125px;text-align:left;border:1px solid var(--saldo-line);background:#fff;border-radius:20px;padding:14px;color:var(--saldo-text);cursor:pointer;scroll-snap-align:start;box-shadow:0 6px 18px rgba(24,28,38,.035)}
+  .saldoAccountCard.mono{background:#16171B;color:#fff;border-color:#16171B}
+  .saldoAccountTop{display:flex;align-items:center;justify-content:space-between;gap:10px}
+  .saldoAccountIcon{width:32px;height:32px;border-radius:11px;background:var(--saldo-blue-soft);display:grid;place-items:center;font-size:16px}
+  .saldoAccountCard.mono .saldoAccountIcon{background:rgba(255,255,255,.10)}
+  .saldoAccountSource{font-size:9px;font-weight:820;letter-spacing:.05em;color:var(--saldo-blue);background:var(--saldo-blue-soft);padding:4px 6px;border-radius:999px}
+  .saldoAccountSource.stale{color:#B46800;background:#FFF3DF}
+  .saldoAccountCard.mono .saldoAccountSource{color:#fff;background:rgba(255,255,255,.12)}
+  .saldoAccountName{margin-top:14px;font-size:11px;color:var(--saldo-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .saldoAccountCard.mono .saldoAccountName{color:rgba(255,255,255,.58)}
+  .saldoAccountBalance{margin-top:4px;font-size:17px;font-weight:840;letter-spacing:-.025em;white-space:nowrap}
+
+  .saldoDashGrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .saldoPanel{background:#fff;border:1px solid var(--saldo-line);border-radius:22px;padding:18px;box-shadow:0 7px 24px rgba(23,27,38,.035)}
+  .saldoPanelHead{display:flex;align-items:flex-start;justify-content:space-between;gap:14px}
+  .saldoPanelEyebrow{font-size:9px;font-weight:850;letter-spacing:.10em;color:#A2A6B0}
+  .saldoPanelTitle{margin-top:4px;font-size:17px;font-weight:830;letter-spacing:-.02em}
+  .saldoResultPill{padding:5px 8px;border-radius:999px;font-size:10px;font-weight:780;background:#F2F3F6;color:#777C88}
+  .saldoResultPill.positive{background:var(--saldo-green-soft);color:var(--saldo-green)}
+  .saldoResultPill.negative{background:var(--saldo-red-soft);color:var(--saldo-red)}
+  .saldoFlowRow{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:21px}
+  .saldoFlowItem{display:flex;align-items:center;gap:9px;min-width:0}
+  .saldoFlowDot{width:9px;height:9px;border-radius:999px;background:#D5D8E0;flex:0 0 auto}
+  .saldoFlowDot.income{background:var(--saldo-green)}
+  .saldoFlowDot.expense{background:var(--saldo-red)}
+  .saldoFlowLabel{font-size:10px;color:var(--saldo-muted)}
+  .saldoFlowValue{margin-top:3px;font-size:14px;font-weight:810;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .saldoFlowValue.income{color:var(--saldo-green)}
+  .saldoResultBlock{margin-top:21px;padding-top:16px;border-top:1px solid #F0F1F4}
+  .saldoResultLabel{font-size:10px;color:var(--saldo-muted)}
+  .saldoResultValue{margin-top:4px;font-size:25px;line-height:1;font-weight:860;letter-spacing:-.04em}
+  .saldoResultValue.positive{color:var(--saldo-green)}
+  .saldoResultValue.negative{color:var(--saldo-red)}
+  .saldoReturnLine{margin-top:10px;font-size:10px;color:var(--saldo-muted);display:flex;justify-content:space-between;gap:12px}
+  .saldoReturnLine strong{color:var(--saldo-green);font-weight:780}
+
+  .saldoBudgetPercent{font-size:13px;font-weight:840;color:var(--saldo-blue);padding:6px 8px;border-radius:10px;background:var(--saldo-blue-soft)}
+  .saldoBudgetText{margin-top:24px;font-size:15px;font-weight:810;letter-spacing:-.02em}
+  .saldoProgress{height:9px;margin-top:11px;background:#EFF1F5;border-radius:999px;overflow:hidden}
+  .saldoProgressFill{height:100%;width:0;border-radius:999px;background:linear-gradient(90deg,#3157F6,#6C82FA);transition:width .25s ease}
+  .saldoProgressFill.over{background:linear-gradient(90deg,#E5484D,#FF7478)}
+  .saldoBudgetStats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:19px;padding-top:15px;border-top:1px solid #F0F1F4}
+  .saldoBudgetStat{display:grid;gap:4px;min-width:0}
+  .saldoBudgetStat span{font-size:9px;color:var(--saldo-muted);line-height:1.25}
+  .saldoBudgetStat strong{font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+  .saldoTransactionsSection{background:#fff;border:1px solid var(--saldo-line);border-radius:22px;padding:18px;box-shadow:0 7px 24px rgba(23,27,38,.035)}
+  .saldoFilters{display:grid;grid-template-columns:.9fr .9fr 1.25fr;gap:7px;margin:2px 0 2px}
+  .saldoSelect{min-width:0;width:100%;height:38px;border:0;border-radius:12px;background:#F4F5F8;color:#555B68;padding:0 9px;font-size:12px;font-weight:650;outline:none}
+  .saldoTxList{display:grid;gap:13px;margin-top:7px}
+  .txDayHead{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:5px 2px 1px;font-size:11px;font-weight:760;color:#8F949F}
+  .txDayHead .positive{color:var(--saldo-green)}
+  .txDayHead .negative{color:var(--saldo-red)}
+  .txDayGroup{background:#fff;border:1px solid var(--saldo-line);border-radius:17px;overflow:hidden}
+  .saldoTxItem.txItem{width:100%;min-height:67px;border:0!important;border-radius:0!important;background:#fff!important;padding:10px 11px;display:grid;grid-template-columns:40px minmax(0,1fr) auto;align-items:center;gap:11px;text-align:left;box-shadow:none!important}
+  .saldoTxItem.txItem + .saldoTxItem.txItem{border-top:1px solid #F1F2F5!important}
+  .saldoTxItem.txItem:active{background:#F8F9FB!important;transform:none}
+  .saldoTxIcon{width:38px;height:38px;border-radius:13px;background:#F2F3F7;color:#6E7480;display:grid;place-items:center;font-size:17px;font-weight:820}
+  .saldoTxIcon.expense{background:var(--saldo-red-soft);color:var(--saldo-red)}
+  .saldoTxIcon.income,.saldoTxIcon.return{background:var(--saldo-green-soft);color:var(--saldo-green)}
+  .saldoTxIcon.transfer{background:var(--saldo-blue-soft);color:var(--saldo-blue)}
+  .saldoTxItem .txTitle{font-size:13px;font-weight:770;letter-spacing:-.01em}
+  .saldoTxItem .txMeta{margin-top:4px;font-size:10px;color:#9A9FAA}
+  .saldoTxItem .txAmount{font-size:13px;font-weight:820}
+  .saldoTxItem .txBadge{margin-top:4px;font-size:9px;color:#A1A6B0}
+  .saldoEmpty{padding:24px 12px;text-align:center;color:var(--saldo-muted);font-size:12px}
+  .saldoEmpty.compact{padding:18px;min-width:180px;background:#fff;border:1px solid var(--saldo-line);border-radius:18px}
+
+  .saldoInsightsPanel{padding:18px}
+  .saldoDonutWrap{margin-top:10px}
+  .saldoInsightsPanel .donutSum{font-size:16px}
+  .saldoInsightsPanel .donutSub{font-size:10px;font-weight:650;color:var(--saldo-muted)}
+
+  .fab{background:var(--saldo-blue)!important;box-shadow:0 13px 28px rgba(49,87,246,.30)!important}
+  .tabbar{background:rgba(246,247,251,.86)!important;border-top:0!important;backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
+  .tabbar__inner{width:var(--app-layout-width)!important;max-width:var(--app-layout-width)!important;background:rgba(255,255,255,.94);border:1px solid var(--saldo-line);border-radius:22px 22px 0 0;box-shadow:0 -8px 30px rgba(24,28,38,.06)}
+  .tab.active{color:var(--saldo-blue)!important}
+
+  @media (max-width:680px){
+    .frame{padding:12px 12px calc(98px + env(safe-area-inset-bottom))}
+    .topbar__inner{padding:0 12px;min-height:58px}
+    .saldoDashShell{gap:15px}
+    .saldoPageTitle{font-size:26px}
+    .saldoBalanceCard{padding:20px;border-radius:23px}
+    .saldoBalanceValue{font-size:34px}
+    .saldoDashGrid{grid-template-columns:1fr}
+    .saldoAccountCard{flex-basis:176px}
+    .saldoTransactionsSection,.saldoPanel{padding:15px;border-radius:20px}
+    .saldoFilters{grid-template-columns:1fr 1fr}
+    .saldoSelectWide{grid-column:1 / -1}
+    .saldoDonutWrap{grid-template-columns:145px minmax(0,1fr);gap:10px}
+    .saldoDonutWrap .donutBox,.saldoDonutWrap #donutSvg,.saldoDonutWrap #donutSvg svg{width:145px;height:145px}
+  }
+
+  @media (max-width:420px){
+    .saldoDashTop{align-items:center}
+    .saldoOverline{display:none}
+    .saldoPageTitle{font-size:24px}
+    .saldoMonthBtn{padding:8px 10px;font-size:12px}
+    .saldoBalanceValue{font-size:31px}
+    .saldoAccountCard{flex-basis:166px}
+    .saldoFlowValue{font-size:13px}
+    .saldoDonutWrap{grid-template-columns:1fr}
+    .saldoDonutWrap .donutBox{margin:0 auto}
+  }
+
+
+
+  /* ======================================================================
+     IPHONE UI TUNING — Stage 9B.3
+     Phone-first canvas: iPhone 15/16 family (393–430 CSS px).
+     ====================================================================== */
+  :root{
+    --iphone-max:430px;
+    --ios-body:15px;
+    --ios-caption:12px;
+    --ios-small:11px;
+  }
+
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","SF Pro Display","Helvetica Neue",Arial,sans-serif;
+    font-size:var(--ios-body);
+    letter-spacing:-.01em;
+  }
+
+  /* One iPhone-sized application canvas on desktop; full width on iPhone. */
+  .safe{
+    width:var(--app-layout-width);
+    max-width:var(--app-layout-width);
+    margin:0 auto;
+    background:var(--saldo-bg);
+  }
+
+  .frame,
+  .topbar__inner{
+    width:100%!important;
+    max-width:100%!important;
+  }
+
+  .tabbar__inner{
+    width:var(--app-layout-width)!important;
+    max-width:var(--app-layout-width)!important;
+  }
+
+  .frame{
+    padding:10px 14px calc(96px + env(safe-area-inset-bottom))!important;
+  }
+
+  .topbar__inner{
+    min-height:54px!important;
+    padding:0 14px!important;
+  }
+
+  .sheet,
+  .actionPanel,
+  .mTxSheet,
+  .ruleConfirmSheet{
+    width:var(--app-layout-width)!important;
+    max-width:var(--app-layout-width)!important;
+  }
+
+  /* iOS typography hierarchy */
+  .brand{font-size:16px}
+  .h1{font-size:20px;line-height:1.15;letter-spacing:-.02em}
+  .p{font-size:14px}
+  .muted{font-size:12px}
+
+  .saldoDashShell{gap:14px}
+  .saldoDashTop{padding:4px 2px 0;align-items:center}
+  .saldoOverline{font-size:10px}
+  .saldoPageTitle{
+    font-size:28px!important;
+    line-height:1.02;
+    font-weight:800;
+    letter-spacing:-.04em;
+  }
+  .saldoMonthBtn{
+    min-height:36px;
+    padding:7px 10px!important;
+    border-radius:12px;
+    font-size:12px!important;
+  }
+
+  .saldoBalanceCard{
+    padding:19px 18px 18px!important;
+    border-radius:22px!important;
+  }
+  .saldoBalanceHead{font-size:11px}
+  .saldoLiveStamp{font-size:9px;padding:4px 7px}
+  .saldoBalanceValue{
+    margin-top:14px;
+    font-size:36px!important;
+    line-height:1;
+    font-weight:800;
+    letter-spacing:-.045em;
+  }
+  .saldoBalanceCaption{font-size:11px;margin-top:8px}
+
+  .saldoSection{gap:9px}
+  .saldoSectionTitle{
+    font-size:17px!important;
+    font-weight:780;
+    letter-spacing:-.02em;
+  }
+  .saldoSectionSub{font-size:11px}
+  .saldoLinkBtn{font-size:13px;padding:6px}
+
+  .saldoAccountStrip{gap:9px;margin:0 -14px;padding:1px 14px 6px}
+  .saldoAccountCard{
+    flex:0 0 166px!important;
+    min-height:112px!important;
+    padding:13px!important;
+    border-radius:18px!important;
+  }
+  .saldoAccountIcon{width:30px;height:30px;border-radius:10px;font-size:15px}
+  .saldoAccountName{margin-top:12px;font-size:11px}
+  .saldoAccountBalance{font-size:16px}
+  .saldoAccountSource{font-size:8px}
+
+  /* On iPhone all primary finance panels are one-column. */
+  .saldoDashGrid{
+    grid-template-columns:1fr!important;
+    gap:10px!important;
+  }
+  .saldoPanel,
+  .saldoTransactionsSection{
+    padding:15px!important;
+    border-radius:19px!important;
+  }
+  .saldoPanelEyebrow{font-size:9px}
+  .saldoPanelTitle{font-size:16px}
+  .saldoFlowRow{margin-top:17px;gap:8px}
+  .saldoFlowLabel{font-size:10px}
+  .saldoFlowValue{font-size:14px}
+  .saldoResultBlock{margin-top:17px;padding-top:14px}
+  .saldoResultLabel{font-size:10px}
+  .saldoResultValue{font-size:24px}
+  .saldoReturnLine{font-size:10px}
+
+  .saldoBudgetText{margin-top:18px;font-size:14px}
+  .saldoBudgetStats{margin-top:16px;padding-top:13px}
+  .saldoBudgetStat span{font-size:9px}
+  .saldoBudgetStat strong{font-size:13px}
+
+  .saldoFilters{
+    grid-template-columns:1fr 1fr!important;
+    gap:7px!important;
+  }
+  .saldoSelectWide{grid-column:1 / -1}
+  .saldoSelect{height:38px;font-size:12px}
+
+  .saldoTxList{gap:11px}
+  .txDayHead{font-size:11px}
+  .txDayGroup{border-radius:16px}
+  .saldoTxItem.txItem{
+    min-height:64px;
+    grid-template-columns:38px minmax(0,1fr) auto;
+    gap:10px;
+    padding:9px 10px;
+  }
+  .saldoTxIcon{width:36px;height:36px;border-radius:12px;font-size:16px}
+  .saldoTxItem .txTitle{font-size:14px}
+  .saldoTxItem .txMeta{font-size:11px}
+  .saldoTxItem .txAmount{font-size:14px}
+  .saldoTxItem .txBadge{font-size:9px}
+
+  .saldoDonutWrap{
+    grid-template-columns:1fr!important;
+    gap:12px!important;
+  }
+  .saldoDonutWrap .donutBox{margin:0 auto}
+
+  /* Native-feeling bottom navigation */
+  .tabbar{
+    left:0!important;
+    right:0!important;
+    width:100%!important;
+    max-width:none!important;
+    transform:none!important;
+  }
+  .tabbar__inner{
+    height:58px!important;
+    border-radius:18px 18px 0 0!important;
+  }
+  .tab{height:58px!important;gap:3px;font-size:10px}
+  .tabIcon,.tabIcon svg{width:21px;height:21px}
+  .tabLabel{font-size:10px!important}
+
+  .fab{
+    right:16px!important;
+    bottom:calc(72px + env(safe-area-inset-bottom))!important;
+    width:52px!important;
+    height:52px!important;
+    font-size:26px!important;
+  }
+
+  /* iPhone 15 Pro / 16 Pro style widths */
+  @media (max-width:430px){
+    .safe{max-width:none}
+    .frame{padding-left:14px!important;padding-right:14px!important}
+  }
+
+  @media (max-width:393px){
+    .frame{padding-left:12px!important;padding-right:12px!important}
+    .saldoAccountStrip{margin-left:-12px;margin-right:-12px;padding-left:12px;padding-right:12px}
+    .saldoPageTitle{font-size:26px!important}
+    .saldoBalanceValue{font-size:34px!important}
+    .saldoAccountCard{flex-basis:158px!important}
+  }
+
+  @media (max-width:375px){
+    .saldoPageTitle{font-size:25px!important}
+    .saldoBalanceValue{font-size:32px!important}
+    .saldoPanel,.saldoTransactionsSection{padding:14px!important}
+    .saldoAccountCard{flex-basis:152px!important}
+  }
+
+  /* Desktop preview should look like an actual phone, not a stretched sheet. */
+  @media (min-width:431px){
+    body{background:#E9EBF1}
+    .safe{
+      min-height:100vh;
+      box-shadow:0 0 0 1px rgba(0,0,0,.04),0 18px 70px rgba(25,30,45,.12);
+    }
+  }
+
+
+
+  /* ======================================================================
+     IPHONE 6.9" / 440 CSS PX — EDGE SPACING REFINEMENT — Stage 9B.4
+     ====================================================================== */
+  :root{
+    --iphone-max:440px;
+    --screen-gutter:18px;
+  }
+
+  /* Keep the content visually away from the physical screen edges. */
+  .frame{
+    padding-left:max(var(--screen-gutter),env(safe-area-inset-left))!important;
+    padding-right:max(var(--screen-gutter),env(safe-area-inset-right))!important;
+  }
+
+  .topbar__inner{
+    padding-left:max(var(--screen-gutter),env(safe-area-inset-left))!important;
+    padding-right:max(var(--screen-gutter),env(safe-area-inset-right))!important;
+  }
+
+  /* Dashboard header gets a little breathing room without double-padding cards. */
+  .saldoDashTop{
+    padding-left:2px!important;
+    padding-right:2px!important;
+  }
+
+  /* Accounts align with the rest of the page instead of touching the viewport. */
+  .saldoAccountStrip{
+    margin-left:0!important;
+    margin-right:0!important;
+    padding-left:0!important;
+    padding-right:0!important;
+    scroll-padding-left:0;
+    scroll-padding-right:0;
+  }
+
+  /* Slightly more inner air on primary cards at 440px. */
+  .saldoBalanceCard{
+    padding-left:20px!important;
+    padding-right:20px!important;
+  }
+
+  .saldoPanel,
+  .saldoTransactionsSection,
+  .saldoInsightsPanel{
+    padding-left:17px!important;
+    padding-right:17px!important;
+  }
+
+  /* Floating action button follows the same visual gutter. */
+  .fab{
+    right:16px!important;
+  }
+
+  /* Full-width iPhone viewport; desktop remains a 440px phone preview. */
+  @media (max-width:440px){
+    .safe{max-width:none}
+  }
+
+  /* 393px iPhones: keep comfortable but slightly tighter gutters. */
+  @media (max-width:393px){
+    :root{--screen-gutter:16px}
+
+    .frame{
+      padding-left:max(var(--screen-gutter),env(safe-area-inset-left))!important;
+      padding-right:max(var(--screen-gutter),env(safe-area-inset-right))!important;
+    }
+
+    .topbar__inner{
+      padding-left:max(var(--screen-gutter),env(safe-area-inset-left))!important;
+      padding-right:max(var(--screen-gutter),env(safe-area-inset-right))!important;
+    }
+  }
+
+  /* 375px iPhones: preserve usable content width. */
+  @media (max-width:375px){
+    :root{--screen-gutter:14px}
+  }
+
+
+
+  /* ======================================================================
+     APP GEOMETRY — REFERENCE LAYOUT — HARD WIDTH LOCK
+     ONLY overall application position and dimensions.
+     Visual styles, typography, colors, radii and component design unchanged.
+
+     Reference desktop width is about 460 CSS px.
+     Desktop: fixed centered 460 px column.
+     Mobile <= 460 px: full viewport width.
+     ====================================================================== */
+  :root{
+    --app-layout-width:min(100vw, 460px);
+  }
+
+  html,
+  body{
+    width:100%;
+    min-width:0;
+    margin:0;
+  }
+
+  /* HARD LOCK: the application itself can never become wider than 460px. */
+  body > .safe,
+  .safe,
+  .page,
+  #page-dashboard,
+  .saldoDashShell{
+    width:var(--app-layout-width)!important;
+    min-width:0!important;
+    max-width:460px!important;
+    margin-left:auto!important;
+    margin-right:auto!important;
+  }
+
+  body > .safe > .frame,
+  .frame,
+  body > .safe > .topbar > .topbar__inner,
+  .topbar__inner{
+    width:var(--app-layout-width)!important;
+    min-width:0!important;
+    max-width:460px!important;
+    margin-left:auto!important;
+    margin-right:auto!important;
+  }
+
+
+  /* Cards/panels may fill the application column, not the viewport. */
+  .card,
+  .saldoBalanceCard,
+  .saldoPanel,
+  .saldoTransactionsSection,
+  .saldoInsightsPanel{
+    max-width:100%!important;
+  }
+
+  /* Bottom bar backdrop may stay viewport-wide; controls match app width. */
+  .tabbar{
+    left:0!important;
+    right:0!important;
+    width:100%!important;
+    max-width:none!important;
+    transform:none!important;
+  }
+
+  .tabbar__inner{
+    width:var(--app-layout-width)!important;
+    min-width:0!important;
+    max-width:460px!important;
+    margin-left:auto!important;
+    margin-right:auto!important;
+  }
+
+  /* Bottom sheets use exactly the same geometry. */
+  .sheet,
+  .actionPanel,
+  .mTxSheet,
+  .ruleConfirmSheet{
+    width:var(--app-layout-width)!important;
+    min-width:0!important;
+    max-width:460px!important;
+    margin-left:auto!important;
+    margin-right:auto!important;
+  }
+
+  /* Reference keeps the floating + attached to the browser edge. */
+  .fab{
+    right:16px!important;
+  }
+
+  /* На реальных смартфонах приложение занимает всю ширину окна. Включая блоки .page */
+  @media (max-width:0px){
+    body > .safe,
+    .safe,
+    body > .safe > .frame,
+    .frame,
+    .page,
+    #page-dashboard,
+    .saldoDashShell,
+    body > .safe > .topbar > .topbar__inner,
+    .topbar__inner,
+    .tabbar__inner,
+    .sheet,
+    .actionPanel,
+    .mTxSheet,
+    .ruleConfirmSheet{
+      width:100%!important;
+      max-width:100%!important;
+    }
+  }
+
+
+
+  /* ==========================================================
+     UI NAVIGATION — 5 TABS
+     ========================================================== */
+
+  .tabbar__inner{
+    grid-template-columns:repeat(5,1fr)!important;
+  }
+
+  .tabLabel{
+    font-size:10px;
+    letter-spacing:-.1px;
+  }
+
+  .tabIcon,
+  .tabIcon svg{
+    width:21px;
+    height:21px;
+  }
+
+  /* Operations tab reuses the Dashboard transaction DOM, without duplicating ids. */
+  #page-dashboard.saldoTxOnly .saldoDashTop,
+  #page-dashboard.saldoTxOnly .saldoBalanceCard,
+  #page-dashboard.saldoTxOnly .saldoAccountsSection,
+  #page-dashboard.saldoTxOnly .saldoDashGrid,
+  #page-dashboard.saldoTxOnly .saldoInsightsPanel{
+    display:none!important;
+  }
+
+  #page-dashboard.saldoTxOnly .saldoTransactionsSection{
+    margin-top:0!important;
+  }
+
+  #page-dashboard.saldoTxOnly .saldoTransactionsSection .saldoSectionTitle{
+    font-size:20px;
+  }
+
+  #page-dashboard.saldoTxOnly .saldoTransactionsSection .saldoSectionSub{
+    margin-top:3px;
+  }
+
+  /* More */
+  .moreShell{
+    width:100%;
+    display:grid;
+    gap:14px;
+  }
+
+  .moreTitle{
+    font-size:28px;
+    line-height:1.05;
+    font-weight:800;
+    letter-spacing:-.6px;
+  }
+
+  .moreSubtitle{
+    margin-top:-6px;
+    font-size:13px;
+    color:var(--muted);
+  }
+
+  .moreMenu{
+    overflow:hidden;
+    border-radius:18px;
+    background:var(--card);
+    box-shadow:var(--shadow);
+  }
+
+  .moreMenuItem{
+    width:100%;
+    min-height:66px;
+    border:0;
+    border-bottom:1px solid rgba(0,0,0,.06);
+    background:transparent;
+    padding:10px 14px;
+    display:grid;
+    grid-template-columns:34px minmax(0,1fr) 16px;
+    align-items:center;
+    gap:10px;
+    color:var(--text);
+    text-align:left;
+    cursor:pointer;
+  }
+
+  .moreMenuItem:last-child{
+    border-bottom:0;
+  }
+
+  .moreMenuIcon{
+    width:32px;
+    height:32px;
+    border-radius:10px;
+    display:grid;
+    place-items:center;
+    background:rgba(0,122,255,.10);
+    color:var(--accent);
+    font-size:17px;
+    font-weight:800;
+  }
+
+  .moreMenuText{
+    min-width:0;
+    display:grid;
+    gap:3px;
+  }
+
+  .moreMenuText strong{
+    font-size:15px;
+    font-weight:700;
+  }
+
+  .moreMenuText small{
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+    font-size:12px;
+    color:var(--muted);
+  }
+
+  .moreMenuChevron{
+    color:rgba(0,0,0,.28);
+    font-size:22px;
+  }
+
+  /* ==========================================================
+     OPERATIONS SCREEN — Stage 9C.1
+     Visual/function layer only. APP GEOMETRY above is untouched.
+     ========================================================== */
+
+  .opsOnly{
+    display:none;
+  }
+
+  #page-dashboard.saldoTxOnly .opsOnly{
+    display:grid;
+    gap:12px;
+  }
+
+  #page-dashboard.saldoTxOnly .saldoTransactionsSection > .saldoSectionHead{
+    display:none!important;
+  }
+
+  #page-dashboard.saldoTxOnly .saldoTransactionsSection{
+    padding-top:16px!important;
+  }
+
+  .opsHeader{
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap:14px;
+  }
+
+  .opsEyebrow{
+    font-size:9px;
+    font-weight:850;
+    letter-spacing:.11em;
+    color:#A1A5AF;
+  }
+
+  .opsTitle{
+    margin-top:4px;
+    font-size:24px;
+    line-height:1.05;
+    font-weight:820;
+    letter-spacing:-.04em;
+  }
+
+  .opsSubtitle{
+    margin-top:5px;
+    font-size:11px;
+    line-height:1.35;
+    color:var(--saldo-muted,var(--muted));
+  }
+
+  .opsCount{
+    min-width:34px;
+    height:34px;
+    padding:0 9px;
+    border-radius:12px;
+    display:grid;
+    place-items:center;
+    background:var(--saldo-blue-soft,#EEF1FF);
+    color:var(--saldo-blue,var(--accent));
+    font-size:12px;
+    font-weight:820;
+  }
+
+  .opsSearch{
+    min-height:44px;
+    display:grid;
+    grid-template-columns:24px minmax(0,1fr) 28px;
+    align-items:center;
+    gap:5px;
+    padding:0 8px 0 11px;
+    border:1px solid var(--saldo-line,rgba(0,0,0,.07));
+    border-radius:14px;
+    background:#F4F5F8;
+  }
+
+  .opsSearch:focus-within{
+    border-color:rgba(49,87,246,.28);
+    background:#fff;
+    box-shadow:0 0 0 3px rgba(49,87,246,.08);
+  }
+
+  .opsSearchIcon{
+    color:#8F949F;
+    font-size:19px;
+    line-height:1;
+    transform:translateY(-1px);
+  }
+
+  .opsSearch input{
+    width:100%;
+    min-width:0;
+    height:42px;
+    border:0;
+    outline:0;
+    background:transparent;
+    color:var(--text);
+    font-size:14px;
+    -webkit-appearance:none;
+    appearance:none;
+  }
+
+  .opsSearch input::-webkit-search-cancel-button{
+    display:none;
+  }
+
+  .opsSearchClear{
+    width:28px;
+    height:28px;
+    border:0;
+    border-radius:9px;
+    display:none;
+    place-items:center;
+    background:rgba(0,0,0,.055);
+    color:#7D828D;
+    font-size:18px;
+    line-height:1;
+    cursor:pointer;
+  }
+
+  .opsSearchClear.show{
+    display:grid;
+  }
+
+  .opsStats{
+    display:grid;
+    grid-template-columns:repeat(3,minmax(0,1fr));
+    gap:7px;
+  }
+
+  .opsStat{
+    min-width:0;
+    padding:10px 9px;
+    border-radius:13px;
+    background:#F7F8FA;
+    border:1px solid #EFF0F4;
+    display:grid;
+    gap:4px;
+  }
+
+  .opsStat span{
+    font-size:9px;
+    color:var(--saldo-muted,var(--muted));
+    white-space:nowrap;
+  }
+
+  .opsStat strong{
+    min-width:0;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+    font-size:12px;
+    font-weight:820;
+    color:var(--saldo-text,var(--text));
+  }
+
+  .opsStat strong.expense{
+    color:var(--saldo-red,var(--red));
+  }
+
+  .opsStat strong.income{
+    color:var(--saldo-green,var(--green));
+  }
+
+  #page-dashboard.saldoTxOnly .saldoFilters{
+    margin-top:2px;
+  }
+
+  #page-dashboard.saldoTxOnly .saldoTxList{
+    margin-top:2px;
+  }
+
+  @media (max-width:375px){
+    .opsTitle{font-size:22px}
+    .opsSubtitle{font-size:10px}
+    .opsStats{gap:5px}
+    .opsStat{padding:9px 7px}
+    .opsStat strong{font-size:11px}
+  }
+
+
+
+  /* ======================================================================
+     STRICT CONTENT GEOMETRY — 24PX GUTTERS
+
+     Desktop reference:
+       460px application
+       24px left gutter
+       412px content
+       24px right gutter
+
+     460 - 24 - 24 = 412
+
+     On viewports narrower than 460px the application remains 100% wide,
+     while the same 24px internal gutters are preserved.
+     ====================================================================== */
+  :root{
+    --app-width:460px;
+    --content-gutter:24px;
+    --content-width:412px;
+    --app-layout-width:460px;
+  }
+
+  /* Outer application shell: max 460px, centered. */
+  body > .safe,
+  .safe{
+    width:var(--app-layout-width)!important;
+    max-width:var(--app-width)!important;
+    min-width:0!important;
+    margin-left:auto!important;
+    margin-right:auto!important;
+  }
+
+  /* The frame stays 460px wide; box-sizing makes 24+412+24 fit exactly. */
+  body > .safe > .frame,
+  .frame{
+    width:100%!important;
+    max-width:var(--app-width)!important;
+    min-width:0!important;
+    margin-left:auto!important;
+    margin-right:auto!important;
+    padding-left:var(--content-gutter)!important;
+    padding-right:var(--content-gutter)!important;
+  }
+
+  /* All page content lives inside the 412px content box on desktop. */
+  .page,
+  #page-dashboard,
+  .saldoDashShell,
+  .moreShell{
+    width:100%!important;
+    max-width:var(--content-width)!important;
+    min-width:0!important;
+    margin-left:auto!important;
+    margin-right:auto!important;
+  }
+
+  /* Top bar uses the same 460 / 24 / 412 / 24 geometry. */
+  body > .safe > .topbar > .topbar__inner,
+  .topbar__inner{
+    width:100%!important;
+    max-width:var(--app-width)!important;
+    min-width:0!important;
+    margin-left:auto!important;
+    margin-right:auto!important;
+    padding-left:var(--content-gutter)!important;
+    padding-right:var(--content-gutter)!important;
+  }
+
+  /* Bottom navigation keeps the full application width. */
+  .tabbar__inner{
+    width:var(--app-layout-width)!important;
+    max-width:var(--app-width)!important;
+    min-width:0!important;
+    margin-left:auto!important;
+    margin-right:auto!important;
+  }
+
+  /* Sheets keep full app width; their own inner padding is unchanged. */
+  .sheet,
+  .actionPanel,
+  .mTxSheet,
+  .ruleConfirmSheet{
+    width:var(--app-layout-width)!important;
+    max-width:var(--app-width)!important;
+    min-width:0!important;
+    margin-left:auto!important;
+    margin-right:auto!important;
+  }
+
+  /* Mobile: app = viewport width, content = viewport - 48px. */
+  @media (max-width:0px){
+    body > .safe,
+    .safe,
+    body > .safe > .frame,
+    .frame,
+    body > .safe > .topbar > .topbar__inner,
+    .topbar__inner,
+    .tabbar__inner,
+    .sheet,
+    .actionPanel,
+    .mTxSheet,
+    .ruleConfirmSheet{
+      width:100%!important;
+      max-width:100%!important;
+    }
+
+    .page,
+    #page-dashboard,
+    .saldoDashShell,
+    .moreShell{
+      width:100%!important;
+      max-width:100%!important;
+    }
+  }
+
+
+
+  /* ==========================================================
+     TRANSACTION DETAILS — Stage 9C.2
+     Geometry 460 / 24 / 412 is intentionally untouched.
+     ========================================================== */
+
+  .txDetailCard{
+    margin-bottom:10px;
+    padding:10px 14px 14px;
+    border-radius:22px;
+    background:var(--saldo-surface,#fff);
+    border:1px solid var(--saldo-line,rgba(0,0,0,.07));
+    box-shadow:0 10px 34px rgba(20,24,36,.10);
+    overflow:hidden;
+  }
+
+  .txDetailHandle{
+    width:38px;
+    height:4px;
+    margin:0 auto 12px;
+    border-radius:999px;
+    background:rgba(0,0,0,.12);
+  }
+
+  .txDetailHero{
+    display:grid;
+    grid-template-columns:46px minmax(0,1fr);
+    gap:12px;
+    align-items:start;
+  }
+
+  .txDetailIcon{
+    width:46px;
+    height:46px;
+    border-radius:15px;
+    display:grid;
+    place-items:center;
+    background:#F2F3F7;
+    color:#6E7480;
+    font-size:24px;
+    font-weight:800;
+  }
+
+  .txDetailIcon.expense{background:var(--saldo-red-soft,#FFF0F0);color:var(--saldo-red,#E5484D)}
+  .txDetailIcon.income,
+  .txDetailIcon.return{background:var(--saldo-green-soft,#EAF8F1);color:var(--saldo-green,#1A9B5A)}
+  .txDetailIcon.transfer{background:var(--saldo-blue-soft,#EEF1FF);color:var(--saldo-blue,#3157F6)}
+
+  .txDetailHeroText{min-width:0}
+
+  .txDetailTopline{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:8px;
+  }
+
+  .txDetailCategory{
+    min-width:0;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+    font-size:14px;
+    font-weight:780;
+    color:var(--saldo-text,var(--text));
+  }
+
+  .txDetailSource{
+    flex:0 0 auto;
+    padding:4px 6px;
+    border-radius:999px;
+    background:#F2F3F6;
+    color:#7C818C;
+    font-size:8px;
+    line-height:1;
+    font-weight:850;
+    letter-spacing:.04em;
+  }
+
+  .txDetailSource.bank{
+    background:var(--saldo-blue-soft,#EEF1FF);
+    color:var(--saldo-blue,#3157F6);
+  }
+
+  .txDetailAmount{
+    margin-top:5px;
+    font-size:25px;
+    line-height:1.05;
+    font-weight:860;
+    letter-spacing:-.035em;
+    white-space:nowrap;
+  }
+
+  .txDetailAmount.expense{color:var(--saldo-red,#E5484D)}
+  .txDetailAmount.income,
+  .txDetailAmount.return{color:var(--saldo-green,#1A9B5A)}
+  .txDetailAmount.transfer{color:var(--saldo-blue,#3157F6)}
+
+  .txDetailDate{
+    margin-top:5px;
+    font-size:10px;
+    color:var(--saldo-muted,var(--muted));
+  }
+
+  .txDetailRows{
+    margin-top:14px;
+    border-top:1px solid var(--saldo-line,rgba(0,0,0,.06));
+  }
+
+  .txDetailRow{
+    min-height:42px;
+    display:grid;
+    grid-template-columns:92px minmax(0,1fr);
+    gap:12px;
+    align-items:center;
+    border-bottom:1px solid #F1F2F5;
+  }
+
+  .txDetailRow:last-child{border-bottom:0}
+
+  .txDetailRow > span{
+    font-size:11px;
+    color:var(--saldo-muted,var(--muted));
+  }
+
+  .txDetailRow > strong{
+    min-width:0;
+    overflow-wrap:anywhere;
+    text-align:right;
+    font-size:12px;
+    line-height:1.35;
+    font-weight:730;
+    color:var(--saldo-text,var(--text));
+  }
+
+  .txDetailNoteRow{
+    align-items:start;
+    padding:10px 0;
+  }
+
+  .txDetailBankHint{
+    margin-top:10px;
+    padding:10px 11px;
+    border-radius:12px;
+    background:var(--saldo-blue-soft,#EEF1FF);
+    color:#5264A7;
+    font-size:10px;
+    line-height:1.4;
+  }
+
+  #txActions .actionPanel{
+    max-height:calc(92vh - env(safe-area-inset-top));
+    overflow:auto;
+    -webkit-overflow-scrolling:touch;
+  }
+
+  #txActions .actionGroup{
+    box-shadow:0 8px 28px rgba(20,24,36,.10);
+  }
+
+  #txActions .actionBtn{
+    min-height:52px;
+    font-size:14px;
+  }
+
+
+
+  /* ==========================================================
+     9C.2 REGRESSION FIX — BOTTOM NAV VISIBILITY
+     Does not change 460 / 24 / 412 / 24 geometry.
+     ========================================================== */
+  .tabbar{
+    display:block!important;
+    visibility:visible!important;
+    opacity:1!important;
+    position:fixed!important;
+    left:0!important;
+    right:0!important;
+    bottom:0!important;
+    z-index:999!important;
+    pointer-events:auto!important;
+  }
+
+  .tabbar__inner{
+    display:grid!important;
+    grid-template-columns:repeat(5,1fr)!important;
+  }
+
+  .frame{
+    padding-bottom:calc(104px + env(safe-area-inset-bottom))!important;
+  }
+
+
+  /* ==========================================================
+     TRANSACTION INTERACTION FIX — Stage 9C.3
+     Geometry 460 / 24 / 412 / 24 is NOT changed.
+     ========================================================== */
+
+  .txCrudSheet{
+    max-height:calc(92vh - env(safe-area-inset-top))!important;
+    overflow:auto!important;
+    -webkit-overflow-scrolling:touch;
+  }
+
+  #txSeg.txCrudSeg{
+    grid-template-columns:repeat(4,1fr)!important;
+  }
+
+  #txSeg.txCrudSeg button{
+    min-width:0;
+    padding:0 5px;
+    font-size:12px;
+  }
+
+  #txOverlay,
+  #ruleOverlay,
+  #ruleConfirmOverlay,
+  #txActions{
+    pointer-events:none;
+  }
+
+  #txOverlay.open,
+  #ruleOverlay.open,
+  #ruleConfirmOverlay.open,
+  #txActions.open{
+    pointer-events:auto;
+  }
+
+  #txOverlay{z-index:1100!important}
+  #txActions{z-index:1200!important}
+  #ruleOverlay{z-index:1300!important}
+  #ruleConfirmOverlay{z-index:1400!important}
+
+  #txActions .actionPanel{
+    width:min(100vw,460px)!important;
+    max-width:460px!important;
+    margin-left:auto!important;
+    margin-right:auto!important;
+  }
+
+  #txActions .actionBtn,
+  #txOverlay button,
+  #ruleOverlay button,
+  #ruleConfirmOverlay button{
+    touch-action:manipulation;
+  }
+
+  @media (max-width:460px){
+    #txActions .actionPanel{
+      width:100%!important;
+      max-width:100%!important;
+    }
+  }
+
+
+
+  /* ==========================================================
+     TRANSACTION ACTION SHEET — POLISH FIX 9C.6
+     Keeps strict geometry: 460px app / 24px gutters / 412px content.
+     ========================================================== */
+
+  #txActions{
+    background:rgba(20,22,28,.34)!important;
+    -webkit-backdrop-filter:blur(3px);
+    backdrop-filter:blur(3px);
+  }
+
+  #txActions .actionPanel{
+    width:min(100vw,460px)!important;
+    max-width:460px!important;
+    margin:0 auto!important;
+    padding:8px 24px calc(12px + env(safe-area-inset-bottom))!important;
+    max-height:calc(94vh - env(safe-area-inset-top))!important;
+    overflow:auto!important;
+    -webkit-overflow-scrolling:touch;
+  }
+
+  #txActions .txDetailCard{
+    width:100%!important;
+    max-width:100%!important;
+    margin:0 0 10px!important;
+    border-radius:22px!important;
+  }
+
+  #txActions .actionGroup{
+    width:100%!important;
+    margin:0 0 10px!important;
+    padding:0!important;
+    overflow:hidden!important;
+    background:#fff!important;
+    border:1px solid var(--saldo-line,#E9EBF1)!important;
+    border-radius:18px!important;
+    box-shadow:0 8px 28px rgba(20,24,36,.08)!important;
+  }
+
+  /* Full reset of native <button> appearance. */
+  #txActions .actionBtn{
+    -webkit-appearance:none!important;
+    appearance:none!important;
+    width:100%!important;
+    min-width:100%!important;
+    min-height:54px!important;
+    margin:0!important;
+    padding:0 16px!important;
+    border:0!important;
+    border-radius:0!important;
+    outline:0!important;
+    background:#fff!important;
+    box-shadow:none!important;
+    color:var(--saldo-text,#14151A)!important;
+    display:flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+    text-align:center!important;
+    font-family:inherit!important;
+    font-size:15px!important;
+    line-height:1!important;
+    font-weight:760!important;
+    cursor:pointer!important;
+    user-select:none!important;
+    -webkit-tap-highlight-color:transparent!important;
+    touch-action:manipulation!important;
+  }
+
+  #txActions .actionBtn + .actionBtn{
+    border-top:1px solid #F0F1F4!important;
+  }
+
+  #txActions .actionBtn:active{
+    background:#F5F6F8!important;
+    transform:none!important;
+  }
+
+  #txActions .actionBtn.danger{
+    color:#FF3B30!important;
+    font-weight:760!important;
+  }
+
+  #txActions .actionBtn.cancel{
+    color:var(--saldo-blue,#3157F6)!important;
+    font-weight:780!important;
+  }
+
+  #txActions .actionBtn[hidden],
+  #txActions .actionBtn[style*="display: none"]{
+    display:none!important;
+  }
+
+  @media (max-width:460px){
+    #txActions .actionPanel{
+      width:100%!important;
+      max-width:100%!important;
+      padding-left:24px!important;
+      padding-right:24px!important;
+    }
+  }
+
+
+
+  /* ==========================================================
+     9C.7 — TRANSACTION ACTIONS: CLEAN MOBILE BUTTONS
+     Geometry remains 460px app / 24px gutters / 412px content.
+     ========================================================== */
+
+  #txActions .txActionButtons{
+    display:grid!important;
+    grid-template-columns:1fr!important;
+    gap:8px!important;
+    margin:0 0 8px!important;
+    padding:0!important;
+    overflow:visible!important;
+    background:transparent!important;
+    border:0!important;
+    border-radius:0!important;
+    box-shadow:none!important;
+  }
+
+  #txActions .actionPanel > .actionGroup:last-child{
+    display:grid!important;
+    gap:8px!important;
+    margin:0!important;
+    padding:0!important;
+    overflow:visible!important;
+    background:transparent!important;
+    border:0!important;
+    border-radius:0!important;
+    box-shadow:none!important;
+  }
+
+  #txActions .actionBtn{
+    -webkit-appearance:none!important;
+    appearance:none!important;
+    width:100%!important;
+    min-width:0!important;
+    min-height:50px!important;
+    margin:0!important;
+    padding:0 16px!important;
+
+    border:1px solid #E7E9EF!important;
+    border-radius:15px!important;
+    outline:0!important;
+
+    background:rgba(255,255,255,.98)!important;
+    box-shadow:0 5px 16px rgba(20,24,36,.055)!important;
+
+    display:flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+    gap:9px!important;
+
+    font-family:inherit!important;
+    font-size:14px!important;
+    line-height:1.15!important;
+    font-weight:780!important;
+    text-align:center!important;
+    white-space:normal!important;
+
+    color:#14151A!important;
+    cursor:pointer!important;
+    touch-action:manipulation!important;
+    -webkit-tap-highlight-color:transparent!important;
+  }
+
+  #txActions .actionBtn + .actionBtn{
+    border-top:1px solid #E7E9EF!important;
+  }
+
+  #txActions #actEdit{
+    color:#fff!important;
+    background:linear-gradient(135deg,#3157F6,#5B72F8)!important;
+    border-color:transparent!important;
+    box-shadow:0 9px 20px rgba(49,87,246,.22)!important;
+  }
+
+  #txActions #actEdit::before{
+    content:"✎";
+    font-size:17px;
+    line-height:1;
+    font-weight:800;
+  }
+
+  #txActions #actRule{
+    color:#3157F6!important;
+    background:#F3F5FF!important;
+    border-color:#E3E7FF!important;
+  }
+
+  #txActions #actRule::before{
+    content:"⚡";
+    font-size:15px;
+    line-height:1;
+  }
+
+  #txActions #actDelete{
+    color:#D70015!important;
+    background:#FFF2F2!important;
+    border-color:#FFDCDC!important;
+    box-shadow:none!important;
+  }
+
+  #txActions #actDelete::before{
+    content:"⌫";
+    font-size:17px;
+    line-height:1;
+  }
+
+  #txActions #actCancel{
+    min-height:46px!important;
+    color:#6B7280!important;
+    background:rgba(255,255,255,.86)!important;
+    border-color:rgba(0,0,0,.06)!important;
+    box-shadow:none!important;
+  }
+
+  #txActions .actionBtn:active{
+    transform:scale(.985)!important;
+    opacity:.92!important;
+  }
+
+  #txActions .actionBtn[hidden],
+  #txActions .actionBtn[style*="display: none"]{
+    display:none!important;
+  }
+
+
+
+  /* ======================================================================
+     10L — SCROLL END / BOTTOM NAV CLEARANCE
+
+     Fixed bottom navigation overlays the viewport by design.
+     Add a real scroll tail AFTER the active page so the final card/row can
+     always be scrolled completely above the tab bar.
+
+     IMPORTANT:
+     - does NOT change 460 / 24 / 412 geometry;
+     - does NOT move the bottom navigation;
+     - does NOT change cards, typography or layout;
+     - applies to every main page, including Budget and Dashboard.
+     ====================================================================== */
+
+  :root{
+    --page-scroll-end:88px;
+  }
+
+  .page.active::after{
+    content:"";
+    display:block;
+    width:100%;
+    height:calc(var(--page-scroll-end) + env(safe-area-inset-bottom));
+    min-height:calc(var(--page-scroll-end) + env(safe-area-inset-bottom));
+    pointer-events:none;
+  }
+
+  html,
+  body{
+    scroll-padding-bottom:calc(
+      var(--page-scroll-end) +
+      64px +
+      env(safe-area-inset-bottom)
+    );
+  }
+
+
+
+  /* ======================================================================
+     10M — ACCOUNTS / SALDO-INSPIRED UI
+
+     Геометрия приложения НЕ меняется:
+       460px app / 24px gutters / 412px content.
+     ====================================================================== */
+
+  .saldoAccountsShell{
+    width:100%;
+    display:grid;
+    gap:14px;
+  }
+
+  .saldoAccountsTop{
+    display:flex;
+    align-items:flex-end;
+    justify-content:space-between;
+    gap:16px;
+    padding:4px 2px 0;
+  }
+
+  .saldoAccountsEyebrow{
+    font-size:9px;
+    line-height:1.2;
+    font-weight:850;
+    letter-spacing:.11em;
+    color:#A1A5AF;
+  }
+
+  .saldoAccountsTitle{
+    margin-top:5px;
+    font-size:28px;
+    line-height:1.02;
+    font-weight:820;
+    letter-spacing:-.045em;
+  }
+
+  .saldoAccountsSubtitle{
+    margin-top:5px;
+    font-size:11px;
+    line-height:1.35;
+    color:var(--saldo-muted,var(--muted));
+  }
+
+  .saldoAccountsCount{
+    min-width:38px;
+    height:38px;
+    padding:0 10px;
+    border-radius:13px;
+    display:grid;
+    place-items:center;
+    background:var(--saldo-blue-soft,#EEF1FF);
+    color:var(--saldo-blue,#3157F6);
+    font-size:13px;
+    font-weight:830;
+  }
+
+  .saldoAccountsTotalCard{
+    padding:20px;
+    border-radius:23px;
+    color:#fff;
+    background:linear-gradient(135deg,#3157F6 0%,#6077FA 100%);
+    box-shadow:0 17px 34px rgba(49,87,246,.20);
+    position:relative;
+    overflow:hidden;
+  }
+
+  .saldoAccountsTotalCard::after{
+    content:"";
+    position:absolute;
+    width:190px;
+    height:190px;
+    right:-92px;
+    top:-105px;
+    border-radius:999px;
+    background:rgba(255,255,255,.08);
+    pointer-events:none;
+  }
+
+  .saldoAccountsTotalHead{
+    position:relative;
+    z-index:1;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    font-size:11px;
+    font-weight:700;
+    color:rgba(255,255,255,.76);
+  }
+
+  .saldoAccountsTotalBadge{
+    padding:5px 8px;
+    border-radius:999px;
+    background:rgba(255,255,255,.13);
+    font-size:9px;
+    font-weight:820;
+    letter-spacing:.04em;
+  }
+
+  .saldoAccountsTotalValue{
+    position:relative;
+    z-index:1;
+    margin-top:15px;
+    font-size:34px;
+    line-height:1;
+    font-weight:850;
+    letter-spacing:-.05em;
+  }
+
+  .saldoAccountsTotalMeta{
+    position:relative;
+    z-index:1;
+    margin-top:9px;
+    font-size:10px;
+    line-height:1.4;
+    color:rgba(255,255,255,.68);
+  }
+
+  .saldoAccountsMonoCard{
+    -webkit-appearance:none;
+    appearance:none;
+    width:100%;
+    border:0;
+    outline:0;
+    padding:18px;
+    border-radius:22px;
+    background:#16171B;
+    color:#fff;
+    text-align:left;
+    box-shadow:0 12px 28px rgba(18,20,27,.14);
+    cursor:pointer;
+    touch-action:manipulation;
+  }
+
+  .saldoAccountsMonoCard:active{
+    transform:scale(.992);
+  }
+
+  .saldoAccountsMonoTop{
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap:12px;
+  }
+
+  .saldoAccountsMonoIdentity{
+    min-width:0;
+    display:flex;
+    align-items:center;
+    gap:11px;
+  }
+
+  .saldoAccountsMonoIcon{
+    width:38px;
+    height:38px;
+    flex:0 0 auto;
+    border-radius:13px;
+    display:grid;
+    place-items:center;
+    background:rgba(255,255,255,.10);
+    font-size:18px;
+  }
+
+  .saldoAccountsMonoName{
+    font-size:14px;
+    line-height:1.2;
+    font-weight:800;
+  }
+
+  .saldoAccountsMonoProvider{
+    margin-top:3px;
+    font-size:9px;
+    color:rgba(255,255,255,.48);
+  }
+
+  .saldoAccountsMonoStatus{
+    flex:0 0 auto;
+    padding:5px 7px;
+    border-radius:999px;
+    background:rgba(52,199,89,.17);
+    color:#7DE3A1;
+    font-size:8px;
+    line-height:1;
+    font-weight:850;
+    letter-spacing:.05em;
+  }
+
+  .saldoAccountsMonoStatus.stale{
+    color:#FFD18B;
+    background:rgba(255,149,0,.18);
+  }
+
+  .saldoAccountsMonoBalance{
+    margin-top:19px;
+    font-size:31px;
+    line-height:1;
+    font-weight:850;
+    letter-spacing:-.045em;
+  }
+
+  .saldoAccountsMonoBalance.negative{
+    color:#FF8085;
+  }
+
+  .saldoAccountsMonoCaption{
+    margin-top:6px;
+    font-size:10px;
+    color:rgba(255,255,255,.54);
+  }
+
+  .saldoAccountsMonoStats{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:8px;
+    margin-top:17px;
+  }
+
+  .saldoAccountsMonoStat{
+    min-width:0;
+    padding:11px;
+    border-radius:14px;
+    background:rgba(255,255,255,.075);
+    display:grid;
+    gap:4px;
+  }
+
+  .saldoAccountsMonoStat span{
+    font-size:8px;
+    color:rgba(255,255,255,.48);
+  }
+
+  .saldoAccountsMonoStat strong{
+    min-width:0;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+    font-size:12px;
+    font-weight:790;
+    color:#fff;
+  }
+
+  .saldoAccountsMonoFooter{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    margin-top:14px;
+    padding-top:12px;
+    border-top:1px solid rgba(255,255,255,.09);
+    font-size:9px;
+    color:rgba(255,255,255,.42);
+  }
+
+  .saldoAccountsSection{
+    display:grid;
+    gap:9px;
+  }
+
+  .saldoAccountsSectionHead{
+    padding:0 2px;
+  }
+
+  .saldoAccountsSectionTitle{
+    font-size:16px;
+    line-height:1.15;
+    font-weight:800;
+    letter-spacing:-.02em;
+  }
+
+  .saldoAccountsSectionSub{
+    margin-top:3px;
+    font-size:10px;
+    color:var(--saldo-muted,var(--muted));
+  }
+
+  .saldoAccountsList{
+    display:grid;
+    gap:8px;
+  }
+
+  .saldoAccountsItem{
+    -webkit-appearance:none;
+    appearance:none;
+    width:100%;
+    min-height:68px;
+    padding:10px 11px;
+    border:1px solid var(--saldo-line,#E9EBF1);
+    border-radius:17px;
+    background:#fff;
+    color:var(--saldo-text,var(--text));
+    box-shadow:0 5px 17px rgba(23,27,38,.035);
+    display:grid;
+    grid-template-columns:38px minmax(0,1fr) auto 12px;
+    align-items:center;
+    gap:10px;
+    text-align:left;
+    cursor:pointer;
+    touch-action:manipulation;
+  }
+
+  .saldoAccountsItem:active{
+    background:#F8F9FB;
+    transform:scale(.995);
+  }
+
+  .saldoAccountsItemIcon{
+    width:38px;
+    height:38px;
+    border-radius:13px;
+    display:grid;
+    place-items:center;
+    background:var(--saldo-blue-soft,#EEF1FF);
+    font-size:17px;
+  }
+
+  .saldoAccountsItemCenter{
+    min-width:0;
+    display:grid;
+    gap:4px;
+  }
+
+  .saldoAccountsItemName{
+    min-width:0;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+    font-size:13px;
+    line-height:1.2;
+    font-weight:770;
+  }
+
+  .saldoAccountsItemSource{
+    min-width:0;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+    font-size:9px;
+    color:var(--saldo-muted,var(--muted));
+  }
+
+  .saldoAccountsItemValues{
+    min-width:0;
+    display:grid;
+    justify-items:end;
+    gap:2px;
+  }
+
+  .saldoAccountsItemBalance{
+    white-space:nowrap;
+    font-size:12px;
+    line-height:1.25;
+    font-weight:820;
+    color:var(--saldo-text,var(--text));
+  }
+
+  .saldoAccountsItemBalance.positive{color:var(--saldo-green,var(--green))}
+  .saldoAccountsItemBalance.negative{color:var(--saldo-red,var(--red))}
+  .saldoAccountsItemBalance.zero{color:#8D929E}
+
+  .saldoAccountsChevron{
+    font-size:20px;
+    line-height:1;
+    color:#B4B8C1;
+  }
+
+  .saldoAccountsSkeleton{
+    height:68px;
+    border-radius:17px;
+    background:linear-gradient(
+      90deg,
+      #F1F2F5 0%,
+      #F8F9FB 45%,
+      #F1F2F5 100%
+    );
+    background-size:220% 100%;
+    animation:saldoAccountsSkeleton 1.15s ease-in-out infinite;
+  }
+
+  .saldoAccountsSkeletonMono{
+    height:213px;
+    border-radius:22px;
+    background:linear-gradient(
+      90deg,
+      #1B1C21 0%,
+      #25272E 45%,
+      #1B1C21 100%
+    );
+    background-size:220% 100%;
+  }
+
+  @keyframes saldoAccountsSkeleton{
+    0%{background-position:100% 0}
+    100%{background-position:-100% 0}
+  }
+
+
+  /* Account history bottom sheet */
+  .saldoAccountHistoryOverlay{
+    background:rgba(20,22,28,.34)!important;
+    -webkit-backdrop-filter:blur(3px);
+    backdrop-filter:blur(3px);
+  }
+
+  .saldoAccountHistorySheet{
+    width:var(--app-layout-width)!important;
+    max-width:460px!important;
+    max-height:91vh!important;
+    padding:8px 24px calc(18px + env(safe-area-inset-bottom))!important;
+    border-radius:24px 24px 0 0!important;
+    background:var(--saldo-bg,#F6F7FB)!important;
+    overflow:auto!important;
+    -webkit-overflow-scrolling:touch;
+  }
+
+  .saldoAccountHistoryHandle{
+    width:38px;
+    height:4px;
+    margin:2px auto 12px;
+    border-radius:999px;
+    background:rgba(0,0,0,.12);
+  }
+
+  .saldoAccountHistoryHead{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+  }
+
+  .saldoAccountHistoryHeadLeft{
+    min-width:0;
+    display:flex;
+    align-items:center;
+    gap:10px;
+  }
+
+  .saldoAccountHistoryIcon{
+    width:40px;
+    height:40px;
+    flex:0 0 auto;
+    border-radius:13px;
+    display:grid;
+    place-items:center;
+    background:var(--saldo-blue-soft,#EEF1FF);
+    font-size:18px;
+  }
+
+  .saldoAccountHistoryHeadText{
+    min-width:0;
+  }
+
+  .saldoAccountHistoryEyebrow{
+    font-size:8px;
+    line-height:1.2;
+    font-weight:850;
+    letter-spacing:.10em;
+    color:#A0A5AF;
+  }
+
+  .saldoAccountHistoryTitle{
+    margin-top:3px;
+    max-width:260px;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+    font-size:17px;
+    line-height:1.15;
+    font-weight:820;
+    letter-spacing:-.025em;
+  }
+
+  .saldoAccountHistoryClose{
+    width:36px;
+    height:36px;
+    flex:0 0 auto;
+    border:0;
+    border-radius:12px;
+    background:#fff;
+    color:#757A86;
+    font-size:22px;
+    line-height:1;
+    display:grid;
+    place-items:center;
+    box-shadow:0 4px 14px rgba(24,28,38,.05);
+    cursor:pointer;
+  }
+
+  .saldoAccountHistoryHero{
+    margin-top:14px;
+    padding:16px;
+    border:1px solid var(--saldo-line,#E9EBF1);
+    border-radius:19px;
+    background:#fff;
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap:12px;
+    box-shadow:0 5px 17px rgba(23,27,38,.035);
+  }
+
+  .saldoAccountHistoryBalanceLabel{
+    font-size:9px;
+    color:var(--saldo-muted,var(--muted));
+  }
+
+  .saldoAccountHistoryBalance{
+    margin-top:5px;
+    font-size:25px;
+    line-height:1;
+    font-weight:850;
+    letter-spacing:-.04em;
+  }
+
+  .saldoAccountHistoryBalance.negative{
+    color:var(--saldo-red,var(--red));
+  }
+
+  .saldoAccountHistorySource{
+    padding:5px 7px;
+    border-radius:999px;
+    background:var(--saldo-green-soft,#EAF8F1);
+    color:var(--saldo-green,#1A9B5A);
+    font-size:8px;
+    line-height:1;
+    font-weight:850;
+    letter-spacing:.04em;
+  }
+
+  .saldoAccountHistorySource.stale{
+    color:#B46800;
+    background:#FFF3DF;
+  }
+
+  .saldoAccountHistoryStats{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:8px;
+    margin-top:8px;
+  }
+
+  .saldoAccountHistoryStats > div{
+    min-width:0;
+    padding:10px 12px;
+    border:1px solid var(--saldo-line,#E9EBF1);
+    border-radius:14px;
+    background:#fff;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+  }
+
+  .saldoAccountHistoryStats span{
+    font-size:9px;
+    color:var(--saldo-muted,var(--muted));
+  }
+
+  .saldoAccountHistoryStats strong{
+    font-size:12px;
+    font-weight:820;
+  }
+
+  .saldoAccountHistoryList{
+    padding:12px 0 0!important;
+    gap:10px!important;
+  }
+
+  .saldoAccountHistoryDay{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    padding:4px 2px 0;
+    font-size:10px;
+    font-weight:760;
+    color:#8F949F;
+  }
+
+  .saldoAccountHistoryDay .positive{color:var(--saldo-green,var(--green))}
+  .saldoAccountHistoryDay .negative{color:var(--saldo-red,var(--red))}
+
+  .saldoAccountHistoryGroup{
+    margin-top:6px;
+    border:1px solid var(--saldo-line,#E9EBF1);
+    border-radius:16px;
+    overflow:hidden;
+    background:#fff;
+  }
+
+  .saldoAccountHistoryItem{
+    -webkit-appearance:none;
+    appearance:none;
+    width:100%;
+    min-height:64px;
+    padding:9px 10px;
+    border:0;
+    background:#fff;
+    color:var(--saldo-text,var(--text));
+    display:grid;
+    grid-template-columns:36px minmax(0,1fr) auto;
+    align-items:center;
+    gap:10px;
+    text-align:left;
+    cursor:pointer;
+  }
+
+  .saldoAccountHistoryItem + .saldoAccountHistoryItem{
+    border-top:1px solid #F1F2F5;
+  }
+
+  .saldoAccountHistoryItem:active{
+    background:#F8F9FB;
+  }
+
+  .saldoAccountHistoryTxIcon{
+    width:36px;
+    height:36px;
+    border-radius:12px;
+    display:grid;
+    place-items:center;
+    background:#F2F3F7;
+    color:#6E7480;
+    font-size:16px;
+    font-weight:820;
+  }
+
+  .saldoAccountHistoryTxIcon.expense{
+    background:var(--saldo-red-soft,#FFF0F0);
+    color:var(--saldo-red,#E5484D);
+  }
+
+  .saldoAccountHistoryTxIcon.income,
+  .saldoAccountHistoryTxIcon.return{
+    background:var(--saldo-green-soft,#EAF8F1);
+    color:var(--saldo-green,#1A9B5A);
+  }
+
+  .saldoAccountHistoryTxIcon.transfer{
+    background:var(--saldo-blue-soft,#EEF1FF);
+    color:var(--saldo-blue,#3157F6);
+  }
+
+  .saldoAccountHistoryTxCenter{
+    min-width:0;
+    display:grid;
+    gap:4px;
+  }
+
+  .saldoAccountHistoryTxCenter strong{
+    min-width:0;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+    font-size:13px;
+    font-weight:770;
+  }
+
+  .saldoAccountHistoryTxCenter small{
+    min-width:0;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+    font-size:9px;
+    color:var(--saldo-muted,var(--muted));
+  }
+
+  .saldoAccountHistoryTxRight{
+    display:grid;
+    justify-items:end;
+    gap:4px;
+  }
+
+  .saldoAccountHistoryTxAmount{
+    white-space:nowrap;
+    font-size:12px;
+    font-weight:830;
+  }
+
+  .saldoAccountHistoryTxAmount.expense{color:var(--saldo-red,var(--red))}
+  .saldoAccountHistoryTxAmount.income{color:var(--saldo-green,var(--green))}
+  .saldoAccountHistoryTxAmount.neutral{color:var(--saldo-text,var(--text))}
+
+  .saldoAccountHistoryTxRight small{
+    font-size:8px;
+    color:#A1A6B0;
+  }
+
+  @media (max-width:375px){
+    .saldoAccountsTitle{font-size:26px}
+    .saldoAccountsTotalValue{font-size:31px}
+    .saldoAccountsMonoBalance{font-size:29px}
+    .saldoAccountsItem{
+      grid-template-columns:36px minmax(0,1fr) auto 10px;
+      gap:8px;
+      padding-left:9px;
+      padding-right:9px;
+    }
+    .saldoAccountsItemIcon{
+      width:36px;
+      height:36px;
+    }
+    .saldoAccountHistorySheet{
+      padding-left:20px!important;
+      padding-right:20px!important;
+    }
+  }
+
+
+
+  /* ======================================================================
+     10N — ACCOUNTS PERFORMANCE / HISTORY SCROLL FIX
+
+     1) Account history overlay sits ABOVE fixed bottom navigation.
+     2) Sheet has a real scroll end.
+     3) "Show more" keeps the first paint light (80 rows).
+     Geometry 460 / 24 / 412 is unchanged.
+     ====================================================================== */
+
+  .saldoAccountHistoryOverlay{
+    z-index:1600!important;
+    align-items:flex-end!important;
+  }
+
+  .saldoAccountHistorySheet{
+    max-height:calc(
+      94vh - env(safe-area-inset-top)
+    )!important;
+    padding-bottom:calc(
+      26px + env(safe-area-inset-bottom)
+    )!important;
+    overscroll-behavior:contain;
+    scrollbar-gutter:stable;
+  }
+
+  .saldoAccountHistoryList{
+    overflow:visible!important;
+  }
+
+  .saldoAccountHistoryMoreWrap{
+    padding:12px 0 0;
+  }
+
+  .saldoAccountHistoryMoreWrap[hidden]{
+    display:none!important;
+  }
+
+  .saldoAccountHistoryMore{
+    -webkit-appearance:none;
+    appearance:none;
+    width:100%;
+    min-height:48px;
+    border:1px solid #E2E6FF;
+    border-radius:15px;
+    background:var(--saldo-blue-soft,#EEF1FF);
+    color:var(--saldo-blue,#3157F6);
+    font-size:12px;
+    line-height:1.2;
+    font-weight:800;
+    cursor:pointer;
+    touch-action:manipulation;
+  }
+
+  .saldoAccountHistoryMore:active{
+    transform:scale(.99);
+  }
+
+  .saldoAccountHistoryMore:disabled{
+    opacity:.55;
+    cursor:default;
+  }
+
+  .saldoAccountHistoryScrollEnd{
+    display:block;
+    width:100%;
+    height:72px;
+    min-height:72px;
+    pointer-events:none;
+  }
+
+
+
+  /* ======================================================================
+     10O — ACCOUNTS TYPOGRAPHY POLISH
+     Только экран "Счета" и история счёта.
+     ====================================================================== */
+
+  .saldoAccountsShell,
+  .saldoAccountHistorySheet{
+    font-family:
+      -apple-system,
+      BlinkMacSystemFont,
+      "SF Pro Text",
+      "SF Pro Display",
+      "Segoe UI Variable",
+      "Segoe UI",
+      Roboto,
+      Arial,
+      sans-serif;
+    font-feature-settings:"tnum" 1, "kern" 1;
+    text-rendering:optimizeLegibility;
+  }
+
+  .saldoAccountsEyebrow,
+  .saldoAccountHistoryEyebrow{
+    font-weight:700;
+    letter-spacing:.12em;
+  }
+
+  .saldoAccountsTitle{
+    font-size:27px;
+    font-weight:750;
+    letter-spacing:-.035em;
+  }
+
+  .saldoAccountsSubtitle{
+    font-size:11px;
+    font-weight:450;
+    letter-spacing:0;
+  }
+
+  .saldoAccountsCount{
+    font-weight:700;
+  }
+
+  .saldoAccountsTotalHead{
+    font-weight:550;
+    letter-spacing:0;
+  }
+
+  .saldoAccountsTotalBadge{
+    font-weight:700;
+  }
+
+  .saldoAccountsTotalValue{
+    font-family:
+      "SF Pro Display",
+      -apple-system,
+      BlinkMacSystemFont,
+      "Segoe UI Variable",
+      "Segoe UI",
+      Roboto,
+      Arial,
+      sans-serif;
+    font-size:33px;
+    font-weight:700;
+    letter-spacing:-.035em;
+    font-variant-numeric:tabular-nums;
+  }
+
+  .saldoAccountsTotalMeta{
+    font-weight:450;
+    letter-spacing:0;
+  }
+
+  .saldoAccountsMonoName{
+    font-size:15px;
+    font-weight:700;
+    letter-spacing:-.015em;
+  }
+
+  .saldoAccountsMonoProvider,
+  .saldoAccountsMonoCaption,
+  .saldoAccountsMonoFooter{
+    font-weight:450;
+    letter-spacing:0;
+  }
+
+  .saldoAccountsMonoStatus{
+    font-weight:700;
+    letter-spacing:.045em;
+  }
+
+  .saldoAccountsMonoBalance{
+    font-family:
+      "SF Pro Display",
+      -apple-system,
+      BlinkMacSystemFont,
+      "Segoe UI Variable",
+      "Segoe UI",
+      Roboto,
+      Arial,
+      sans-serif;
+    font-size:30px;
+    font-weight:700;
+    letter-spacing:-.035em;
+    font-variant-numeric:tabular-nums;
+  }
+
+  .saldoAccountsMonoStat span{
+    font-weight:450;
+    letter-spacing:0;
+  }
+
+  .saldoAccountsMonoStat strong{
+    font-size:12px;
+    font-weight:650;
+    font-variant-numeric:tabular-nums;
+  }
+
+  .saldoAccountsSectionTitle{
+    font-size:16px;
+    font-weight:700;
+    letter-spacing:-.015em;
+  }
+
+  .saldoAccountsSectionSub{
+    font-weight:450;
+    letter-spacing:0;
+  }
+
+  .saldoAccountsItemName{
+    font-size:13px;
+    font-weight:650;
+    letter-spacing:-.008em;
+  }
+
+  .saldoAccountsItemSource{
+    font-size:9px;
+    font-weight:450;
+    letter-spacing:0;
+  }
+
+  .saldoAccountsItemBalance{
+    font-family:
+      "SF Pro Text",
+      -apple-system,
+      BlinkMacSystemFont,
+      "Segoe UI Variable",
+      "Segoe UI",
+      Roboto,
+      Arial,
+      sans-serif;
+    font-size:12.5px;
+    font-weight:650;
+    letter-spacing:-.01em;
+    font-variant-numeric:tabular-nums;
+  }
+
+  .saldoAccountHistoryTitle{
+    font-size:17px;
+    font-weight:700;
+    letter-spacing:-.02em;
+  }
+
+  .saldoAccountHistoryBalanceLabel{
+    font-weight:450;
+    letter-spacing:0;
+  }
+
+  .saldoAccountHistoryBalance{
+    font-family:
+      "SF Pro Display",
+      -apple-system,
+      BlinkMacSystemFont,
+      "Segoe UI Variable",
+      "Segoe UI",
+      Roboto,
+      Arial,
+      sans-serif;
+    font-size:25px;
+    font-weight:700;
+    letter-spacing:-.03em;
+    font-variant-numeric:tabular-nums;
+  }
+
+  .saldoAccountHistorySource{
+    font-weight:700;
+  }
+
+  .saldoAccountHistoryStats span{
+    font-weight:450;
+  }
+
+  .saldoAccountHistoryStats strong{
+    font-weight:650;
+    font-variant-numeric:tabular-nums;
+  }
+
+  .saldoAccountHistoryDay{
+    font-weight:600;
+    letter-spacing:0;
+  }
+
+  .saldoAccountHistoryTxCenter strong{
+    font-size:13px;
+    font-weight:650;
+    letter-spacing:-.008em;
+  }
+
+  .saldoAccountHistoryTxCenter small{
+    font-size:9.5px;
+    font-weight:450;
+    letter-spacing:0;
+  }
+
+  .saldoAccountHistoryTxAmount{
+    font-size:12.5px;
+    font-weight:650;
+    letter-spacing:-.01em;
+    font-variant-numeric:tabular-nums;
+  }
+
+  .saldoAccountHistoryTxRight small{
+    font-weight:450;
+  }
+
+  .saldoAccountHistoryMore{
+    font-weight:650;
+    letter-spacing:0;
+  }
+
+
+
+  /* ======================================================================
+     10P — ACCOUNT HISTORY CLOSE FIX
+     Крестик всегда доступен и кликабелен при любой прокрутке.
+     ====================================================================== */
+
+  .saldoAccountHistoryHead{
+    position:sticky!important;
+    top:-8px!important;
+    z-index:30!important;
+    margin-left:-4px;
+    margin-right:-4px;
+    padding:8px 4px 10px;
+    background:linear-gradient(
+      180deg,
+      var(--saldo-bg,#F6F7FB) 0%,
+      var(--saldo-bg,#F6F7FB) 82%,
+      rgba(246,247,251,0) 100%
+    );
+  }
+
+  .saldoAccountHistoryClose{
+    position:relative!important;
+    z-index:40!important;
+    width:44px!important;
+    height:44px!important;
+    min-width:44px!important;
+    min-height:44px!important;
+    padding:0!important;
+    pointer-events:auto!important;
+    touch-action:manipulation!important;
+    -webkit-tap-highlight-color:transparent!important;
+    cursor:pointer!important;
+  }
+
+  .saldoAccountHistoryClose::after{
+    content:"";
+    position:absolute;
+    inset:-6px;
+    border-radius:16px;
+  }
+
+  .saldoAccountHistorySheet{
+    position:relative!important;
+  }
+
+  .saldoAccountHistoryOverlay.open{
+    pointer-events:auto!important;
+  }
+
+
+
+  /* ======================================================================
+     10U — IN-APP DELETE CONFIRMATION
+     No native window.confirm() / browser dialog.
+     ====================================================================== */
+
+  #txActions .txDeleteConfirm{
+    width:100%;
+    padding:22px 18px 18px;
+    border:1px solid var(--saldo-line,#E9EBF1);
+    border-radius:22px;
+    background:#fff;
+    box-shadow:0 14px 40px rgba(20,24,36,.14);
+    text-align:center;
+  }
+
+  #txActions .txDeleteConfirm[hidden]{
+    display:none!important;
+  }
+
+  #txActions.delete-confirm-open .txDetailCard,
+  #txActions.delete-confirm-open .actionPanel > .actionGroup{
+    display:none!important;
+  }
+
+  #txActions.delete-confirm-open .txDeleteConfirm{
+    display:block!important;
+  }
+
+  #txActions .txDeleteConfirmIcon{
+    width:52px;
+    height:52px;
+    margin:0 auto 13px;
+    border-radius:17px;
+    display:grid;
+    place-items:center;
+    background:#FFF0F0;
+    color:#E5484D;
+    font-size:24px;
+    line-height:1;
+    font-weight:700;
+  }
+
+  #txActions .txDeleteConfirmTitle{
+    font-size:20px;
+    line-height:1.15;
+    font-weight:720;
+    letter-spacing:-.025em;
+    color:var(--saldo-text,#14151A);
+  }
+
+  #txActions .txDeleteConfirmSummary{
+    margin-top:8px;
+    font-size:13px;
+    line-height:1.35;
+    font-weight:620;
+    color:#363A43;
+    overflow-wrap:anywhere;
+  }
+
+  #txActions .txDeleteConfirmHint{
+    margin-top:6px;
+    font-size:10px;
+    line-height:1.4;
+    font-weight:450;
+    color:var(--saldo-muted,#8F949F);
+  }
+
+  #txActions .txDeleteConfirmError{
+    margin-top:12px;
+    padding:10px 12px;
+    border-radius:12px;
+    background:#FFF0F0;
+    color:#C53136;
+    font-size:10px;
+    line-height:1.35;
+    font-weight:550;
+    text-align:left;
+  }
+
+  #txActions .txDeleteConfirmError[hidden]{
+    display:none!important;
+  }
+
+  #txActions .txDeleteConfirmButtons{
+    display:grid;
+    grid-template-columns:1fr;
+    gap:8px;
+    margin-top:18px;
+  }
+
+  #txActions .txDeleteConfirmBtn{
+    -webkit-appearance:none;
+    appearance:none;
+    width:100%;
+    min-height:50px;
+    border-radius:15px;
+    font-family:inherit;
+    font-size:14px;
+    line-height:1;
+    font-weight:680;
+    cursor:pointer;
+    touch-action:manipulation;
+    -webkit-tap-highlight-color:transparent;
+  }
+
+  #txActions .txDeleteConfirmBtn.danger{
+    border:1px solid transparent;
+    background:#E5484D;
+    color:#fff;
+    box-shadow:0 8px 18px rgba(229,72,77,.20);
+  }
+
+  #txActions .txDeleteConfirmBtn.cancel{
+    border:1px solid #E7E9EF;
+    background:#F7F8FA;
+    color:#5F6570;
+    box-shadow:none;
+  }
+
+  #txActions .txDeleteConfirmBtn:active:not(:disabled){
+    transform:scale(.985);
+  }
+
+  #txActions .txDeleteConfirmBtn:disabled{
+    opacity:.55;
+    cursor:default;
+  }
+
+
+
+  /* ======================================================================
+     10W — ANALYTICS / SALDO-INSPIRED
+     Geometry 460 / 24 / 412 remains unchanged.
+     ====================================================================== */
+
+  .saldoAnalyticsShell{
+    width:100%;
+    display:grid;
+    gap:14px;
+    font-family:
+      -apple-system,
+      BlinkMacSystemFont,
+      "SF Pro Text",
+      "SF Pro Display",
+      "Segoe UI Variable",
+      "Segoe UI",
+      Roboto,
+      Arial,
+      sans-serif;
+    font-feature-settings:"tnum" 1,"kern" 1;
+  }
+
+  .saldoAnalyticsTop{padding:4px 2px 0}
+
+  .saldoAnalyticsEyebrow{
+    font-size:9px;
+    line-height:1.2;
+    font-weight:700;
+    letter-spacing:.12em;
+    color:#A1A5AF;
+  }
+
+  .saldoAnalyticsTitle{
+    margin-top:5px;
+    font-size:27px;
+    line-height:1.02;
+    font-weight:750;
+    letter-spacing:-.035em;
+  }
+
+  .saldoAnalyticsSubtitle{
+    margin-top:5px;
+    font-size:11px;
+    line-height:1.35;
+    font-weight:450;
+    color:var(--saldo-muted,#8A8F9C);
+  }
+
+  .saldoAnalyticsMonthCard{
+    min-height:68px;
+    padding:10px 12px;
+    border:1px solid var(--saldo-line,#E9EBF1);
+    border-radius:19px;
+    background:#fff;
+    box-shadow:0 5px 17px rgba(23,27,38,.035);
+    display:grid;
+    grid-template-columns:42px minmax(0,1fr) 42px;
+    align-items:center;
+    gap:10px;
+  }
+
+  .saldoAnalyticsMonthNav{
+    -webkit-appearance:none;
+    appearance:none;
+    width:42px;
+    height:42px;
+    border:0;
+    border-radius:14px;
+    background:var(--saldo-blue-soft,#EEF1FF);
+    color:var(--saldo-blue,#3157F6);
+    font-size:25px;
+    line-height:1;
+    display:grid;
+    place-items:center;
+    cursor:pointer;
+  }
+
+  .saldoAnalyticsMonthNav:active{transform:scale(.97)}
+
+  .saldoAnalyticsMonthCenter{
+    min-width:0;
+    text-align:center;
+  }
+
+  .saldoAnalyticsMonthLabel{
+    font-size:17px;
+    line-height:1.1;
+    font-weight:700;
+    letter-spacing:-.02em;
+  }
+
+  .saldoAnalyticsMonthHint{
+    margin-top:4px;
+    font-size:9px;
+    color:var(--saldo-muted,#8A8F9C);
+  }
+
+  .saldoAnalyticsKpis{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:8px;
+  }
+
+  .saldoAnalyticsKpi{
+    -webkit-appearance:none;
+    appearance:none;
+    min-width:0;
+    min-height:104px;
+    padding:14px;
+    border:1px solid var(--saldo-line,#E9EBF1);
+    border-radius:18px;
+    background:#fff;
+    text-align:left;
+    color:var(--saldo-text,#14151A);
+    box-shadow:0 5px 17px rgba(23,27,38,.035);
+    display:grid;
+    align-content:start;
+  }
+
+  button.saldoAnalyticsKpi{cursor:pointer}
+  button.saldoAnalyticsKpi:active{transform:scale(.99)}
+
+  .saldoAnalyticsKpi.income{
+    background:linear-gradient(180deg,#FFFFFF 0%,#F7FCF9 100%);
+  }
+
+  .saldoAnalyticsKpi.expense{
+    background:linear-gradient(180deg,#FFFFFF 0%,#FFF9F9 100%);
+  }
+
+  .saldoAnalyticsKpi.profit{
+    grid-column:1 / -1;
+    min-height:96px;
+    background:linear-gradient(135deg,#3157F6 0%,#657BFA 100%);
+    border-color:transparent;
+    color:#fff;
+    box-shadow:0 14px 28px rgba(49,87,246,.18);
+  }
+
+  .saldoAnalyticsKpiLabel{
+    font-size:9px;
+    font-weight:600;
+    color:var(--saldo-muted,#8A8F9C);
+  }
+
+  .saldoAnalyticsKpi.profit .saldoAnalyticsKpiLabel{
+    color:rgba(255,255,255,.68);
+  }
+
+  .saldoAnalyticsKpiValue{
+    margin-top:8px;
+    font-size:21px;
+    line-height:1;
+    font-weight:700;
+    letter-spacing:-.03em;
+    white-space:nowrap;
+    font-variant-numeric:tabular-nums;
+  }
+
+  .saldoAnalyticsKpi.income .saldoAnalyticsKpiValue{
+    color:var(--saldo-green,#1A9B5A);
+  }
+
+  .saldoAnalyticsKpi.expense .saldoAnalyticsKpiValue{
+    color:var(--saldo-red,#E5484D);
+  }
+
+  .saldoAnalyticsKpi.profit .saldoAnalyticsKpiValue{
+    font-size:29px;
+    color:#fff;
+  }
+
+  .saldoAnalyticsKpi.profit .saldoAnalyticsKpiValue.negative{color:#FFD5D7}
+  .saldoAnalyticsKpi.profit .saldoAnalyticsKpiValue.positive{color:#fff}
+  .saldoAnalyticsKpi.profit .saldoAnalyticsKpiValue.zero{color:rgba(255,255,255,.86)}
+
+  .saldoAnalyticsKpi small{
+    margin-top:6px;
+    font-size:8.5px;
+    line-height:1.3;
+    color:var(--saldo-muted,#8A8F9C);
+  }
+
+  .saldoAnalyticsKpi.profit small{
+    color:rgba(255,255,255,.58);
+  }
+
+  .saldoAnalyticsCard{
+    padding:16px;
+    border:1px solid var(--saldo-line,#E9EBF1);
+    border-radius:21px;
+    background:#fff;
+    box-shadow:0 7px 24px rgba(23,27,38,.045);
+  }
+
+  .saldoAnalyticsCardHead{
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap:12px;
+  }
+
+  .saldoAnalyticsCardTitle{
+    font-size:15px;
+    font-weight:700;
+    letter-spacing:-.015em;
+  }
+
+  .saldoAnalyticsCardSub{
+    margin-top:4px;
+    font-size:9.5px;
+    color:var(--saldo-muted,#8A8F9C);
+  }
+
+  .saldoAnalyticsAllBtn{
+    -webkit-appearance:none;
+    appearance:none;
+    min-width:48px;
+    height:32px;
+    padding:0 10px;
+    border:0;
+    border-radius:11px;
+    background:var(--saldo-blue-soft,#EEF1FF);
+    color:var(--saldo-blue,#3157F6);
+    font-size:10px;
+    font-weight:650;
+    cursor:pointer;
+  }
+
+  .saldoAnalyticsDonutWrap{
+    margin-top:15px;
+    display:grid;
+    grid-template-columns:146px minmax(0,1fr);
+    gap:14px;
+    align-items:center;
+  }
+
+  .saldoAnalyticsDonutBox{
+    position:relative;
+    width:146px;
+    height:146px;
+    display:grid;
+    place-items:center;
+  }
+
+  .saldoAnalyticsDonutBox #repIncomeSvg,
+  .saldoAnalyticsDonutBox #repExpenseSvg,
+  .saldoAnalyticsDonutBox #repIncomeSvg svg,
+  .saldoAnalyticsDonutBox #repExpenseSvg svg{
+    width:146px!important;
+    height:146px!important;
+  }
+
+  .saldoAnalyticsDonutCenter{
+    position:absolute;
+    inset:0;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    pointer-events:none;
+    padding:27px;
+  }
+
+  .saldoAnalyticsDonutCenter strong{
+    max-width:100%;
+    font-size:17px;
+    line-height:1;
+    font-weight:700;
+    letter-spacing:-.025em;
+    white-space:nowrap;
+    font-variant-numeric:tabular-nums;
+  }
+
+  .saldoAnalyticsDonutCenter span{
+    margin-top:4px;
+    font-size:8px;
+    color:var(--saldo-muted,#8A8F9C);
+  }
+
+  .saldoAnalyticsLegend{
+    min-width:0;
+    display:grid;
+    gap:3px;
+  }
+
+  .saldoAnalyticsLegendRow{
+    -webkit-appearance:none;
+    appearance:none;
+    width:100%;
+    min-width:0;
+    min-height:38px;
+    padding:5px 2px;
+    border:0;
+    border-bottom:1px solid #F0F1F4;
+    background:transparent;
+    color:var(--saldo-text,#14151A);
+    display:grid;
+    grid-template-columns:minmax(0,1fr) auto 8px;
+    align-items:center;
+    gap:7px;
+    text-align:left;
+    cursor:pointer;
+  }
+
+  .saldoAnalyticsLegendRow:last-child{border-bottom:0}
+  .saldoAnalyticsLegendRow:active{opacity:.62}
+
+  .saldoAnalyticsLegendLeft{
+    min-width:0;
+    display:flex;
+    align-items:center;
+    gap:7px;
+  }
+
+  .saldoAnalyticsLegendDot{
+    width:8px;
+    height:8px;
+    flex:0 0 auto;
+    border-radius:999px;
+  }
+
+  .saldoAnalyticsLegendText{
+    min-width:0;
+    display:grid;
+    gap:2px;
+  }
+
+  .saldoAnalyticsLegendText strong{
+    min-width:0;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+    font-size:10px;
+    font-weight:600;
+  }
+
+  .saldoAnalyticsLegendText small{
+    font-size:8px;
+    color:var(--saldo-muted,#8A8F9C);
+  }
+
+  .saldoAnalyticsLegendValue{
+    white-space:nowrap;
+    font-size:9.5px;
+    font-weight:650;
+    font-variant-numeric:tabular-nums;
+  }
+
+  .saldoAnalyticsLegendChevron{
+    font-size:16px;
+    color:#B5B9C2;
+  }
+
+  .saldoAnalyticsEmpty{
+    padding:18px 4px;
+    text-align:center;
+    font-size:10px;
+    color:var(--saldo-muted,#8A8F9C);
+  }
+
+  .saldoAnalyticsInfo{
+    min-height:62px;
+    padding:11px 13px;
+    border:1px solid #DCEEE5;
+    border-radius:17px;
+    background:#F5FBF8;
+    display:flex;
+    align-items:center;
+    gap:11px;
+  }
+
+  .saldoAnalyticsInfo[hidden]{display:none!important}
+
+  .saldoAnalyticsInfoIcon{
+    width:36px;
+    height:36px;
+    flex:0 0 auto;
+    border-radius:12px;
+    display:grid;
+    place-items:center;
+    background:var(--saldo-green-soft,#EAF8F1);
+    color:var(--saldo-green,#1A9B5A);
+    font-size:17px;
+  }
+
+  .saldoAnalyticsInfo div{
+    min-width:0;
+    display:grid;
+    gap:3px;
+  }
+
+  .saldoAnalyticsInfo strong{
+    font-size:11px;
+    font-weight:650;
+  }
+
+  .saldoAnalyticsInfo small{
+    font-size:9px;
+    color:var(--saldo-muted,#8A8F9C);
+  }
+
+  @media (max-width:375px){
+    .saldoAnalyticsDonutWrap{
+      grid-template-columns:132px minmax(0,1fr);
+      gap:10px;
+    }
+
+    .saldoAnalyticsDonutBox,
+    .saldoAnalyticsDonutBox #repIncomeSvg,
+    .saldoAnalyticsDonutBox #repExpenseSvg,
+    .saldoAnalyticsDonutBox #repIncomeSvg svg,
+    .saldoAnalyticsDonutBox #repExpenseSvg svg{
+      width:132px!important;
+      height:132px!important;
+    }
+
+    .saldoAnalyticsDonutCenter strong{
+      font-size:15px;
+    }
+  }
+
+
+
+  /* ======================================================================
+     10X — MORE / STATUS
+     ====================================================================== */
+
+  .moreMenuIcon.status{
+    background:#EAF8F1;
+    color:#1A9B5A;
+    font-size:13px;
+  }
+
+  .saldoStatusShell{
+    width:100%;
+    display:grid;
+    gap:14px;
+    font-family:
+      -apple-system,
+      BlinkMacSystemFont,
+      "SF Pro Text",
+      "SF Pro Display",
+      "Segoe UI Variable",
+      "Segoe UI",
+      Roboto,
+      Arial,
+      sans-serif;
+    font-feature-settings:"tnum" 1,"kern" 1;
+  }
+
+  .saldoStatusTop{
+    display:flex;
+    align-items:flex-end;
+    justify-content:space-between;
+    gap:16px;
+    padding:4px 2px 0;
+  }
+
+  .saldoStatusEyebrow{
+    font-size:9px;
+    line-height:1.2;
+    font-weight:700;
+    letter-spacing:.12em;
+    color:#A1A5AF;
+  }
+
+  .saldoStatusTitle{
+    margin-top:5px;
+    font-size:27px;
+    line-height:1.02;
+    font-weight:750;
+    letter-spacing:-.035em;
+  }
+
+  .saldoStatusSubtitle{
+    margin-top:5px;
+    font-size:11px;
+    line-height:1.35;
+    color:var(--saldo-muted,#8A8F9C);
+  }
+
+  .saldoStatusRefresh{
+    -webkit-appearance:none;
+    appearance:none;
+    width:42px;
+    height:42px;
+    flex:0 0 auto;
+    border:0;
+    border-radius:14px;
+    background:var(--saldo-blue-soft,#EEF1FF);
+    color:var(--saldo-blue,#3157F6);
+    font-size:22px;
+    line-height:1;
+    display:grid;
+    place-items:center;
+    cursor:pointer;
+  }
+
+  .saldoStatusRefresh.loading{
+    animation:saldoStatusSpin 1s linear infinite;
+  }
+
+  .saldoStatusRefresh:disabled{
+    opacity:.65;
+  }
+
+  @keyframes saldoStatusSpin{
+    to{transform:rotate(360deg)}
+  }
+
+  .saldoStatusHero{
+    min-height:88px;
+    padding:15px;
+    border:1px solid #DCEEE5;
+    border-radius:20px;
+    background:linear-gradient(180deg,#FFFFFF 0%,#F4FBF7 100%);
+    display:grid;
+    grid-template-columns:42px minmax(0,1fr) auto;
+    align-items:center;
+    gap:11px;
+    box-shadow:0 7px 24px rgba(23,27,38,.04);
+  }
+
+  .saldoStatusHero.bad{
+    border-color:#F3D3D5;
+    background:linear-gradient(180deg,#FFFFFF 0%,#FFF6F6 100%);
+  }
+
+  .saldoStatusHeroIcon{
+    width:42px;
+    height:42px;
+    border-radius:14px;
+    display:grid;
+    place-items:center;
+    background:#EAF8F1;
+    color:#1A9B5A;
+    font-size:19px;
+    font-weight:750;
+  }
+
+  .saldoStatusHero.bad .saldoStatusHeroIcon{
+    background:#FFF0F0;
+    color:#E5484D;
+  }
+
+  .saldoStatusHeroText{
+    min-width:0;
+    display:grid;
+    gap:4px;
+  }
+
+  .saldoStatusHeroText strong{
+    font-size:13px;
+    line-height:1.25;
+    font-weight:680;
+  }
+
+  .saldoStatusHeroText small{
+    font-size:9px;
+    line-height:1.35;
+    color:var(--saldo-muted,#8A8F9C);
+  }
+
+  .saldoStatusBadge,
+  .saldoStatusMiniBadge{
+    padding:5px 8px;
+    border-radius:999px;
+    background:#EAF8F1;
+    color:#1A9B5A;
+    font-size:8px;
+    line-height:1;
+    font-weight:750;
+    letter-spacing:.04em;
+  }
+
+  .saldoStatusBadge.bad,
+  .saldoStatusMiniBadge.bad{
+    background:#FFF0F0;
+    color:#E5484D;
+  }
+
+  .saldoStatusMiniBadge.blue{
+    background:var(--saldo-blue-soft,#EEF1FF);
+    color:var(--saldo-blue,#3157F6);
+  }
+
+  .saldoStatusCard{
+    padding:16px;
+    border:1px solid var(--saldo-line,#E9EBF1);
+    border-radius:20px;
+    background:#fff;
+    box-shadow:0 7px 24px rgba(23,27,38,.04);
+  }
+
+  .saldoStatusCardHead{
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap:12px;
+    padding-bottom:13px;
+    border-bottom:1px solid #F0F1F4;
+  }
+
+  .saldoStatusCardTitle{
+    font-size:15px;
+    line-height:1.2;
+    font-weight:700;
+    letter-spacing:-.015em;
+  }
+
+  .saldoStatusCardSub{
+    margin-top:4px;
+    font-size:9.5px;
+    line-height:1.3;
+    color:var(--saldo-muted,#8A8F9C);
+  }
+
+  .saldoStatusRows{
+    display:grid;
+  }
+
+  .saldoStatusRow{
+    min-height:46px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    border-bottom:1px solid #F2F3F5;
+  }
+
+  .saldoStatusRow:last-child{
+    border-bottom:0;
+  }
+
+  .saldoStatusRow span{
+    min-width:0;
+    font-size:10px;
+    line-height:1.3;
+    color:var(--saldo-muted,#8A8F9C);
+  }
+
+  .saldoStatusRow strong{
+    max-width:58%;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+    text-align:right;
+    font-size:10.5px;
+    line-height:1.2;
+    font-weight:650;
+    font-variant-numeric:tabular-nums;
+  }
+
+  .statusGood{color:#1A9B5A!important}
+  .statusBad{color:#E5484D!important}
+  .statusWarn{color:#B46A00!important}
+
+  .saldoStatusVersionBox{
+    margin:14px 0 4px;
+    padding:15px;
+    border-radius:17px;
+    background:linear-gradient(135deg,#3157F6 0%,#657BFA 100%);
+    color:#fff;
+    display:grid;
+    gap:5px;
+  }
+
+  .saldoStatusVersionBox > span{
+    font-size:9px;
+    color:rgba(255,255,255,.64);
+  }
+
+  .saldoStatusVersionBox > strong{
+    font-size:28px;
+    line-height:1;
+    font-weight:720;
+    letter-spacing:-.035em;
+    font-variant-numeric:tabular-nums;
+  }
+
+  .saldoStatusVersionBox > small{
+    font-size:9px;
+    line-height:1.3;
+    color:rgba(255,255,255,.66)!important;
+  }
+
+  .saldoStatusVersionBox > small.statusGood{
+    color:#D8FFE7!important;
+  }
+
+  .saldoStatusVersionBox > small.statusWarn{
+    color:#FFE1A8!important;
+  }
+
+  .saldoStatusChecked{
+    padding:2px 3px 0;
+    text-align:center;
+    font-size:8.5px;
+    line-height:1.3;
+    color:#A1A5AF;
+  }
+
+
+
+  /* ======================================================================
+     10Z — APPLE-INSPIRED MORE + SETTINGS
+     Geometry remains 460 / 24 / 412.
+     ====================================================================== */
+
+  .appleMoreShell,
+  .appleSettingsShell{
+    width:100%;
+    display:grid;
+    gap:13px;
+    font-family:
+      -apple-system,
+      BlinkMacSystemFont,
+      "SF Pro Text",
+      "SF Pro Display",
+      "Segoe UI Variable",
+      "Segoe UI",
+      Roboto,
+      Arial,
+      sans-serif;
+    font-feature-settings:"tnum" 1,"kern" 1;
+  }
+
+  .appleMoreHeader,
+  .appleSettingsHeader{
+    padding:4px 2px 1px;
+  }
+
+  .appleMoreEyebrow,
+  .appleSettingsEyebrow{
+    font-size:9px;
+    line-height:1.2;
+    font-weight:700;
+    letter-spacing:.12em;
+    color:#9EA3AE;
+  }
+
+  .appleMoreTitle,
+  .appleSettingsTitle{
+    margin-top:5px;
+    font-size:30px;
+    line-height:1;
+    font-weight:740;
+    letter-spacing:-.042em;
+    color:var(--saldo-text,#14151A);
+  }
+
+  .appleMoreSubtitle,
+  .appleSettingsSubtitle{
+    margin-top:7px;
+    font-size:11px;
+    line-height:1.35;
+    color:var(--saldo-muted,#8A8F9C);
+  }
+
+  .appleMoreHero{
+    position:relative;
+    overflow:hidden;
+    min-height:92px;
+    padding:16px;
+    border-radius:22px;
+    background:linear-gradient(135deg,#1C1D22 0%,#292B32 100%);
+    color:#fff;
+    display:grid;
+    grid-template-columns:44px minmax(0,1fr) auto;
+    align-items:center;
+    gap:12px;
+    box-shadow:0 14px 34px rgba(17,19,25,.14);
+  }
+
+  .appleMoreHero::after{
+    content:"";
+    position:absolute;
+    width:170px;
+    height:170px;
+    right:-94px;
+    top:-105px;
+    border-radius:999px;
+    background:rgba(255,255,255,.055);
+    pointer-events:none;
+  }
+
+  .appleMoreHeroIcon{
+    width:44px;
+    height:44px;
+    border-radius:14px;
+    display:grid;
+    place-items:center;
+    background:rgba(255,255,255,.10);
+  }
+
+  .appleMoreHeroIcon svg{
+    width:24px;
+    height:24px;
+    fill:#fff;
+  }
+
+  .appleMoreHeroText{
+    min-width:0;
+    display:grid;
+    gap:4px;
+  }
+
+  .appleMoreHeroText strong{
+    font-size:14px;
+    font-weight:680;
+  }
+
+  .appleMoreHeroText small{
+    font-size:9.5px;
+    line-height:1.35;
+    color:rgba(255,255,255,.52);
+  }
+
+  .appleMoreHeroBadge{
+    position:relative;
+    z-index:1;
+    padding:6px 8px;
+    border-radius:999px;
+    background:rgba(255,255,255,.11);
+    color:rgba(255,255,255,.76);
+    font-size:8px;
+    font-weight:700;
+  }
+
+  .appleMoreSectionLabel,
+  .appleSettingsSectionLabel{
+    padding:7px 6px 0;
+    font-size:9px;
+    font-weight:650;
+    letter-spacing:.06em;
+    color:#9DA2AD;
+  }
+
+  .appleMoreGroup,
+  .appleSettingsGroup{
+    overflow:hidden;
+    border:1px solid rgba(0,0,0,.045);
+    border-radius:20px;
+    background:rgba(255,255,255,.97);
+    box-shadow:0 8px 28px rgba(31,35,47,.045);
+  }
+
+  .appleMoreRow{
+    width:100%;
+    min-height:68px;
+    border:0;
+    border-bottom:1px solid #EFF0F3;
+    padding:10px 12px;
+    background:transparent;
+    color:var(--saldo-text,#14151A);
+    display:grid;
+    grid-template-columns:38px minmax(0,1fr) auto 10px;
+    align-items:center;
+    gap:10px;
+    text-align:left;
+    cursor:pointer;
+  }
+
+  .appleMoreRow:last-child{border-bottom:0}
+  .appleMoreRow:active{background:#F7F8FA}
+
+  .appleMoreIcon{
+    width:36px;
+    height:36px;
+    border-radius:11px;
+    display:grid;
+    place-items:center;
+  }
+
+  .appleMoreIcon svg{
+    width:20px;
+    height:20px;
+    fill:currentColor;
+  }
+
+  .appleMoreIcon.blue{background:#EAF0FF;color:#3157F6}
+  .appleMoreIcon.green{background:#E7F7EF;color:#189557}
+  .appleMoreIcon.gray{background:#ECEEF2;color:#606672}
+
+  .appleMoreRowText{
+    min-width:0;
+    display:grid;
+    gap:4px;
+  }
+
+  .appleMoreRowText strong{
+    font-size:14px;
+    font-weight:640;
+  }
+
+  .appleMoreRowText small{
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+    font-size:9.5px;
+    color:#9297A2;
+  }
+
+  .appleMoreRowMeta{
+    white-space:nowrap;
+    font-size:9px;
+    color:#9DA2AD;
+  }
+
+  .appleMoreRowMeta.good{color:#199859}
+
+  .appleMoreChevron,
+  .appleSettingsChevron{
+    color:#B6BAC3;
+    font-size:20px;
+    line-height:1;
+  }
+
+  .appleMoreFoot,
+  .appleSettingsFoot{
+    padding:2px 5px 0;
+    text-align:center;
+    font-size:8.5px;
+    line-height:1.35;
+    color:#A3A8B2;
+  }
+
+
+  /* Settings */
+
+  .appleSettingsBack{
+    margin:0 0 12px -3px;
+    padding:0 4px 0 0;
+    border:0;
+    background:transparent;
+    color:var(--saldo-blue,#3157F6);
+    display:inline-flex;
+    align-items:center;
+    gap:2px;
+    font-family:inherit;
+    font-size:12px;
+    font-weight:550;
+    cursor:pointer;
+  }
+
+  .appleSettingsBack span{
+    font-size:24px;
+    line-height:.7;
+  }
+
+  .appleSettingsNotice{
+    padding:11px 13px;
+    border:1px solid #E1E6FF;
+    border-radius:14px;
+    background:#F4F6FF;
+    color:#4058B5;
+    font-size:10px;
+    line-height:1.35;
+    font-weight:500;
+  }
+
+  .appleSettingsNotice[hidden]{display:none!important}
+  .appleSettingsNotice.success{border-color:#D6EEE1;background:#F1FAF5;color:#177F4C}
+  .appleSettingsNotice.error{border-color:#F3D2D4;background:#FFF4F4;color:#C63D43}
+
+  .appleSettingsInfoRow,
+  .appleSettingsRow{
+    width:100%;
+    min-height:62px;
+    padding:9px 12px;
+    border:0;
+    border-bottom:1px solid #EFF0F3;
+    background:transparent;
+    color:var(--saldo-text,#14151A);
+    display:grid;
+    grid-template-columns:36px minmax(0,1fr) auto;
+    align-items:center;
+    gap:10px;
+    text-align:left;
+  }
+
+  button.appleSettingsRow{
+    grid-template-columns:36px minmax(0,1fr) auto 10px;
+    cursor:pointer;
+  }
+
+  .appleSettingsInfoRow:last-child,
+  .appleSettingsRow:last-child{border-bottom:0}
+
+  button.appleSettingsRow:active{background:#F7F8FA}
+
+  .appleSettingsIcon{
+    width:34px;
+    height:34px;
+    border-radius:10px;
+    display:grid;
+    place-items:center;
+    font-size:16px;
+    font-weight:700;
+  }
+
+  .appleSettingsIcon.mono{background:#1B1C21;color:#fff}
+  .appleSettingsIcon.cloud{background:#F0EAFF;color:#7654D9}
+  .appleSettingsIcon.sync{background:#EAF0FF;color:#3157F6}
+  .appleSettingsIcon.rules{background:#FFF3D8;color:#C27B00}
+  .appleSettingsIcon.telegram{background:#E6F5FF;color:#1686C7}
+  .appleSettingsIcon.refresh{background:#EAF8F1;color:#1A9B5A}
+  .appleSettingsIcon.storage{background:#F2F3F6;color:#656B76}
+  .appleSettingsIcon.status{background:#EAF8F1;color:#1A9B5A;font-size:11px}
+  .appleSettingsIcon.app{background:#111216;color:#fff;font-size:14px}
+  .appleSettingsIcon.currency{background:#EAF8F1;color:#1A9B5A}
+  .appleSettingsIcon.time{background:#F1EDFF;color:#7654D9}
+
+  .appleSettingsInfoText,
+  .appleSettingsRowText{
+    min-width:0;
+    display:grid;
+    gap:3px;
+  }
+
+  .appleSettingsInfoText strong,
+  .appleSettingsRowText strong{
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+    font-size:13px;
+    font-weight:640;
+  }
+
+  .appleSettingsInfoText small,
+  .appleSettingsRowText small{
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+    font-size:9px;
+    color:#9297A2;
+  }
+
+  .appleSettingsPill{
+    padding:5px 8px;
+    border-radius:999px;
+    background:#F1F2F5;
+    color:#858A95;
+    font-size:8px;
+    font-weight:700;
+    white-space:nowrap;
+  }
+
+  .appleSettingsPill.good{background:#E8F7EF;color:#198D53}
+  .appleSettingsPill.warn{background:#FFF4DF;color:#B46A00}
+  .appleSettingsPill.bad{background:#FFF0F0;color:#D6454A}
+
+  .appleSettingsValue{
+    max-width:145px;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+    text-align:right;
+    font-size:9.5px;
+    font-weight:550;
+    color:#9297A2;
+  }
+
+  .appleSettingsValue.good{color:#198D53}
+  .appleSettingsValue.warn{color:#B46A00}
+
+  .appleSettingsMiniGrid{
+    padding:10px;
+    border-top:1px solid #EFF0F3;
+    display:grid;
+    grid-template-columns:repeat(3,minmax(0,1fr));
+    gap:7px;
+  }
+
+  .appleSettingsMiniButton{
+    min-width:0;
+    min-height:76px;
+    padding:10px 6px;
+    border:1px solid #ECEEF2;
+    border-radius:14px;
+    background:#F8F9FB;
+    color:var(--saldo-text,#14151A);
+    display:grid;
+    justify-items:center;
+    align-content:center;
+    gap:3px;
+    text-align:center;
+    cursor:pointer;
+  }
+
+  .appleSettingsMiniButton:active{transform:scale(.985);background:#F2F3F6}
+  .appleSettingsMiniButton:disabled{opacity:.52;cursor:default}
+
+  .appleSettingsMiniButton > span{
+    font-size:18px;
+    color:var(--saldo-blue,#3157F6);
+  }
+
+  .appleSettingsMiniButton > strong{
+    margin-top:3px;
+    font-size:10px;
+    font-weight:650;
+  }
+
+  .appleSettingsMiniButton > small{
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+    font-size:7.5px;
+    color:#959AA5;
+  }
+
+
+  /* Settings action sheet */
+
+  .settingsActionOverlay{
+    position:fixed;
+    inset:0;
+    z-index:1800;
+    display:none;
+    align-items:flex-end;
+    justify-content:center;
+    background:rgba(20,22,28,.34);
+    -webkit-backdrop-filter:blur(4px);
+    backdrop-filter:blur(4px);
+  }
+
+  .settingsActionOverlay.open{display:flex}
+
+  .settingsActionSheet{
+    position:relative;
+    width:var(--app-layout-width,460px);
+    max-width:460px;
+    max-height:88vh;
+    overflow:auto;
+    -webkit-overflow-scrolling:touch;
+    padding:8px 24px calc(24px + env(safe-area-inset-bottom));
+    border-radius:25px 25px 0 0;
+    background:#F6F7FB;
+    box-shadow:0 -14px 44px rgba(21,24,33,.18);
+  }
+
+  .settingsActionHandle{
+    width:38px;
+    height:4px;
+    margin:2px auto 14px;
+    border-radius:999px;
+    background:rgba(0,0,0,.12);
+  }
+
+  .settingsActionClose{
+    position:absolute;
+    right:24px;
+    top:16px;
+    width:38px;
+    height:38px;
+    border:0;
+    border-radius:13px;
+    background:#fff;
+    color:#777D88;
+    font-size:22px;
+    display:grid;
+    place-items:center;
+    cursor:pointer;
+  }
+
+  .settingsActionIcon{
+    width:48px;
+    height:48px;
+    margin:4px auto 11px;
+    border-radius:16px;
+    background:#EAF0FF;
+    color:#3157F6;
+    display:grid;
+    place-items:center;
+    font-size:22px;
+  }
+
+  .settingsActionTitle{
+    padding:0 42px;
+    text-align:center;
+    font-size:19px;
+    font-weight:700;
+    letter-spacing:-.02em;
+  }
+
+  .settingsActionText{
+    max-width:340px;
+    margin:8px auto 0;
+    text-align:center;
+    font-size:10px;
+    line-height:1.45;
+    color:#8C929D;
+  }
+
+  .settingsActionBody{margin-top:14px}
+  .settingsActionButtons{display:grid;gap:8px;margin-top:16px}
+
+  .settingsActionButton{
+    width:100%;
+    min-height:49px;
+    border-radius:15px;
+    font-family:inherit;
+    font-size:13px;
+    font-weight:650;
+    cursor:pointer;
+  }
+
+  .settingsActionButton.primary{
+    border:0;
+    background:#3157F6;
+    color:#fff;
+  }
+
+  .settingsActionButton.danger{
+    border:0;
+    background:#E5484D;
+    color:#fff;
+  }
+
+  .settingsActionButton.cancel{
+    border:1px solid #E7E9EF;
+    background:#fff;
+    color:#626873;
+  }
+
+  .settingsActionButton:disabled{opacity:.55;cursor:default}
+
+  .settingsInlineError{
+    padding:10px 12px;
+    border:1px solid #F2D3D5;
+    border-radius:13px;
+    background:#FFF3F3;
+    color:#C83D43;
+    font-size:10px;
+    line-height:1.4;
+  }
+
+  .settingsRulesLoading,
+  .settingsRulesEmpty{
+    padding:22px 8px;
+    text-align:center;
+    font-size:10px;
+    color:#9297A2;
+  }
+
+  .settingsRulesList{
+    overflow:hidden;
+    border:1px solid #E9EBF0;
+    border-radius:16px;
+    background:#fff;
+  }
+
+  .settingsRuleRow{
+    min-height:58px;
+    padding:9px 11px;
+    border-bottom:1px solid #EFF0F3;
+    display:grid;
+    grid-template-columns:auto minmax(0,1fr);
+    align-items:center;
+    gap:10px;
+  }
+
+  .settingsRuleRow:last-child{border-bottom:0}
+
+  .settingsRuleAction{
+    min-width:64px;
+    padding:5px 7px;
+    border-radius:9px;
+    background:#F1F2F5;
+    color:#6D737E;
+    text-align:center;
+    font-size:7.5px;
+    font-weight:700;
+  }
+
+  .settingsRuleAction.expense{background:#FFF0F0;color:#D6454A}
+  .settingsRuleAction.income,
+  .settingsRuleAction.return{background:#EAF8F1;color:#188C53}
+  .settingsRuleAction.transfer{background:#EAF0FF;color:#3157F6}
+
+  .settingsRuleText{
+    min-width:0;
+    display:grid;
+    gap:4px;
+  }
+
+  .settingsRuleText strong{
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+    font-size:11px;
+    font-weight:620;
+  }
+
+  .settingsRuleText small{
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+    font-size:9px;
+    color:#9297A2;
+  }
+
+  @media (max-width:375px){
+    .appleMoreTitle,
+    .appleSettingsTitle{font-size:28px}
+
+    .appleSettingsMiniGrid{
+      gap:5px;
+      padding:8px;
+    }
+
+    .settingsActionSheet{
+      padding-left:20px;
+      padding-right:20px;
+    }
+  }
+
+
+
+  /* ======================================================================
+     10ZB — BOTTOM NAV COMPACT WIDTH
+     Only bottom navigation width is changed.
+     App geometry 460 / 24 / 412 remains untouched.
+     ====================================================================== */
+
+  .tabbar__inner{
+    width:420px!important;
+    max-width:calc(100% - 40px)!important;
+    min-width:0!important;
+    margin-left:auto!important;
+    margin-right:auto!important;
+  }
+
+
+
+  /* ======================================================================
+     10ZC — DASHBOARD MONTH ARROW REMOVED
+     Remove only the small chevron next to "август 2026".
+     Month button behavior and layout stay unchanged.
+     ====================================================================== */
+
+  .saldoMonthBtn .saldoChevron{
+    display:none!important;
+  }
+
+
+  /* ======================================================================
+     10ZD — iPHONE NATIVE BUTTON COLOR FIX
+     Fixes Safari/iOS default button accent coloring.
+     Does NOT change app geometry.
+     ====================================================================== */
+
+  /*
+   * Transaction rows are <button> elements.
+   * iOS Safari may apply the system accent color to button text unless
+   * appearance and text color are explicitly reset.
+   */
+  .saldoTxItem.txItem{
+    -webkit-appearance:none!important;
+    appearance:none!important;
+    color:var(--saldo-text,#14151A)!important;
+    -webkit-tap-highlight-color:transparent!important;
+  }
+
+  .saldoTxItem.txItem .txLeft{
+    color:var(--saldo-text,#14151A)!important;
+  }
+
+  .saldoTxItem.txItem .txTitle{
+    color:var(--saldo-text,#14151A)!important;
+    -webkit-text-fill-color:var(--saldo-text,#14151A)!important;
+  }
+
+  /*
+   * Keep metadata neutral.
+   */
+  .saldoTxItem.txItem .txMeta{
+    color:#9A9FAA!important;
+    -webkit-text-fill-color:#9A9FAA!important;
+  }
+
+  /*
+   * Amount colors remain action-specific.
+   */
+  .saldoTxItem.txItem .txAmountExpense{
+    color:var(--saldo-red,#E5484D)!important;
+    -webkit-text-fill-color:var(--saldo-red,#E5484D)!important;
+  }
+
+  .saldoTxItem.txItem .txAmountIncome{
+    color:var(--saldo-green,#1A9B5A)!important;
+    -webkit-text-fill-color:var(--saldo-green,#1A9B5A)!important;
+  }
+
+  .saldoTxItem.txItem .txAmountTransfer{
+    color:var(--saldo-blue,#3157F6)!important;
+    -webkit-text-fill-color:var(--saldo-blue,#3157F6)!important;
+  }
+
+  /*
+   * Transaction action sheet.
+   * Edit = yellow, Delete = red, Cancel = neutral.
+   */
+  #txActions #actEdit{
+  -webkit-appearance:none!important;
+  appearance:none!important;
+
+  color:#6A5200!important;
+  -webkit-text-fill-color:#6A5200!important;
+
+  background:#FFF3B8!important;
+  border-color:#F6E7A0!important;
+
+  box-shadow:0 7px 18px rgba(180,145,40,.10)!important;
+}
+
+#txActions #actEdit:active{
+  color:#6A5200!important;
+  -webkit-text-fill-color:#6A5200!important;
+
+  background:#FBEAA5!important;
+  border-color:#EEDB8F!important;
+
+  transform:scale(.985)!important;
+}
+
+  #txActions #actDelete{
+    -webkit-text-fill-color:#D70015!important;
+  }
+
+  #txActions #actCancel{
+    -webkit-text-fill-color:#6B7280!important;
+  }
+
+</style>
+
+  <style>
+    /* Экран входа и служебные блоки нового приложения */
+    .authShell{min-height:100vh;min-height:100dvh;display:grid;place-items:center;padding:24px}
+    .authCard{width:min(100%,380px)}
+    .authCard .h1{font-size:24px;margin-bottom:4px}
+    .authError{min-height:20px;margin-top:10px;font-size:13px;color:var(--red)}
+    .stubCard{margin-top:16px}
+    .stubCard .h1{font-size:18px}
+    [hidden]{display:none !important}
+  </style>
+</head>
+
+<body>
+
+  <!-- ===================== ВХОД ===================== -->
+  <div class="authShell" id="authView" hidden>
+    <div class="card authCard">
+      <h1 class="h1">Accounting</h1>
+      <p class="p">Войди, чтобы открыть свои финансы</p>
+
+      <form id="authForm" novalidate>
+        <div class="field">
+          <input class="input" id="authEmail" type="email" inputmode="email"
+                 autocomplete="email" placeholder="Email" required>
+        </div>
+        <div class="field">
+          <input class="input" id="authPassword" type="password"
+                 autocomplete="current-password" placeholder="Пароль" required>
+        </div>
+        <button class="btnPrimary btnFull" id="authSubmit" type="submit">Войти</button>
+        <div class="authError" id="authError" role="alert"></div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ===================== ПРИЛОЖЕНИЕ ===================== -->
+  <div class="safe" id="appView" hidden>
+    <main class="frame">
+
+      <!-- Главная -->
+      <section class="page active" id="page-dashboard">
+        <div class="saldoDashShell">
+
+          <div class="saldoDashTop">
+            <div>
+              <div class="saldoOverline">ОБЗОР ФИНАНСОВ</div>
+              <div class="saldoPageTitle">Мои финансы</div>
+            </div>
+            <button class="saldoMonthBtn" id="dashMonthBtn" type="button" aria-label="Текущий месяц">
+              <span id="dashMonth">—</span>
+            </button>
+          </div>
+
+          <section class="saldoBalanceCard" aria-label="Общий баланс">
+            <div class="saldoBalanceHead">
+              <span>Общий баланс</span>
+              <span class="saldoLiveStamp" id="dashFresh">обновление…</span>
+            </div>
+            <div class="saldoBalanceValue" id="dashTotalBalance">—</div>
+            <div class="saldoBalanceCaption" id="dashTotalCaption">Счета UAH</div>
+          </section>
+
+          <section class="saldoSection saldoAccountsSection">
+            <div class="saldoSectionHead">
+              <div>
+                <div class="saldoSectionTitle">Счета</div>
+                <div class="saldoSectionSub">Баланс по всем кошелькам</div>
+              </div>
+              <button class="saldoLinkBtn" id="dashAllAccounts" type="button">Все</button>
+            </div>
+            <div class="saldoAccountStrip" id="dashAccountsStrip"></div>
+          </section>
+
+          <div class="saldoDashGrid">
+            <section class="saldoPanel saldoMonthPanel">
+              <div class="saldoPanelHead">
+                <div>
+                  <div class="saldoPanelEyebrow">ЭТОТ МЕСЯЦ</div>
+                  <div class="saldoPanelTitle" id="dashMonthTitle">—</div>
+                </div>
+                <div class="saldoResultPill" id="dashResultPill">—</div>
+              </div>
+
+              <div class="saldoFlowRow">
+                <div class="saldoFlowItem">
+                  <span class="saldoFlowDot income"></span>
+                  <div>
+                    <div class="saldoFlowLabel">Доходы</div>
+                    <div class="saldoFlowValue income" id="dashIncome">—</div>
+                  </div>
+                </div>
+                <div class="saldoFlowItem">
+                  <span class="saldoFlowDot expense"></span>
+                  <div>
+                    <div class="saldoFlowLabel">Расходы</div>
+                    <div class="saldoFlowValue" id="dashExpense">—</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="saldoResultBlock">
+                <div class="saldoResultLabel">Результат месяца</div>
+                <div class="saldoResultValue" id="dashProfit">—</div>
+                <div class="saldoReturnLine">Возвраты <strong id="dashReturns">—</strong></div>
+              </div>
+            </section>
+
+            <section class="saldoPanel saldoBudgetPanel">
+              <div class="saldoPanelHead">
+                <div>
+                  <div class="saldoPanelEyebrow">БЮДЖЕТ</div>
+                  <div class="saldoPanelTitle">Расходы</div>
+                </div>
+                <div class="saldoBudgetPercent" id="dashBudgetPercent">0%</div>
+              </div>
+
+              <div class="saldoBudgetText" id="dashBudgetText">—</div>
+              <div class="saldoProgress"><div class="saldoProgressFill" id="dashBudgetFill"></div></div>
+
+              <div class="saldoBudgetStats">
+                <div class="saldoBudgetStat">
+                  <span>Осталось</span>
+                  <strong id="dashBudgetRemaining">—</strong>
+                </div>
+                <div class="saldoBudgetStat">
+                  <span id="dashDailyLabel">Можно тратить / день</span>
+                  <strong id="dashDailyAllowance">—</strong>
+                </div>
+              </div>
+            </section>
+          </div>
+
+          <div class="authError" id="dashError" role="alert"></div>
+        </div>
+      </section>
+
+      <!-- Разделы, которые появятся на следующих этапах -->
+      <section class="page" id="page-transactions">
+        <div class="card stubCard">
+          <h2 class="h1">Операции</h2>
+          <p class="p">Список операций с фильтрами и редактированием появится на следующем этапе.</p>
+        </div>
+      </section>
+
+      <section class="page" id="page-budget">
+        <div class="card stubCard">
+          <h2 class="h1">Бюджет</h2>
+          <p class="p">Бюджет по месяцам с копированием на следующий месяц появится на следующем этапе.</p>
+        </div>
+      </section>
+
+      <section class="page" id="page-accounts">
+        <div class="card stubCard">
+          <h2 class="h1">Счета</h2>
+          <p class="p">Подробный список счетов появится на следующем этапе.</p>
+        </div>
+      </section>
+
+      <section class="page" id="page-more">
+        <div class="card stubCard">
+          <h2 class="h1">Ещё</h2>
+          <p class="p" id="moreUser">—</p>
+          <div class="field">
+            <button class="btnGhost btnFull" id="logoutBtn" type="button">Выйти</button>
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- Нижняя навигация -->
+    <nav class="tabbar" aria-label="Нижняя навигация">
+      <div class="tabbar__inner">
+        <button class="tab active" type="button" data-page="dashboard" aria-label="Главная">
+          <span class="tabIcon" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="M12 3.2 3.5 10.2V20a1.5 1.5 0 0 0 1.5 1.5H9.5V15a1.5 1.5 0 0 1 1.5-1.5h2a1.5 1.5 0 0 1 1.5 1.5v6.5H19A1.5 1.5 0 0 0 20.5 20v-9.8L12 3.2Z"></path></svg></span>
+          <span class="tabLabel">Главная</span>
+        </button>
+        <button class="tab" type="button" data-page="transactions" aria-label="Операции">
+          <span class="tabIcon" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="M5 5.5h14v2H5v-2Zm0 5.5h14v2H5v-2Zm0 5.5h14v2H5v-2Z"></path></svg></span>
+          <span class="tabLabel">Операции</span>
+        </button>
+        <button class="tab" type="button" data-page="budget" aria-label="Бюджет">
+          <span class="tabIcon" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="M4 19.5h16v1.8H4v-1.8Zm1.5-2.7V12h2.6v4.8H5.5Zm5.2 0V7.8h2.6v9h-2.6Zm5.2 0V4.7h2.6v12.1h-2.6Z"></path></svg></span>
+          <span class="tabLabel">Бюджет</span>
+        </button>
+        <button class="tab" type="button" data-page="accounts" aria-label="Счета">
+          <span class="tabIcon" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="M4.5 7.5A3 3 0 0 1 7.5 4.5h11A2 2 0 0 1 20.5 6.5V8h-3.8A3.2 3.2 0 0 0 13.5 11.2v1.6A3.2 3.2 0 0 0 16.7 16h3.8v1.5a2 2 0 0 1-2 2h-11a3 3 0 0 1-3-3v-9Z"></path><path d="M16.7 10H21.5v6h-4.8a1.2 1.2 0 0 1-1.2-1.2v-3.6A1.2 1.2 0 0 1 16.7 10Z"></path></svg></span>
+          <span class="tabLabel">Счета</span>
+        </button>
+        <button class="tab" type="button" data-page="more" aria-label="Ещё">
+          <span class="tabIcon" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><circle cx="5" cy="12" r="2.1"></circle><circle cx="12" cy="12" r="2.1"></circle><circle cx="19" cy="12" r="2.1"></circle></svg></span>
+          <span class="tabLabel">Ещё</span>
+        </button>
+      </div>
+    </nav>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+  (function () {
+    'use strict';
+
+    // ---------------------------------------------------------------
+    // Подключение к Supabase.
+    // Publishable-ключ можно держать в публичном коде: данные
+    // защищены правилами RLS (доступ только у твоего пользователя).
+    // ---------------------------------------------------------------
+    var SUPABASE_URL = 'https://ozgorwowudjhyvdncilu.supabase.co';
+    var SUPABASE_KEY = 'sb_publishable__m_20U0l39X58kjoO9RjFw_fTEIu36-';
+
+    var sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    function qs(id) { return document.getElementById(id); }
+
+    var MONTHS = ['январь','февраль','март','апрель','май','июнь',
+                  'июль','август','сентябрь','октябрь','ноябрь','декабрь'];
+
+    function money(value) {
+      var n = Number(value || 0);
+      return new Intl.NumberFormat('ru-RU', {
+        minimumFractionDigits: 2, maximumFractionDigits: 2
+      }).format(n) + ' ₴';
+    }
+
+    function signedMoney(value) {
+      var n = Number(value || 0);
+      return (n > 0 ? '+' : '') + money(n);
+    }
+
+    function pad2(n) { return String(n).padStart(2, '0'); }
+
+    // ---------------------------------------------------------------
+    // Экраны: вход / приложение
+    // ---------------------------------------------------------------
+    function showAuth() {
+      qs('appView').hidden = true;
+      qs('authView').hidden = false;
+    }
+
+    function showApp(session) {
+      qs('authView').hidden = true;
+      qs('appView').hidden = false;
+      qs('moreUser').textContent = session && session.user ? session.user.email : '—';
+      loadDashboard();
+    }
+
+    function setPage(name) {
+      document.querySelectorAll('.page').forEach(function (p) {
+        p.classList.toggle('active', p.id === 'page-' + name);
+      });
+      document.querySelectorAll('.tab').forEach(function (t) {
+        t.classList.toggle('active', t.getAttribute('data-page') === name);
+      });
+      window.scrollTo(0, 0);
+      if (name === 'dashboard') loadDashboard();
+    }
+
+    // ---------------------------------------------------------------
+    // Дашборд
+    // ---------------------------------------------------------------
+    var lastLoadAt = 0;
+    var loading = false;
+
+    function accountIcon(name) {
+      var m = String(name || '').match(/(\p{Extended_Pictographic}\uFE0F?)\s*$/u);
+      return m ? m[1] : '💼';
+    }
+
+    function accountLabel(name) {
+      return String(name || '')
+        .replace(/\s*\p{Extended_Pictographic}\uFE0F?\s*$/u, '')
+        .trim() || 'Счёт';
+    }
+
+    function renderAccounts(accounts) {
+      var box = qs('dashAccountsStrip');
+      box.innerHTML = '';
+
+      var rows = accounts
+        .filter(function (a) { return String(a.currency || 'UAH').toUpperCase() === 'UAH'; })
+        .sort(function (a, b) {
+          if (a.is_monobank !== b.is_monobank) return a.is_monobank ? -1 : 1;
+          return Math.abs(Number(b.balance || 0)) - Math.abs(Number(a.balance || 0));
+        })
+        .slice(0, 6);
+
+      rows.forEach(function (a) {
+        var card = document.createElement('button');
+        card.type = 'button';
+        card.className = 'saldoAccountCard' + (a.is_monobank ? ' mono' : '');
+        card.addEventListener('click', function () { setPage('accounts'); });
+
+        var top = document.createElement('div');
+        top.className = 'saldoAccountTop';
+        var icon = document.createElement('span');
+        icon.className = 'saldoAccountIcon';
+        icon.textContent = accountIcon(a.name);
+        var source = document.createElement('span');
+        source.className = 'saldoAccountSource';
+        source.textContent = 'APP';
+        top.append(icon, source);
+
+        var name = document.createElement('div');
+        name.className = 'saldoAccountName';
+        name.textContent = accountLabel(a.name);
+
+        var balance = document.createElement('div');
+        balance.className = 'saldoAccountBalance';
+        balance.textContent = money(a.balance);
+
+        card.append(top, name, balance);
+        box.appendChild(card);
+      });
+
+      if (!box.children.length) {
+        box.innerHTML = '<div class="saldoEmpty compact">Нет счетов</div>';
+      }
+    }
+
+    function renderSummary(summary, now) {
+      var income  = Number(summary.income  || 0);
+      var expense = Number(summary.expense || 0);
+      var returns = Number(summary.returns || 0);
+      var budget  = Number(summary.budget  || 0);
+
+      var netExpense = expense - returns;
+      var profit = income - netExpense;
+
+      var monthName = MONTHS[now.getMonth()] + ' ' + now.getFullYear();
+      qs('dashMonth').textContent = monthName;
+      qs('dashMonthTitle').textContent = monthName;
+
+      qs('dashIncome').textContent  = money(income);
+      qs('dashExpense').textContent = money(netExpense);
+      qs('dashReturns').textContent = money(returns);
+
+      var profitEl = qs('dashProfit');
+      profitEl.textContent = signedMoney(profit);
+      profitEl.classList.toggle('positive', profit >= 0);
+      profitEl.classList.toggle('negative', profit < 0);
+
+      var pill = qs('dashResultPill');
+      pill.textContent = profit >= 0 ? 'плюс' : 'минус';
+      pill.classList.toggle('positive', profit >= 0);
+      pill.classList.toggle('negative', profit < 0);
+
+      var remaining = budget - netExpense;
+      var pct = budget > 0 ? (netExpense / budget) * 100 : 0;
+      if (!isFinite(pct)) pct = 0;
+
+      qs('dashBudgetText').textContent = money(netExpense) + ' из ' + money(budget);
+      qs('dashBudgetRemaining').textContent = money(remaining);
+      qs('dashBudgetPercent').textContent = (Math.round(pct * 10) / 10) + '%';
+
+      var fill = qs('dashBudgetFill');
+      fill.style.width = Math.max(0, Math.min(100, pct)) + '%';
+      fill.classList.toggle('over', remaining < 0 && budget > 0);
+
+      var daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+      var daysLeft = Math.max(1, daysInMonth - now.getDate() + 1);
+      qs('dashDailyLabel').textContent = 'Можно тратить / день';
+      qs('dashDailyAllowance').textContent = money(Math.max(0, remaining) / daysLeft);
+    }
+
+    async function loadDashboard() {
+      if (loading) return;
+      loading = true;
+      qs('dashError').textContent = '';
+      qs('dashFresh').textContent = 'обновление…';
+
+      try {
+        var now = new Date();
+        var firstOfMonth = now.getFullYear() + '-' + pad2(now.getMonth() + 1) + '-01';
+
+        var results = await Promise.all([
+          sb.rpc('month_summary', { p_month: firstOfMonth }),
+          sb.from('account_balances').select('id,name,currency,is_monobank,balance')
+        ]);
+
+        var summaryRes = results[0];
+        var accountsRes = results[1];
+
+        if (summaryRes.error) throw summaryRes.error;
+        if (accountsRes.error) throw accountsRes.error;
+
+        var accounts = accountsRes.data || [];
+        var total = accounts
+          .filter(function (a) { return String(a.currency || 'UAH').toUpperCase() === 'UAH'; })
+          .reduce(function (sum, a) { return sum + Number(a.balance || 0); }, 0);
+
+        qs('dashTotalBalance').textContent = money(total);
+        qs('dashTotalCaption').textContent = accounts.length + ' счетов UAH · баланс по операциям';
+
+        renderAccounts(accounts);
+        renderSummary(summaryRes.data || {}, now);
+
+        lastLoadAt = Date.now();
+        qs('dashFresh').textContent = 'обновлено ' + pad2(now.getHours()) + ':' + pad2(now.getMinutes());
+      } catch (err) {
+        console.error('[ACCOUNTING][DASHBOARD]', err);
+        qs('dashFresh').textContent = 'ошибка';
+        qs('dashError').textContent =
+          'Не удалось загрузить данные: ' + (err && err.message ? err.message : 'неизвестная ошибка');
+      } finally {
+        loading = false;
+      }
+    }
+
+    // ---------------------------------------------------------------
+    // Вход / выход
+    // ---------------------------------------------------------------
+    qs('authForm').addEventListener('submit', async function (event) {
+      event.preventDefault();
+
+      var email = qs('authEmail').value.trim();
+      var password = qs('authPassword').value;
+      var errorBox = qs('authError');
+      var button = qs('authSubmit');
+
+      errorBox.textContent = '';
+
+      if (!email || !password) {
+        errorBox.textContent = 'Введи email и пароль.';
+        return;
+      }
+
+      button.disabled = true;
+      button.textContent = 'Входим…';
+
+      try {
+        var result = await sb.auth.signInWithPassword({ email: email, password: password });
+        if (result.error) {
+          errorBox.textContent = 'Неверный email или пароль.';
+          return;
+        }
+        qs('authPassword').value = '';
+        showApp(result.data.session);
+      } catch (err) {
+        errorBox.textContent = 'Нет связи с сервером. Проверь интернет и попробуй ещё раз.';
+      } finally {
+        button.disabled = false;
+        button.textContent = 'Войти';
+      }
+    });
+
+    qs('logoutBtn').addEventListener('click', async function () {
+      await sb.auth.signOut();
+      setPage('dashboard');
+      showAuth();
+    });
+
+    document.querySelectorAll('.tab').forEach(function (tab) {
+      tab.addEventListener('click', function () {
+        setPage(tab.getAttribute('data-page'));
+      });
+    });
+
+    qs('dashAllAccounts').addEventListener('click', function () { setPage('accounts'); });
+
+    // Обновляем дашборд, когда возвращаешься в приложение
+    document.addEventListener('visibilitychange', function () {
+      if (!document.hidden && !qs('appView').hidden && Date.now() - lastLoadAt > 60000) {
+        loadDashboard();
+      }
+    });
+
+    // ---------------------------------------------------------------
+    // Старт
+    // ---------------------------------------------------------------
+    (async function init() {
+      try {
+        var res = await sb.auth.getSession();
+        if (res.data && res.data.session) showApp(res.data.session);
+        else showAuth();
+      } catch (err) {
+        showAuth();
+      }
+
+      sb.auth.onAuthStateChange(function (event) {
+        if (event === 'SIGNED_OUT') showAuth();
+      });
+    })();
+  })();
+  </script>
+</body>
+</html>
