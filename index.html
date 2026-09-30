@@ -4543,6 +4543,41 @@
     -webkit-text-fill-color:#6B7280!important;
   }
 
+
+/* ---- Операции: правила исходного экрана, перенесённые на #page-transactions ---- */
+/* Operations tab reuses the Dashboard transaction DOM, without duplicating ids. */
+  #page-transactions .saldoDashTop,
+  #page-transactions .saldoBalanceCard,
+  #page-transactions .saldoAccountsSection,
+  #page-transactions .saldoDashGrid,
+  #page-transactions .saldoInsightsPanel{
+    display:none!important;
+  }
+#page-transactions .saldoTransactionsSection{
+    margin-top:0!important;
+  }
+#page-transactions .saldoTransactionsSection .saldoSectionTitle{
+    font-size:20px;
+  }
+#page-transactions .saldoTransactionsSection .saldoSectionSub{
+    margin-top:3px;
+  }
+#page-transactions .opsOnly{
+    display:grid;
+    gap:12px;
+  }
+#page-transactions .saldoTransactionsSection > .saldoSectionHead{
+    display:none!important;
+  }
+#page-transactions .saldoTransactionsSection{
+    padding-top:16px!important;
+  }
+#page-transactions .saldoFilters{
+    margin-top:2px;
+  }
+#page-transactions .saldoTxList{
+    margin-top:2px;
+  }
 </style>
 
   <style>
@@ -4554,6 +4589,17 @@
     .stubCard{margin-top:16px}
     .stubCard .h1{font-size:18px}
     [hidden]{display:none !important}
+
+    /* Лист редактирования операции: выше нижнего меню (у него z-index 999) */
+    #editOverlay{z-index:1500 !important}
+    .editSummary{padding:12px 14px;border-radius:14px;background:rgba(0,0,0,.03);margin:2px 0 6px}
+    .editAmount{font-size:22px;font-weight:800;letter-spacing:-.01em}
+    .editAmount.expense{color:var(--red)}
+    .editAmount.income{color:var(--green)}
+    .editMeta{margin-top:4px;font-size:13px;color:var(--muted);line-height:1.4}
+    .checkRow{display:flex;align-items:flex-start;gap:10px;margin:12px 4px 4px;font-size:14px;line-height:1.35;cursor:pointer}
+    .checkRow input{width:20px;height:20px;margin:1px 0 0;flex:0 0 auto}
+    #editHint{margin:8px 4px 0}
   </style>
 </head>
 
@@ -4682,10 +4728,72 @@
       </section>
 
       <!-- Разделы, которые появятся на следующих этапах -->
+      <!-- Операции -->
       <section class="page" id="page-transactions">
-        <div class="card stubCard">
-          <h2 class="h1">Операции</h2>
-          <p class="p">Список операций с фильтрами и редактированием появится на следующем этапе.</p>
+        <div class="saldoDashShell">
+          <section class="saldoSection saldoTransactionsSection">
+
+            <div class="opsOnly" id="opsOnly">
+              <div class="opsHeader">
+                <div>
+                  <div class="opsEyebrow">ДВИЖЕНИЕ ДЕНЕГ</div>
+                  <div class="opsTitle">Операции</div>
+                  <div class="opsSubtitle">Нажми на операцию, чтобы изменить категорию или заметку</div>
+                </div>
+                <div class="opsCount" id="opsCount">0</div>
+              </div>
+
+              <div class="opsSearch">
+                <span class="opsSearchIcon" aria-hidden="true">⌕</span>
+                <input id="opsSearchInput" type="search" inputmode="search" autocomplete="off"
+                       placeholder="Категория, заметка или счёт">
+                <button class="opsSearchClear" id="opsSearchClear" type="button" aria-label="Очистить поиск">×</button>
+              </div>
+
+              <div class="opsStats">
+                <div class="opsStat">
+                  <span>Расходы</span>
+                  <strong class="expense" id="opsExpense">0 ₴</strong>
+                </div>
+                <div class="opsStat">
+                  <span>Доходы</span>
+                  <strong class="income" id="opsIncome">0 ₴</strong>
+                </div>
+                <div class="opsStat">
+                  <span>Операций</span>
+                  <strong id="opsVisibleCount">0</strong>
+                </div>
+              </div>
+            </div>
+
+            <div class="saldoFilters">
+              <select class="saldoSelect" id="fPeriod" aria-label="Период">
+                <option value="MONTH">Месяц</option>
+                <option value="7D">7 дней</option>
+                <option value="TODAY">Сегодня</option>
+                <option value="ALL">Все</option>
+              </select>
+              <select class="saldoSelect" id="fAction" aria-label="Тип операции">
+                <option value="ALL">Все типы</option>
+                <option value="EXPENSE">Расходы</option>
+                <option value="INCOME">Доходы</option>
+                <option value="RETURN">Возвраты</option>
+                <option value="TRANSFER">Переводы</option>
+              </select>
+              <select class="saldoSelect saldoSelectWide" id="fCategory" aria-label="Категория">
+                <option value="ALL">Все категории</option>
+              </select>
+            </div>
+
+            <div id="txList" class="txList saldoTxList"></div>
+            <div id="txEmpty" class="saldoEmpty" hidden>Операций пока нет</div>
+            <div class="authError" id="txError" role="alert"></div>
+
+            <div class="field">
+              <button class="btnGhost btnFull" id="txMore" type="button" hidden>Показать ещё</button>
+            </div>
+
+          </section>
         </div>
       </section>
 
@@ -4740,6 +4848,44 @@
         </button>
       </div>
     </nav>
+  </div>
+
+  <!-- ===================== ИЗМЕНИТЬ ОПЕРАЦИЮ ===================== -->
+  <div class="sheetOverlay" id="editOverlay">
+    <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="editTitle">
+      <div class="sheetHeader">
+        <div class="sheetTitle" id="editTitle">Операция</div>
+        <div class="xbtn" id="editClose" role="button" tabindex="0" aria-label="Закрыть">×</div>
+      </div>
+
+      <div class="editSummary">
+        <div class="editAmount" id="editAmount">—</div>
+        <div class="editMeta" id="editMeta">—</div>
+      </div>
+
+      <div class="field">
+        <div class="label">Категория</div>
+        <select class="select" id="editCategory"></select>
+      </div>
+
+      <div class="field">
+        <div class="label">Заметка</div>
+        <textarea class="textarea" id="editNote" maxlength="500" placeholder="Например: Сильпо"></textarea>
+      </div>
+
+      <label class="checkRow" id="editRuleRow">
+        <input type="checkbox" id="editRule">
+        <span>Запомнить: для такой заметки сразу ставить эту категорию</span>
+      </label>
+
+      <div class="muted" id="editHint"></div>
+      <div class="authError" id="editError" role="alert"></div>
+
+      <div class="btnRow">
+        <button class="btnGhost" id="editCancel" type="button">Отмена</button>
+        <button class="btnPrimary" id="editSave" type="button">Сохранить</button>
+      </div>
+    </div>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -4800,6 +4946,7 @@
       });
       window.scrollTo(0, 0);
       if (name === 'dashboard') loadDashboard();
+      if (name === 'transactions') loadTransactions(false);
     }
 
     // ---------------------------------------------------------------
@@ -4954,6 +5101,453 @@
     }
 
     // ---------------------------------------------------------------
+    // Справочники (категории и счета)
+    // ---------------------------------------------------------------
+    var refs = { categories: [], accounts: [], catById: {}, accById: {}, loaded: false };
+
+    async function loadRefs() {
+      var res = await Promise.all([
+        sb.from('categories').select('id,name,type,sort_order').order('sort_order'),
+        sb.from('accounts').select('id,name,currency,is_monobank').order('id')
+      ]);
+      if (res[0].error) throw res[0].error;
+      if (res[1].error) throw res[1].error;
+
+      refs.categories = res[0].data || [];
+      refs.accounts = res[1].data || [];
+      refs.catById = {};
+      refs.accById = {};
+      refs.categories.forEach(function (c) { refs.catById[c.id] = c; });
+      refs.accounts.forEach(function (a) { refs.accById[a.id] = a; });
+      refs.loaded = true;
+
+      fillCategoryFilter();
+    }
+
+    function categoriesOfType(type) {
+      return refs.categories.filter(function (c) { return c.type === type; });
+    }
+
+    function fillCategoryFilter() {
+      var select = qs('fCategory');
+      var current = select.value;
+      select.innerHTML = '<option value="ALL">Все категории</option>';
+
+      [['EXPENSE', 'Расходы'], ['INCOME', 'Доходы']].forEach(function (pair) {
+        var group = document.createElement('optgroup');
+        group.label = pair[1];
+        categoriesOfType(pair[0]).forEach(function (c) {
+          var opt = document.createElement('option');
+          opt.value = String(c.id);
+          opt.textContent = c.name;
+          group.appendChild(opt);
+        });
+        select.appendChild(group);
+      });
+
+      select.value = current || 'ALL';
+      if (select.value !== current && current) select.value = 'ALL';
+    }
+
+    // ---------------------------------------------------------------
+    // Операции
+    // ---------------------------------------------------------------
+    var tx = { rows: [], offset: 0, pageSize: 100, hasMore: false, req: 0, search: '', editing: null };
+
+    function periodStart(period) {
+      var now = new Date();
+      if (period === 'TODAY') return new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      if (period === '7D') return new Date(now.getFullYear(), now.getMonth(), now.getDate() - 6);
+      if (period === 'MONTH') return new Date(now.getFullYear(), now.getMonth(), 1);
+      return null;
+    }
+
+    function cleanNote(note) {
+      return String(note || '').replace(/\s*\(FX[^)]*\)\s*/gi, '').trim();
+    }
+
+    function catName(row) {
+      var c = refs.catById[row.category_id];
+      return c ? c.name : '';
+    }
+
+    function accName(id) {
+      var a = refs.accById[id];
+      return a ? a.name : '';
+    }
+
+    function accText(row) {
+      if (row.action === 'TRANSFER') {
+        return (accName(row.from_account_id) || '?') + ' → ' + (accName(row.to_account_id) || '?');
+      }
+      return accName(row.account_id);
+    }
+
+    function txTitle(row) {
+      if (row.action === 'TRANSFER') return 'Перевод';
+      return catName(row) || '(без категории)';
+    }
+
+    function txIcon(row) {
+      var m = catName(row).match(/\p{Extended_Pictographic}\uFE0F?/u);
+      if (m) return m[0];
+      if (row.action === 'INCOME') return '↗';
+      if (row.action === 'RETURN') return '↩';
+      if (row.action === 'TRANSFER') return '⇄';
+      return '↘';
+    }
+
+    function txAmountText(row) {
+      var n = Math.abs(Number(row.amount || 0));
+      var text = new Intl.NumberFormat('ru-RU', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n);
+      var cur = String(row.currency || 'UAH').toUpperCase();
+      text += ' ' + (cur === 'UAH' ? '₴' : cur);
+      if (row.action === 'EXPENSE') return '−' + text;
+      if (row.action === 'INCOME' || row.action === 'RETURN') return '+' + text;
+      return text;
+    }
+
+    function txAmountClass(row) {
+      if (row.action === 'EXPENSE') return 'txAmount txAmountExpense';
+      if (row.action === 'INCOME' || row.action === 'RETURN') return 'txAmount txAmountIncome';
+      return 'txAmount txAmountTransfer';
+    }
+
+    function dayLabel(d) {
+      var now = new Date();
+      var start = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+      var day = new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+      var diff = Math.round((start - day) / 86400000);
+      if (diff === 0) return 'Сегодня';
+      if (diff === 1) return 'Вчера';
+      return d.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' });
+    }
+
+    async function loadTransactions(append) {
+      var reqId = ++tx.req;
+      qs('txError').textContent = '';
+      qs('txMore').disabled = true;
+
+      try {
+        if (!refs.loaded) await loadRefs();
+        if (reqId !== tx.req) return;
+
+        if (!append) { tx.offset = 0; tx.rows = []; }
+
+        var query = sb.from('transactions')
+          .select('id,date,action,amount,currency,note,mono_op_id,category_id,account_id,from_account_id,to_account_id')
+          .order('date', { ascending: false })
+          .order('created_at', { ascending: false })
+          .range(tx.offset, tx.offset + tx.pageSize - 1);
+
+        var start = periodStart(qs('fPeriod').value);
+        if (start) query = query.gte('date', start.toISOString());
+
+        var action = qs('fAction').value;
+        if (action !== 'ALL') query = query.eq('action', action);
+
+        var category = qs('fCategory').value;
+        if (category !== 'ALL') query = query.eq('category_id', Number(category));
+
+        var res = await query;
+        if (reqId !== tx.req) return;
+        if (res.error) throw res.error;
+
+        var data = res.data || [];
+        tx.rows = tx.rows.concat(data);
+        tx.offset += data.length;
+        tx.hasMore = data.length === tx.pageSize;
+        renderTransactions();
+      } catch (err) {
+        if (reqId !== tx.req) return;
+        console.error('[ACCOUNTING][TX]', err);
+        qs('txError').textContent =
+          'Не удалось загрузить операции: ' + (err && err.message ? err.message : 'неизвестная ошибка');
+      } finally {
+        if (reqId === tx.req) qs('txMore').disabled = false;
+      }
+    }
+
+    function visibleRows() {
+      var s = tx.search.trim().toLowerCase();
+      if (!s) return tx.rows;
+      return tx.rows.filter(function (row) {
+        var hay = [catName(row), accText(row), cleanNote(row.note)].join(' ').toLowerCase();
+        return hay.indexOf(s) !== -1;
+      });
+    }
+
+    function renderStats(list) {
+      var expense = 0, returns = 0, income = 0;
+      list.forEach(function (row) {
+        var n = Math.abs(Number(row.amount || 0));
+        if (row.action === 'EXPENSE') expense += n;
+        else if (row.action === 'RETURN') returns += n;
+        else if (row.action === 'INCOME') income += n;
+      });
+      qs('opsExpense').textContent = money(expense - returns);
+      qs('opsIncome').textContent = money(income);
+      qs('opsVisibleCount').textContent = String(list.length);
+      qs('opsCount').textContent = String(list.length);
+    }
+
+    function renderTransactions() {
+      var list = visibleRows();
+      var box = qs('txList');
+      var empty = qs('txEmpty');
+
+      renderStats(list);
+      box.innerHTML = '';
+
+      qs('txMore').hidden = !tx.hasMore;
+
+      if (!list.length) {
+        empty.textContent = tx.search.trim() ? 'Ничего не найдено' : 'Операций пока нет';
+        empty.hidden = false;
+        return;
+      }
+      empty.hidden = true;
+
+      var groups = [];
+      var byKey = {};
+
+      list.forEach(function (row) {
+        var d = new Date(row.date);
+        var key = d.getFullYear() + '-' + d.getMonth() + '-' + d.getDate();
+        if (!byKey[key]) {
+          byKey[key] = { label: dayLabel(d), items: [], net: 0 };
+          groups.push(byKey[key]);
+        }
+        var g = byKey[key];
+        g.items.push(row);
+        var n = Math.abs(Number(row.amount || 0));
+        if (row.action === 'EXPENSE') g.net -= n;
+        else if (row.action === 'INCOME' || row.action === 'RETURN') g.net += n;
+      });
+
+      groups.forEach(function (g) {
+        var head = document.createElement('div');
+        head.className = 'txDayHead';
+        var label = document.createElement('span');
+        label.textContent = g.label;
+        var total = document.createElement('span');
+        if (Math.abs(g.net) > 0.000001) {
+          total.className = g.net < 0 ? 'negative' : 'positive';
+          total.textContent = (g.net < 0 ? '−' : '+') + money(Math.abs(g.net));
+        }
+        head.append(label, total);
+        box.appendChild(head);
+
+        var group = document.createElement('div');
+        group.className = 'txDayGroup';
+
+        g.items.forEach(function (row) {
+          var item = document.createElement('button');
+          item.type = 'button';
+          item.className = 'txItem saldoTxItem';
+          item.dataset.id = row.id;
+          item.setAttribute('aria-label', 'Открыть операцию');
+
+          var iconWrap = document.createElement('span');
+          iconWrap.className = 'saldoTxIcon ' + String(row.action || '').toLowerCase();
+          iconWrap.textContent = txIcon(row);
+
+          var left = document.createElement('div');
+          left.className = 'txLeft';
+          var title = document.createElement('div');
+          title.className = 'txTitle';
+          title.textContent = txTitle(row);
+          var meta = document.createElement('div');
+          meta.className = 'txMeta';
+          meta.textContent = [accText(row), cleanNote(row.note)].filter(Boolean).join(' · ');
+          left.append(title, meta);
+
+          var right = document.createElement('div');
+          right.className = 'txRight';
+          var amount = document.createElement('div');
+          amount.className = txAmountClass(row);
+          amount.textContent = txAmountText(row);
+          var badge = document.createElement('div');
+          badge.className = 'txBadge';
+          var d = new Date(row.date);
+          badge.textContent = isNaN(d.getTime())
+            ? ''
+            : pad2(d.getHours()) + ':' + pad2(d.getMinutes());
+          right.append(amount, badge);
+
+          item.append(iconWrap, left, right);
+          item.addEventListener('click', function () { openEdit(row.id); });
+          group.appendChild(item);
+        });
+
+        box.appendChild(group);
+      });
+    }
+
+    // ---------------------------------------------------------------
+    // Изменение операции: категория и заметка
+    // ---------------------------------------------------------------
+    function openEdit(id) {
+      var row = tx.rows.find(function (r) { return r.id === id; });
+      if (!row) return;
+      tx.editing = row;
+
+      var isTransfer = row.action === 'TRANSFER';
+      var isBank = Boolean(row.mono_op_id);
+      var type = row.action === 'INCOME' ? 'INCOME' : 'EXPENSE';
+
+      qs('editTitle').textContent = isTransfer ? 'Перевод' : 'Изменить операцию';
+
+      var amountEl = qs('editAmount');
+      amountEl.textContent = txAmountText(row);
+      amountEl.className = 'editAmount' +
+        (row.action === 'EXPENSE' ? ' expense' : (row.action === 'INCOME' || row.action === 'RETURN' ? ' income' : ''));
+
+      var when = new Date(row.date);
+      qs('editMeta').textContent = [
+        isNaN(when.getTime()) ? '' : when.toLocaleString('ru-RU', {
+          day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit'
+        }),
+        accText(row)
+      ].filter(Boolean).join(' · ');
+
+      var select = qs('editCategory');
+      select.innerHTML = '';
+      if (isTransfer) {
+        var only = document.createElement('option');
+        only.value = '';
+        only.textContent = 'У перевода нет категории';
+        select.appendChild(only);
+        select.disabled = true;
+      } else {
+        select.disabled = false;
+        var placeholder = document.createElement('option');
+        placeholder.value = '';
+        placeholder.textContent = 'Выбери категорию';
+        select.appendChild(placeholder);
+        categoriesOfType(type).forEach(function (c) {
+          var opt = document.createElement('option');
+          opt.value = String(c.id);
+          opt.textContent = c.name;
+          select.appendChild(opt);
+        });
+        select.value = row.category_id ? String(row.category_id) : '';
+        if (select.value !== (row.category_id ? String(row.category_id) : '')) select.value = '';
+      }
+
+      qs('editNote').value = row.note || '';
+      qs('editRule').checked = false;
+      qs('editRuleRow').hidden = isTransfer;
+      qs('editHint').textContent = isBank
+        ? 'Банковская операция: сумма, дата и счёт защищены. Меняются только категория и заметка.'
+        : '';
+      qs('editError').textContent = '';
+      qs('editSave').disabled = false;
+      qs('editSave').textContent = 'Сохранить';
+
+      qs('editOverlay').classList.add('open');
+    }
+
+    function closeEdit() {
+      qs('editOverlay').classList.remove('open');
+      tx.editing = null;
+    }
+
+    async function saveEdit() {
+      var row = tx.editing;
+      if (!row) return;
+
+      var isTransfer = row.action === 'TRANSFER';
+      var note = qs('editNote').value.trim();
+      var categoryId = qs('editCategory').value ? Number(qs('editCategory').value) : null;
+      var wantRule = qs('editRule').checked;
+      var errorBox = qs('editError');
+      var button = qs('editSave');
+
+      errorBox.textContent = '';
+
+      if (!isTransfer && !categoryId) {
+        errorBox.textContent = 'Выбери категорию.';
+        return;
+      }
+
+      if (wantRule && !isTransfer) {
+        var chosen = refs.catById[categoryId];
+        if (chosen && /^Uncategorized/.test(chosen.name)) {
+          errorBox.textContent = 'Для правила выбери конкретную категорию.';
+          return;
+        }
+        if (!note) {
+          errorBox.textContent = 'Для правила нужна заметка.';
+          return;
+        }
+      }
+
+      button.disabled = true;
+      button.textContent = 'Сохраняем…';
+
+      try {
+        var patch = { note: note, updated_at: new Date().toISOString() };
+        if (!isTransfer) patch.category_id = categoryId;
+
+        var upd = await sb.from('transactions').update(patch).eq('id', row.id).select('id');
+        if (upd.error) throw upd.error;
+        if (!upd.data || !upd.data.length) {
+          throw new Error('Операция не найдена или нет доступа.');
+        }
+
+        if (wantRule && !isTransfer) {
+          var rule = await sb.from('rules').upsert(
+            { action: row.action, category_id: categoryId, note: note },
+            { onConflict: 'action,note' }
+          );
+          if (rule.error) throw rule.error;
+        }
+
+        row.note = note;
+        if (!isTransfer) row.category_id = categoryId;
+
+        closeEdit();
+        renderTransactions();
+      } catch (err) {
+        console.error('[ACCOUNTING][TX_EDIT]', err);
+        errorBox.textContent =
+          'Не удалось сохранить: ' + (err && err.message ? err.message : 'неизвестная ошибка');
+        button.disabled = false;
+        button.textContent = 'Сохранить';
+      }
+    }
+
+    ['fPeriod', 'fAction', 'fCategory'].forEach(function (id) {
+      qs(id).addEventListener('change', function () { loadTransactions(false); });
+    });
+
+    qs('txMore').addEventListener('click', function () { loadTransactions(true); });
+
+    qs('opsSearchInput').addEventListener('input', function () {
+      tx.search = qs('opsSearchInput').value;
+      qs('opsSearchClear').classList.toggle('show', tx.search.length > 0);
+      renderTransactions();
+    });
+
+    qs('opsSearchClear').addEventListener('click', function () {
+      qs('opsSearchInput').value = '';
+      tx.search = '';
+      qs('opsSearchClear').classList.remove('show');
+      renderTransactions();
+    });
+
+    qs('editSave').addEventListener('click', saveEdit);
+    qs('editCancel').addEventListener('click', closeEdit);
+    qs('editClose').addEventListener('click', closeEdit);
+    qs('editOverlay').addEventListener('click', function (event) {
+      if (event.target === qs('editOverlay')) closeEdit();
+    });
+    document.addEventListener('keydown', function (event) {
+      if (event.key === 'Escape' && qs('editOverlay').classList.contains('open')) closeEdit();
+    });
+
+    // ---------------------------------------------------------------
     // Вход / выход
     // ---------------------------------------------------------------
     qs('authForm').addEventListener('submit', async function (event) {
@@ -4992,6 +5586,9 @@
 
     qs('logoutBtn').addEventListener('click', async function () {
       await sb.auth.signOut();
+      tx.rows = [];
+      tx.req++;
+      refs.loaded = false;
       setPage('dashboard');
       showAuth();
     });
