@@ -8110,24 +8110,53 @@
 
     var CARD_TYPE = { black: 'Чёрная', white: 'Белая', platinum: 'Platinum', iron: 'Iron', fop: 'ФОП', yellow: 'Жёлтая', eAid: 'єПідтримка' };
 
+    // Supabase даёт функции имя сам (у тебя smart-api, но может быть и mono).
+    // Приложение пробует известные имена и запоминает то, что откликнулось.
+    var MONO_FN_NAMES = ['smart-api', 'mono'];
+    var monoFnName = null;
+
+    async function monoInvoke(body) {
+      var names = monoFnName ? [monoFnName] : MONO_FN_NAMES;
+      var lastRes = null;
+      var wrongCode = null; // функция есть, но с чужим кодом: это важнее, чем «не найдена»
+      for (var i = 0; i < names.length; i++) {
+        var res;
+        try {
+          res = await sb.functions.invoke(names[i], { body: body });
+        } catch (err) {
+          continue; // нет связи с этим именем, пробуем следующее
+        }
+        if (res.error) {
+          var status = res.error.context && res.error.context.status;
+          if (!status || status === 404) { lastRes = res; continue; } // такого имени нет
+        } else if (!res.data || typeof res.data !== 'object' || res.data.ok === undefined) {
+          wrongCode = res; continue; // функция с таким именем есть, но в ней не наш код (заготовка Supabase)
+        }
+        monoFnName = names[i];
+        return res;
+      }
+      return wrongCode || lastRes || { data: null, error: { message: 'unreachable', context: null } };
+    }
+
     // Вызов серверной функции. Ошибки превращаем в понятный текст
     async function monoCall(body) {
-      var res;
-      try {
-        res = await sb.functions.invoke('mono', { body: body });
-      } catch (err) {
-        throw new Error('Не удалось связаться с функцией mono. Проверь интернет и что функция создана в Supabase.');
-      }
+      var res = await monoInvoke(body);
       if (res.error) {
         var detail = null;
         var status = res.error.context && res.error.context.status;
         try { if (res.error.context && res.error.context.json) detail = await res.error.context.json(); } catch (e) { /* нет тела */ }
-        if (detail && detail.message) throw new Error(detail.message);
-        if (status === 404) throw new Error('Функция mono не найдена. Создай её: Supabase → Edge Functions → Deploy a new function, имя ровно mono.');
+        if (status && status !== 404 && detail && detail.message) throw new Error(detail.message);
         if (status === 401 || status === 403) throw new Error('Функция отказала в доступе. Войди в приложение заново.');
-        throw new Error('Не удалось связаться с функцией mono. Проверь, что она создана в Supabase и называется ровно mono.');
+        throw new Error('Функция не найдена. В Supabase → Edge Functions посмотри конец её адреса (…/functions/v1/ИМЯ): приложение ищет имена ' + MONO_FN_NAMES.join(' и ') + '. Если у неё другое имя, напиши мне.');
       }
-      if (res.data && res.data.ok === false) throw new Error(res.data.message || 'Ошибка функции mono.');
+      if (res.data && res.data.ok === false) throw new Error(res.data.message || 'Ошибка функции.');
+      if (!res.data || res.data.ok !== true) {
+        // Функция откликнулась, но не нашим кодом (например, осталась заготовка Supabase «Hello»)
+        var preview = '';
+        try { preview = typeof res.data === 'string' ? res.data : JSON.stringify(res.data); } catch (e) { /* пусто */ }
+        throw new Error('Функция в Supabase отвечает, но в ней не код Monobank (ответ: ' + String(preview).slice(0, 120) +
+          '). Открой функцию → Code, замени всё содержимое файлом mono_function.ts и нажми Deploy.');
+      }
       return res.data;
     }
 
@@ -8211,8 +8240,11 @@
       qs('monoFind').textContent = 'Ищу карты…';
       try {
         var data = await monoCall({ action: 'accounts', token: token });
+        if (!Array.isArray(data.accounts) || !data.accounts.length) {
+          throw new Error('Банк не вернул ни одной карты в UAH, USD или EUR.');
+        }
         mono.token = token;
-        mono.accounts = data.accounts || [];
+        mono.accounts = data.accounts;
         mono.clientName = data.clientName || '';
         renderMonoAccounts();
         monoShow('monoStepPick');
