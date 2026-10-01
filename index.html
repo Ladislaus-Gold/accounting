@@ -4644,6 +4644,22 @@
     .deleteConfirmTitle{font-weight:600}
     .budMsgLine{margin-top:8px;text-align:center}
     #budOverlay{z-index:1500 !important}
+    #ruleOverlay{z-index:1500 !important}
+    .dangerSolid{color:#fff !important}
+    .moreRow{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;padding:14px 0;background:none;border:0;text-align:left;color:inherit;cursor:pointer}
+    .moreRow:active{opacity:.6}
+    .moreRowTitle{display:block;font-size:16px;font-weight:600;letter-spacing:-.011em}
+    .moreRowSub{display:block;margin-top:2px;font-size:13px}
+    .moreRowEnd{color:var(--muted);font-size:16px;white-space:nowrap}
+    .rulesGroupHead{margin:14px 0 2px;font-size:12px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
+    .rulesGroupHead:first-child{margin-top:2px}
+    .ruleRow{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;padding:12px 0;background:none;border:0;border-bottom:1px solid rgba(0,0,0,.06);text-align:left;color:inherit;cursor:pointer}
+    .ruleRow:last-child{border-bottom:0}
+    .ruleRow:active{opacity:.6}
+    .ruleNote{font-size:15px;font-weight:600;letter-spacing:-.01em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .ruleCat{margin-top:2px;font-size:13px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .ruleMain{min-width:0}
+    .ruleChevron{color:rgba(60,60,67,.3);font-size:18px}
     .budCatBtn{display:block;width:100%;padding:12px 0;background:none;border:0;border-bottom:1px solid rgba(0,0,0,.06);text-align:left;color:inherit;cursor:pointer}
     .budCatBtn:last-child{border-bottom:0}
     .budCatBtn:active{opacity:.6}
@@ -4930,12 +4946,47 @@
       </section>
 
       <section class="page" id="page-more">
-        <div class="card stubCard">
-          <h2 class="h1">Ещё</h2>
-          <p class="p" id="moreUser">—</p>
-          <div class="field">
+        <div class="budgetShell" style="display:grid;gap:14px;width:100%;">
+          <section class="card" style="padding:4px 16px;">
+            <button class="moreRow" id="openRules" type="button">
+              <span>
+                <span class="moreRowTitle">Правила категоризации</span>
+                <span class="muted moreRowSub">Заметка → категория для банковских операций</span>
+              </span>
+              <span class="moreRowEnd"><span id="rulesCount"></span> ›</span>
+            </button>
+          </section>
+
+          <section class="card">
+            <div class="cardTitle">Аккаунт</div>
+            <p class="p" id="moreUser" style="margin:6px 0 14px">—</p>
             <button class="btnTintRed btnFull" id="logoutBtn" type="button">Выйти</button>
-          </div>
+          </section>
+        </div>
+      </section>
+
+      <!-- Правила категоризации -->
+      <section class="page" id="page-rules">
+        <div class="budgetShell" style="display:grid;gap:14px;width:100%;">
+          <section class="card" style="padding:14px 16px;">
+            <div style="display:grid;grid-template-columns:40px minmax(0,1fr) 40px;align-items:center;gap:8px;">
+              <button class="repNav" id="rulesBack" type="button" aria-label="Назад">‹</button>
+              <div style="text-align:center;min-width:0;">
+                <div class="dashEyebrow">АВТОКАТЕГОРИИ</div>
+                <div style="margin-top:4px;font-size:18px;font-weight:700;">Правила</div>
+              </div>
+              <button class="repNav" id="rulesAdd" type="button" aria-label="Добавить правило">＋</button>
+            </div>
+            <div class="muted" style="margin-top:10px;text-align:center;">
+              Если заметка операции совпадает с правилом, ей присваивается эта категория.
+            </div>
+          </section>
+
+          <section class="card">
+            <div id="rulesList"><div class="saldoEmpty">Загрузка…</div></div>
+          </section>
+
+          <div class="authError" id="rulesError" role="alert"></div>
         </div>
       </section>
 
@@ -5094,6 +5145,43 @@
     </div>
   </div>
 
+  <!-- ===================== ПРАВИЛО ===================== -->
+  <div class="sheetOverlay" id="ruleOverlay">
+    <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="ruleTitle">
+      <div class="sheetHeader">
+        <div class="sheetTitle" id="ruleTitle">Новое правило</div>
+        <div class="xbtn" id="ruleClose" role="button" tabindex="0" aria-label="Закрыть">×</div>
+      </div>
+
+      <div class="seg" id="ruleSeg" style="grid-template-columns:repeat(3,1fr)">
+        <button type="button" data-action="EXPENSE" class="active">Расход</button>
+        <button type="button" data-action="INCOME">Доход</button>
+        <button type="button" data-action="RETURN">Возврат</button>
+      </div>
+
+      <div class="field">
+        <div class="label">Заметка операции</div>
+        <input class="input" id="ruleNote" type="text" maxlength="200" autocomplete="off" placeholder="Например: Сильпо">
+      </div>
+
+      <div class="field">
+        <div class="label">Категория</div>
+        <select class="select" id="ruleCategory"></select>
+      </div>
+
+      <div class="authError" id="ruleError" role="alert"></div>
+
+      <div class="btnRow">
+        <button class="btnGhost" id="ruleCancel" type="button">Отмена</button>
+        <button class="btnPrimary" id="ruleSave" type="button">Сохранить</button>
+      </div>
+
+      <div class="field" id="ruleDeleteWrap" hidden>
+        <button class="btnTintRed btnFull" id="ruleDelete" type="button">Удалить правило</button>
+      </div>
+    </div>
+  </div>
+
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
   (function () {
@@ -5149,8 +5237,9 @@
       document.querySelectorAll('.page').forEach(function (p) {
         p.classList.toggle('active', p.id === 'page-' + name);
       });
+      var tabName = name === 'rules' ? 'more' : name;
       document.querySelectorAll('.tab').forEach(function (t) {
-        t.classList.toggle('active', t.getAttribute('data-page') === name);
+        t.classList.toggle('active', t.getAttribute('data-page') === tabName);
       });
       window.scrollTo(0, 0);
       currentPage = name;
@@ -5158,6 +5247,7 @@
       if (name === 'dashboard') loadDashboard();
       if (name === 'transactions') loadTransactions(false);
       if (name === 'budget') loadBudget();
+      if (name === 'rules' || name === 'more') loadRules();
     }
 
     // Перезагрузить то, что видно на экране, после изменения операции
@@ -6268,6 +6358,239 @@
     });
 
     // ---------------------------------------------------------------
+    // Правила категоризации
+    // ---------------------------------------------------------------
+    var RULE_GROUPS = [['EXPENSE', 'Расходы'], ['INCOME', 'Доходы'], ['RETURN', 'Возвраты']];
+    var rulesState = { rows: [], req: 0, editing: null, action: 'EXPENSE', busy: false, armed: false, armTimer: null };
+
+    function ruleError(err) {
+      if (err && (err.code === '23505' || /duplicate key/i.test(err.message || ''))) {
+        return 'Правило для такой заметки и типа операции уже есть.';
+      }
+      return err && err.message ? err.message : 'неизвестная ошибка';
+    }
+
+    async function loadRules() {
+      var reqId = ++rulesState.req;
+      qs('rulesError').textContent = '';
+      try {
+        if (!refs.loaded) await loadRefs();
+        if (reqId !== rulesState.req) return;
+
+        var res = await sb.from('rules').select('id,action,category_id,note').order('note');
+        if (reqId !== rulesState.req) return;
+        if (res.error) throw res.error;
+
+        rulesState.rows = res.data || [];
+        qs('rulesCount').textContent = rulesState.rows.length ? String(rulesState.rows.length) : '';
+        renderRules();
+      } catch (err) {
+        if (reqId !== rulesState.req) return;
+        console.error('[ACCOUNTING][RULES]', err);
+        qs('rulesError').textContent = 'Не удалось загрузить правила: ' + ruleError(err);
+      }
+    }
+
+    function renderRules() {
+      var box = qs('rulesList');
+      box.innerHTML = '';
+
+      if (!rulesState.rows.length) {
+        box.innerHTML = '<div class="saldoEmpty">Правил пока нет. Добавь первое кнопкой ＋ вверху.</div>';
+        return;
+      }
+
+      RULE_GROUPS.forEach(function (group) {
+        var items = rulesState.rows.filter(function (r) { return r.action === group[0]; });
+        if (!items.length) return;
+
+        var head = document.createElement('div');
+        head.className = 'rulesGroupHead';
+        head.textContent = group[1] + ' · ' + items.length;
+        box.appendChild(head);
+
+        items.forEach(function (rule) {
+          var row = document.createElement('button');
+          row.type = 'button';
+          row.className = 'ruleRow';
+
+          var main = document.createElement('div');
+          main.className = 'ruleMain';
+          var note = document.createElement('div');
+          note.className = 'ruleNote';
+          note.textContent = rule.note;
+          var cat = document.createElement('div');
+          cat.className = 'ruleCat';
+          var c = refs.catById[rule.category_id];
+          cat.textContent = '→ ' + (c ? c.name : 'категория удалена');
+          main.append(note, cat);
+
+          var chevron = document.createElement('span');
+          chevron.className = 'ruleChevron';
+          chevron.textContent = '›';
+
+          row.append(main, chevron);
+          row.addEventListener('click', function () { openRuleForm(rule); });
+          box.appendChild(row);
+        });
+      });
+    }
+
+    function fillRuleCategories(action, selectedId) {
+      var type = action === 'INCOME' ? 'INCOME' : 'EXPENSE';
+      var select = qs('ruleCategory');
+      select.innerHTML = '';
+      var ph = document.createElement('option');
+      ph.value = '';
+      ph.textContent = 'Выбери категорию';
+      select.appendChild(ph);
+      categoriesOfType(type).forEach(function (c) {
+        var opt = document.createElement('option');
+        opt.value = String(c.id);
+        opt.textContent = c.name;
+        select.appendChild(opt);
+      });
+      var want = selectedId ? String(selectedId) : '';
+      select.value = want;
+      if (select.value !== want) select.value = '';
+    }
+
+    function setRuleAction(action, selectedCat) {
+      rulesState.action = action;
+      qs('ruleSeg').querySelectorAll('button').forEach(function (b) {
+        b.classList.toggle('active', b.getAttribute('data-action') === action);
+      });
+      fillRuleCategories(action, selectedCat);
+    }
+
+    function disarmRuleDelete() {
+      rulesState.armed = false;
+      clearTimeout(rulesState.armTimer);
+      var btn = qs('ruleDelete');
+      btn.textContent = 'Удалить правило';
+      btn.classList.remove('dangerSolid');
+    }
+
+    async function openRuleForm(rule) {
+      try { if (!refs.loaded) await loadRefs(); }
+      catch (err) { qs('rulesError').textContent = 'Не удалось загрузить справочники: ' + ruleError(err); return; }
+
+      rulesState.editing = rule || null;
+      rulesState.busy = false;
+      disarmRuleDelete();
+
+      qs('ruleTitle').textContent = rule ? 'Изменить правило' : 'Новое правило';
+      setRuleAction(rule ? rule.action : 'EXPENSE', rule ? rule.category_id : null);
+      qs('ruleNote').value = rule ? rule.note : '';
+      qs('ruleDeleteWrap').hidden = !rule;
+      qs('ruleError').textContent = '';
+      qs('ruleSave').disabled = false;
+      qs('ruleSave').textContent = 'Сохранить';
+      qs('ruleOverlay').classList.add('open');
+    }
+
+    function closeRuleForm() {
+      qs('ruleOverlay').classList.remove('open');
+      rulesState.editing = null;
+      rulesState.busy = false;
+      disarmRuleDelete();
+    }
+
+    async function saveRule() {
+      if (rulesState.busy) return;
+
+      var note = qs('ruleNote').value.trim();
+      var categoryId = qs('ruleCategory').value ? Number(qs('ruleCategory').value) : null;
+      var action = rulesState.action;
+      var errorBox = qs('ruleError');
+      errorBox.textContent = '';
+
+      if (!note) { errorBox.textContent = 'Введи заметку операции.'; return; }
+      if (!categoryId) { errorBox.textContent = 'Выбери категорию.'; return; }
+      var chosen = refs.catById[categoryId];
+      if (chosen && /^Uncategorized/.test(chosen.name)) {
+        errorBox.textContent = 'Для правила выбери конкретную категорию.';
+        return;
+      }
+
+      rulesState.busy = true;
+      qs('ruleSave').disabled = true;
+      qs('ruleSave').textContent = 'Сохраняем…';
+
+      try {
+        var payload = { action: action, category_id: categoryId, note: note };
+        var res;
+        if (rulesState.editing) {
+          res = await sb.from('rules').update(payload).eq('id', rulesState.editing.id).select('id');
+        } else {
+          res = await sb.from('rules').insert(payload).select('id');
+        }
+        if (res.error) throw res.error;
+        if (!res.data || !res.data.length) throw new Error('Правило не найдено или нет доступа.');
+
+        closeRuleForm();
+        loadRules();
+      } catch (err) {
+        console.error('[ACCOUNTING][RULE_SAVE]', err);
+        errorBox.textContent = 'Не удалось сохранить: ' + ruleError(err);
+        rulesState.busy = false;
+        qs('ruleSave').disabled = false;
+        qs('ruleSave').textContent = 'Сохранить';
+      }
+    }
+
+    // Удаление: первое нажатие «взводит» кнопку, второе удаляет
+    async function deleteRule() {
+      var rule = rulesState.editing;
+      if (!rule || rulesState.busy) return;
+
+      var btn = qs('ruleDelete');
+      if (!rulesState.armed) {
+        rulesState.armed = true;
+        btn.textContent = 'Нажми ещё раз, чтобы удалить';
+        btn.classList.add('dangerSolid');
+        rulesState.armTimer = setTimeout(disarmRuleDelete, 4000);
+        return;
+      }
+
+      rulesState.busy = true;
+      btn.disabled = true;
+      try {
+        var res = await sb.from('rules').delete().eq('id', rule.id).select('id');
+        if (res.error) throw res.error;
+        if (!res.data || !res.data.length) throw new Error('Правило не найдено или нет доступа.');
+        closeRuleForm();
+        loadRules();
+      } catch (err) {
+        console.error('[ACCOUNTING][RULE_DELETE]', err);
+        disarmRuleDelete();
+        qs('ruleError').textContent = 'Не удалось удалить: ' + ruleError(err);
+        rulesState.busy = false;
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
+    qs('openRules').addEventListener('click', function () { setPage('rules'); });
+    qs('rulesBack').addEventListener('click', function () { setPage('more'); });
+    qs('rulesAdd').addEventListener('click', function () { openRuleForm(null); });
+    qs('ruleSave').addEventListener('click', saveRule);
+    qs('ruleCancel').addEventListener('click', closeRuleForm);
+    qs('ruleClose').addEventListener('click', closeRuleForm);
+    qs('ruleDelete').addEventListener('click', deleteRule);
+    qs('ruleSeg').querySelectorAll('button').forEach(function (b) {
+      b.addEventListener('click', function () {
+        setRuleAction(b.getAttribute('data-action'), qs('ruleCategory').value);
+      });
+    });
+    qs('ruleOverlay').addEventListener('click', function (event) {
+      if (event.target === qs('ruleOverlay')) closeRuleForm();
+    });
+    document.addEventListener('keydown', function (event) {
+      if (event.key === 'Escape' && qs('ruleOverlay').classList.contains('open')) closeRuleForm();
+    });
+
+    // ---------------------------------------------------------------
     // Вход / выход
     // ---------------------------------------------------------------
     qs('authForm').addEventListener('submit', async function (event) {
@@ -6309,6 +6632,7 @@
       tx.rows = [];
       tx.req++;
       bud.req++;
+      rulesState.req++;
       refs.loaded = false;
       setPage('dashboard');
       showAuth();
