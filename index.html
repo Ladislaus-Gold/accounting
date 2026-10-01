@@ -4645,7 +4645,20 @@
     .budMsgLine{margin-top:8px;text-align:center}
     #budOverlay{z-index:1500 !important}
     #ruleOverlay{z-index:1500 !important}
+    #ruleTransferFields[hidden]{display:none !important}
     #accOverlay{z-index:1700 !important}
+    .monoSteps{margin:8px 0 12px;padding-left:20px;line-height:1.5;font-size:14px;color:var(--muted)}
+    .monoSteps li{margin-bottom:4px}
+    .monoSteps a{color:var(--saldo-blue);font-weight:600;text-decoration:none}
+    .monoPick{display:flex;align-items:flex-start;gap:12px;padding:12px 0;border-bottom:1px solid rgba(0,0,0,.06);cursor:pointer}
+    .monoPick:last-child{border-bottom:0}
+    .monoPick input{width:20px;height:20px;margin:2px 0 0;accent-color:var(--saldo-blue);flex:0 0 auto}
+    .monoPickTitle{font-size:15px;font-weight:600;letter-spacing:-.01em}
+    .monoPickSub{margin-top:2px;font-size:13px;color:var(--muted)}
+    .monoLine{display:flex;gap:10px;padding:8px 0;font-size:14px;line-height:1.4}
+    .monoLine .mark{flex:0 0 auto;width:18px;font-weight:700}
+    .monoLine.ok .mark{color:#1E9E5A}
+    .monoLine.warn .mark{color:#FF9500}
     .saldoAccountsSectionHead{display:flex !important;align-items:flex-start;justify-content:space-between;gap:12px}
     .saldoAccountsSectionHead .saldoLinkBtn{flex:0 0 auto;white-space:nowrap;padding:2px 0 0}
     .impStat{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px solid rgba(0,0,0,.06);font-size:15px}
@@ -5048,6 +5061,16 @@
       <section class="page" id="page-more">
         <div class="budgetShell" style="display:grid;gap:14px;width:100%;">
           <section class="card" style="padding:4px 16px;">
+            <button class="moreRow" id="openMono" type="button">
+              <span>
+                <span class="moreRowTitle">Monobank</span>
+                <span class="muted moreRowSub">Привязка карты и автоматические операции</span>
+              </span>
+              <span class="moreRowEnd">›</span>
+            </button>
+          </section>
+
+          <section class="card" style="padding:4px 16px;">
             <button class="moreRow" id="openRules" type="button">
               <span>
                 <span class="moreRowTitle">Правила категоризации</span>
@@ -5124,6 +5147,82 @@
           </section>
 
           <div class="authError" id="impError" role="alert"></div>
+        </div>
+      </section>
+
+      <!-- Monobank -->
+      <section class="page" id="page-mono">
+        <div class="budgetShell" style="display:grid;gap:14px;width:100%;">
+
+          <section class="card" style="padding:14px 16px;">
+            <div style="display:grid;grid-template-columns:40px minmax(0,1fr) 40px;align-items:center;gap:8px;">
+              <button class="repNav" id="monoBack" type="button" aria-label="Назад">‹</button>
+              <div style="text-align:center;min-width:0;">
+                <div class="dashEyebrow">ИНТЕГРАЦИЯ</div>
+                <div style="margin-top:4px;font-size:18px;font-weight:700;">Monobank</div>
+              </div>
+              <span></span>
+            </div>
+            <div class="muted" id="monoIntro" style="margin-top:10px;text-align:center;">Проверяю подключение…</div>
+          </section>
+
+          <!-- Карта подключена -->
+          <section class="card" id="monoConnected" hidden>
+            <div class="cardHead">
+              <div>
+                <div class="cardTitle">Карта подключена</div>
+                <div class="muted" id="monoConnSub" style="margin-top:3px;">—</div>
+              </div>
+              <div class="saldoBudgetPercent" id="monoConnBadge">LIVE</div>
+            </div>
+            <div class="impStat"><span>Счёт в приложении</span><strong id="monoConnAccount">—</strong></div>
+            <div class="impStat"><span>Карта</span><strong id="monoConnCard">—</strong></div>
+            <div class="impStat"><span>Баланс</span><strong id="monoConnBalance">—</strong></div>
+            <div class="impStat"><span>Обновлено</span><strong id="monoConnUpdated">—</strong></div>
+            <div class="impStat"><span>Автоопрос банка</span><strong id="monoConnPolling">—</strong></div>
+            <div class="btnRow">
+              <button class="btnTint" id="monoSyncBtn" type="button">Обновить сейчас</button>
+              <button class="btnTintRed" id="monoDisconnect" type="button">Отключить</button>
+            </div>
+            <div class="muted" id="monoSyncMsg" style="text-align:center;margin-top:10px;"></div>
+          </section>
+
+          <!-- Шаг 1: токен -->
+          <section class="card" id="monoStepToken" hidden>
+            <div class="cardTitle">Подключить карту</div>
+            <ol class="monoSteps">
+              <li>Открой <a href="https://api.monobank.ua/" target="_blank" rel="noopener">api.monobank.ua</a> и войди через приложение Monobank.</li>
+              <li>Нажми «Получить токен» и скопируй его.</li>
+              <li>Вставь токен ниже. Он хранится только на сервере, приложение его больше не показывает.</li>
+            </ol>
+            <div class="field">
+              <input class="input" id="monoToken" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Токен Monobank">
+            </div>
+            <button class="btnPrimary btnFull" id="monoFind" type="button">Найти мои карты</button>
+          </section>
+
+          <!-- Шаг 2: выбор карты -->
+          <section class="card" id="monoStepPick" hidden>
+            <div class="cardTitle">Выбери карту</div>
+            <div class="muted" id="monoClient" style="margin-top:3px;"></div>
+            <div id="monoAccounts" style="margin:6px 0 12px;"></div>
+            <button class="btnPrimary btnFull" id="monoConnect" type="button">Подключить</button>
+            <div class="field" style="margin:8px 0 0;">
+              <button class="btnGhost btnFull" id="monoRetry" type="button">Другой токен</button>
+            </div>
+            <div class="muted" id="monoProgress" style="text-align:center;margin-top:10px;"></div>
+          </section>
+
+          <!-- Итог подключения -->
+          <section class="card" id="monoResult" hidden>
+            <div class="cardTitle">Готово</div>
+            <div id="monoResultBody" style="margin-top:6px;"></div>
+            <div class="field" style="margin:12px 0 0;">
+              <button class="btnPrimary btnFull" id="monoDone" type="button">Отлично</button>
+            </div>
+          </section>
+
+          <div class="authError" id="monoError" role="alert"></div>
         </div>
       </section>
 
@@ -5315,10 +5414,11 @@
         <div class="xbtn" id="ruleClose" role="button" tabindex="0" aria-label="Закрыть">×</div>
       </div>
 
-      <div class="seg" id="ruleSeg" style="grid-template-columns:repeat(3,1fr)">
+      <div class="seg" id="ruleSeg" style="grid-template-columns:repeat(4,1fr)">
         <button type="button" data-action="EXPENSE" class="active">Расход</button>
         <button type="button" data-action="INCOME">Доход</button>
         <button type="button" data-action="RETURN">Возврат</button>
+        <button type="button" data-action="TRANSFER">Перевод</button>
       </div>
 
       <div class="field">
@@ -5326,9 +5426,20 @@
         <input class="input" id="ruleNote" type="text" maxlength="200" autocomplete="off" placeholder="Например: Сильпо">
       </div>
 
-      <div class="field">
+      <div class="field" id="ruleCategoryField">
         <div class="label">Категория</div>
         <select class="select" id="ruleCategory"></select>
+      </div>
+
+      <div class="row2" id="ruleTransferFields" hidden>
+        <div class="field">
+          <div class="label">Со счёта</div>
+          <select class="select" id="ruleFrom"></select>
+        </div>
+        <div class="field">
+          <div class="label">На счёт</div>
+          <select class="select" id="ruleTo"></select>
+        </div>
       </div>
 
       <div class="authError" id="ruleError" role="alert"></div>
@@ -5485,7 +5596,7 @@
       document.querySelectorAll('.page').forEach(function (p) {
         p.classList.toggle('active', p.id === 'page-' + name);
       });
-      var tabName = (name === 'rules' || name === 'import') ? 'more' : name;
+      var tabName = (name === 'rules' || name === 'import' || name === 'mono') ? 'more' : name;
       document.querySelectorAll('.tab').forEach(function (t) {
         t.classList.toggle('active', t.getAttribute('data-page') === tabName);
       });
@@ -5497,6 +5608,7 @@
       if (name === 'budget') loadBudget();
       if (name === 'rules' || name === 'more') loadRules();
       if (name === 'accounts') loadAccounts();
+      if (name === 'mono') loadMonoStatus();
     }
 
     // Перезагрузить то, что видно на экране, после изменения операции
@@ -5512,6 +5624,32 @@
     // ---------------------------------------------------------------
     var lastLoadAt = 0;
     var loading = false;
+
+    // Баланс счетов: с полями живого баланса Monobank; если SQL ещё не обновлён, берём базовые поля
+    async function fetchBalances() {
+      var ext = await sb.from('account_balances')
+        .select('id,name,currency,is_monobank,balance,live,live_at,available,credit_limit');
+      if (!ext.error) return ext;
+      return await sb.from('account_balances').select('id,name,currency,is_monobank,balance');
+    }
+
+    // APP — по операциям, LIVE — из банка, CACHE — банковское значение давно не обновлялось
+    function monoStatus(a) {
+      if (!a || !a.is_monobank || !a.live) return 'APP';
+      var at = a.live_at ? new Date(a.live_at).getTime() : 0;
+      return at && Date.now() - at <= 48 * 3600 * 1000 ? 'LIVE' : 'CACHE';
+    }
+
+    function monoCaption(a) {
+      if (!a.live) return 'Баланс по операциям';
+      var bal = Number(a.balance || 0), lim = Number(a.credit_limit || 0);
+      if (lim > 0) {
+        if (bal < 0) return 'Использовано кредитных средств';
+        if (Math.abs(bal) < 0.000001) return 'Кредитный лимит не использован';
+        return 'Собственные средства';
+      }
+      return 'Доступный банковский баланс';
+    }
 
     function accountIcon(name) {
       var m = String(name || '').match(/(\p{Extended_Pictographic}\uFE0F?)\s*$/u);
@@ -5552,7 +5690,7 @@
         icon.textContent = accountIcon(a.name);
         var source = document.createElement('span');
         source.className = 'saldoAccountSource';
-        source.textContent = 'APP';
+        source.textContent = monoStatus(a);
         top.append(icon, source);
 
         var name = document.createElement('div');
@@ -5630,7 +5768,7 @@
 
         var results = await Promise.all([
           sb.rpc('month_summary', { p_month: firstOfMonth }),
-          sb.from('account_balances').select('id,name,currency,is_monobank,balance')
+          fetchBalances()
         ]);
 
         var summaryRes = results[0];
@@ -5645,7 +5783,9 @@
           .reduce(function (sum, a) { return sum + Number(a.balance || 0); }, 0);
 
         qs('dashTotalBalance').textContent = money(total);
-        qs('dashTotalCaption').textContent = accounts.length + ' счетов UAH · баланс по операциям';
+        var monoRow = accounts.filter(function (a) { return a.is_monobank; })[0];
+        qs('dashTotalCaption').textContent = accounts.length + ' счетов UAH · ' +
+          (monoRow && monoRow.live ? 'Monobank ' + monoStatus(monoRow) : 'баланс по операциям');
 
         renderAccounts(accounts);
         renderSummary(summaryRes.data || {}, now);
@@ -6636,10 +6776,13 @@
     // ---------------------------------------------------------------
     // Правила категоризации
     // ---------------------------------------------------------------
-    var RULE_GROUPS = [['EXPENSE', 'Расходы'], ['INCOME', 'Доходы'], ['RETURN', 'Возвраты']];
+    var RULE_GROUPS = [['EXPENSE', 'Расходы'], ['INCOME', 'Доходы'], ['RETURN', 'Возвраты'], ['TRANSFER', 'Переводы']];
     var rulesState = { rows: [], req: 0, editing: null, action: 'EXPENSE', busy: false, armed: false, armTimer: null };
 
     function ruleError(err) {
+      if (err && /from_account_id|to_account_id|rules_shape_check|rules_action_check/.test(err.message || '')) {
+        return 'Таблица правил ещё не обновлена. Запусти файл rules_step1.sql в Supabase (SQL Editor).';
+      }
       if (err && (err.code === '23505' || /duplicate key/i.test(err.message || ''))) {
         return 'Правило для такой заметки и типа операции уже есть.';
       }
@@ -6653,7 +6796,7 @@
         if (!refs.loaded) await loadRefs();
         if (reqId !== rulesState.req) return;
 
-        var res = await sb.from('rules').select('id,action,category_id,note').order('note');
+        var res = await sb.from('rules').select('id,action,category_id,from_account_id,to_account_id,note').order('note');
         if (reqId !== rulesState.req) return;
         if (res.error) throw res.error;
 
@@ -6697,8 +6840,12 @@
           note.textContent = rule.note;
           var cat = document.createElement('div');
           cat.className = 'ruleCat';
-          var c = refs.catById[rule.category_id];
-          cat.textContent = '→ ' + (c ? c.name : 'категория удалена');
+          if (rule.action === 'TRANSFER') {
+            cat.textContent = (accName(rule.from_account_id) || '?') + ' → ' + (accName(rule.to_account_id) || '?');
+          } else {
+            var c = refs.catById[rule.category_id];
+            cat.textContent = '→ ' + (c ? c.name : 'категория удалена');
+          }
           main.append(note, cat);
 
           var chevron = document.createElement('span');
@@ -6731,12 +6878,23 @@
       if (select.value !== want) select.value = '';
     }
 
-    function setRuleAction(action, selectedCat) {
+    function setRuleAction(action, selectedCat, fromId, toId) {
       rulesState.action = action;
       qs('ruleSeg').querySelectorAll('button').forEach(function (b) {
         b.classList.toggle('active', b.getAttribute('data-action') === action);
       });
-      fillRuleCategories(action, selectedCat);
+      var isTransfer = action === 'TRANSFER';
+      qs('ruleCategoryField').hidden = isTransfer;
+      qs('ruleTransferFields').hidden = !isTransfer;
+      if (isTransfer) {
+        fillAccountSelect(qs('ruleFrom'), fromId, true);
+        fillAccountSelect(qs('ruleTo'), toId, true);
+      } else {
+        fillRuleCategories(action, selectedCat);
+        // не тянем счета от прошлого правила в следующее
+        qs('ruleFrom').value = '';
+        qs('ruleTo').value = '';
+      }
     }
 
     function disarmRuleDelete() {
@@ -6756,7 +6914,8 @@
       disarmRuleDelete();
 
       qs('ruleTitle').textContent = rule ? 'Изменить правило' : 'Новое правило';
-      setRuleAction(rule ? rule.action : 'EXPENSE', rule ? rule.category_id : null);
+      setRuleAction(rule ? rule.action : 'EXPENSE', rule ? rule.category_id : null,
+                    rule ? rule.from_account_id : null, rule ? rule.to_account_id : null);
       qs('ruleNote').value = rule ? rule.note : '';
       qs('ruleDeleteWrap').hidden = !rule;
       qs('ruleError').textContent = '';
@@ -6781,12 +6940,21 @@
       var errorBox = qs('ruleError');
       errorBox.textContent = '';
 
+      var isTransfer = action === 'TRANSFER';
+      var fromId = qs('ruleFrom').value ? Number(qs('ruleFrom').value) : null;
+      var toId = qs('ruleTo').value ? Number(qs('ruleTo').value) : null;
+
       if (!note) { errorBox.textContent = 'Введи заметку операции.'; return; }
-      if (!categoryId) { errorBox.textContent = 'Выбери категорию.'; return; }
-      var chosen = refs.catById[categoryId];
-      if (chosen && /^Uncategorized/.test(chosen.name)) {
-        errorBox.textContent = 'Для правила выбери конкретную категорию.';
-        return;
+      if (isTransfer) {
+        if (!fromId || !toId) { errorBox.textContent = 'Выбери оба счёта для перевода.'; return; }
+        if (fromId === toId) { errorBox.textContent = 'Счета перевода должны отличаться.'; return; }
+      } else {
+        if (!categoryId) { errorBox.textContent = 'Выбери категорию.'; return; }
+        var chosen = refs.catById[categoryId];
+        if (chosen && /^Uncategorized/.test(chosen.name)) {
+          errorBox.textContent = 'Для правила выбери конкретную категорию.';
+          return;
+        }
       }
 
       rulesState.busy = true;
@@ -6794,7 +6962,15 @@
       qs('ruleSave').textContent = 'Сохраняем…';
 
       try {
-        var payload = { action: action, category_id: categoryId, note: note };
+        var payload = { action: action, category_id: isTransfer ? null : categoryId, note: note };
+        if (isTransfer) {
+          payload.from_account_id = fromId;
+          payload.to_account_id = toId;
+        } else if (rulesState.editing && rulesState.editing.action === 'TRANSFER') {
+          // правило перевели в обычное: старые счета обнуляем
+          payload.from_account_id = null;
+          payload.to_account_id = null;
+        }
         var res;
         if (rulesState.editing) {
           res = await sb.from('rules').update(payload).eq('id', rulesState.editing.id).select('id');
@@ -6856,7 +7032,7 @@
     qs('ruleDelete').addEventListener('click', deleteRule);
     qs('ruleSeg').querySelectorAll('button').forEach(function (b) {
       b.addEventListener('click', function () {
-        setRuleAction(b.getAttribute('data-action'), qs('ruleCategory').value);
+        setRuleAction(b.getAttribute('data-action'), qs('ruleCategory').value, qs('ruleFrom').value, qs('ruleTo').value);
       });
     });
     qs('ruleOverlay').addEventListener('click', function (event) {
@@ -6904,7 +7080,7 @@
       var reqId = ++acc.req;
       qs('accError').textContent = '';
       try {
-        var res = await sb.from('account_balances').select('id,name,currency,is_monobank,balance');
+        var res = await fetchBalances();
         if (reqId !== acc.req) return;
         if (res.error) throw res.error;
 
@@ -6937,22 +7113,33 @@
               '<div class="saldoAccountsMonoProvider">Банковский счёт</div>' +
             '</div>' +
           '</div>' +
-          '<span class="saldoAccountsMonoStatus">APP</span>' +
+          '<span class="saldoAccountsMonoStatus"></span>' +
         '</div>' +
         '<div class="saldoAccountsMonoBalance' + (neg ? ' negative' : '') + '"></div>' +
-        '<div class="saldoAccountsMonoCaption">Баланс по операциям</div>' +
+        '<div class="saldoAccountsMonoCaption"></div>' +
         '<div class="saldoAccountsMonoStats">' +
-          '<div class="saldoAccountsMonoStat"><span>Доступно</span><strong>—</strong></div>' +
-          '<div class="saldoAccountsMonoStat"><span>Лимит</span><strong>—</strong></div>' +
+          '<div class="saldoAccountsMonoStat"><span>Доступно</span><strong class="monoAvail">—</strong></div>' +
+          '<div class="saldoAccountsMonoStat"><span>Лимит</span><strong class="monoLimit">—</strong></div>' +
         '</div>' +
         '<div class="saldoAccountsMonoFooter">' +
-          '<span>Источник: Transactions 🔄</span>' +
+          '<span class="monoSource"></span>' +
           '<span class="saldoAccountsChevron">›</span>' +
         '</div>';
 
       // Текст кладём через textContent, чтобы название счёта не попало в разметку
       card.querySelector('.saldoAccountsMonoName').textContent = a.name;
       card.querySelector('.saldoAccountsMonoBalance').textContent = moneyCur(a.balance, a.currency);
+
+      var status = monoStatus(a);
+      var pill = card.querySelector('.saldoAccountsMonoStatus');
+      pill.textContent = status;
+      pill.classList.toggle('stale', status === 'CACHE');
+      card.querySelector('.saldoAccountsMonoCaption').textContent = monoCaption(a);
+      if (a.live) {
+        card.querySelector('.monoAvail').textContent = moneyCur(a.available, a.currency);
+        card.querySelector('.monoLimit').textContent = moneyCur(a.credit_limit, a.currency);
+      }
+      card.querySelector('.monoSource').textContent = a.live ? 'Источник: Monobank API' : 'Источник: Transactions 🔄';
       host.appendChild(card);
     }
 
@@ -6962,7 +7149,9 @@
 
       qs('accountsCount').textContent = String(acc.list.length);
       qs('accountsTotalBalance').textContent = moneyCur(total, 'UAH');
-      qs('accountsTotalMeta').textContent = uah.length + ' счетов UAH · баланс по операциям';
+      var monoA = acc.list.filter(function (a) { return a.is_monobank; })[0];
+      qs('accountsTotalMeta').textContent = uah.length + ' счетов UAH · ' +
+        (monoA && monoA.live ? 'Monobank ' + monoStatus(monoA) : 'баланс по операциям');
 
       renderMonoCard_(acc.list.filter(function (a) { return a.is_monobank; })[0] || null);
 
@@ -7028,7 +7217,8 @@
       var bal = qs('accTxHeroBalance');
       bal.textContent = moneyCur(a.balance, a.currency);
       bal.classList.toggle('negative', Number(a.balance || 0) < 0);
-      qs('accTxHeroSource').textContent = 'APP';
+      qs('accTxHeroSource').textContent = monoStatus(a);
+      qs('accTxHeroSource').classList.toggle('stale', monoStatus(a) === 'CACHE');
       qs('accTxEdit').hidden = Boolean(a.is_monobank);
       qs('accTxCount').textContent = total === null ? '…' : String(total);
       qs('accTxShown').textContent = shown === null ? '…' : String(shown);
@@ -7914,6 +8104,302 @@
     qs('dashAllTx').addEventListener('click', function () { setPage('transactions'); });
 
     // ---------------------------------------------------------------
+    // Monobank: подключение карты прямо из приложения
+    // ---------------------------------------------------------------
+    var mono = { token: '', accounts: [], clientName: '', busy: false, armed: false, armTimer: null, req: 0 };
+
+    var CARD_TYPE = { black: 'Чёрная', white: 'Белая', platinum: 'Platinum', iron: 'Iron', fop: 'ФОП', yellow: 'Жёлтая', eAid: 'єПідтримка' };
+
+    // Вызов серверной функции. Ошибки превращаем в понятный текст
+    async function monoCall(body) {
+      var res;
+      try {
+        res = await sb.functions.invoke('mono', { body: body });
+      } catch (err) {
+        throw new Error('Не удалось связаться с функцией mono. Проверь интернет и что функция создана в Supabase.');
+      }
+      if (res.error) {
+        var detail = null;
+        var status = res.error.context && res.error.context.status;
+        try { if (res.error.context && res.error.context.json) detail = await res.error.context.json(); } catch (e) { /* нет тела */ }
+        if (detail && detail.message) throw new Error(detail.message);
+        if (status === 404) throw new Error('Функция mono не найдена. Создай её: Supabase → Edge Functions → Deploy a new function, имя ровно mono.');
+        if (status === 401 || status === 403) throw new Error('Функция отказала в доступе. Войди в приложение заново.');
+        throw new Error('Не удалось связаться с функцией mono. Проверь, что она создана в Supabase и называется ровно mono.');
+      }
+      if (res.data && res.data.ok === false) throw new Error(res.data.message || 'Ошибка функции mono.');
+      return res.data;
+    }
+
+    function monoShow(which) {
+      ['monoConnected', 'monoStepToken', 'monoStepPick', 'monoResult'].forEach(function (id) {
+        qs(id).hidden = id !== which;
+      });
+    }
+
+    function monoMsg(text) { qs('monoError').textContent = text || ''; }
+
+    function monoWhen(iso) {
+      var d = new Date(iso);
+      if (isNaN(d.getTime())) return '—';
+      return d.toLocaleString('ru-RU', { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' });
+    }
+
+    var MONO_SOURCE = { webhook: 'от банка', poll: 'опрос', 'client-info': 'запрос баланса' };
+
+    async function loadMonoStatus() {
+      var reqId = ++mono.req;
+      monoMsg('');
+      qs('monoIntro').textContent = 'Проверяю подключение…';
+      ['monoConnected', 'monoStepToken', 'monoStepPick', 'monoResult'].forEach(function (id) { qs(id).hidden = true; });
+
+      try {
+        var st = await monoCall({ action: 'status' });
+        if (reqId !== mono.req) return;
+
+        if (st.connected) {
+          renderMonoConnected(st);
+        } else {
+          qs('monoIntro').textContent = 'Приложение само получает операции из банка, раскладывает их по твоим правилам и держит баланс в актуальном состоянии.';
+          monoShow('monoStepToken');
+        }
+      } catch (err) {
+        if (reqId !== mono.req) return;
+        console.error('[ACCOUNTING][MONO_STATUS]', err);
+        qs('monoIntro').textContent = 'Не удалось проверить подключение.';
+        monoMsg(err.message);
+      }
+    }
+
+    function renderMonoConnected(st) {
+      qs('monoIntro').textContent = 'Операции приходят из банка автоматически.';
+      var state = st.state || null;
+      var fresh = state && state.updated_at && Date.now() - new Date(state.updated_at).getTime() <= 48 * 3600 * 1000;
+
+      qs('monoConnSub').textContent = st.clientName ? st.clientName : (st.connectedAt ? 'с ' + monoWhen(st.connectedAt) : '');
+      qs('monoConnBadge').textContent = fresh ? 'LIVE' : 'CACHE';
+      qs('monoConnAccount').textContent = st.account ? st.account.name : '—';
+      qs('monoConnCard').textContent = st.card ? st.card.replace(/\*+/g, '•••• ') : '—';
+
+      if (state && state.balance_kop !== null && state.balance_kop !== undefined) {
+        var own = (Number(state.balance_kop) - Number(state.credit_limit_kop || 0)) / 100;
+        qs('monoConnBalance').textContent = moneyCur(own, st.account ? st.account.currency : 'UAH');
+        qs('monoConnUpdated').textContent = monoWhen(state.updated_at) + (MONO_SOURCE[state.source] ? ' · ' + MONO_SOURCE[state.source] : '');
+      } else {
+        qs('monoConnBalance').textContent = '—';
+        qs('monoConnUpdated').textContent = 'ещё не обновлялся';
+      }
+
+      qs('monoConnPolling').textContent =
+        st.polling === true ? 'каждые 2 минуты' : (st.polling === false ? 'выключен' : 'недоступен');
+
+      qs('monoSyncMsg').textContent = st.polling === true ? '' :
+        'Опрос по расписанию не работает: включи расширения pg_cron и pg_net (Supabase → Database → Extensions) и нажми «Обновить сейчас». Вебхук от банка при этом работает.';
+      disarmMonoDisconnect();
+      monoShow('monoConnected');
+    }
+
+    // ----- шаг 1: токен → список карт
+    async function monoFindCards() {
+      if (mono.busy) return;
+      var token = qs('monoToken').value.trim();
+      monoMsg('');
+      if (!token) { monoMsg('Вставь токен Monobank.'); return; }
+
+      mono.busy = true;
+      qs('monoFind').disabled = true;
+      qs('monoFind').textContent = 'Ищу карты…';
+      try {
+        var data = await monoCall({ action: 'accounts', token: token });
+        mono.token = token;
+        mono.accounts = data.accounts || [];
+        mono.clientName = data.clientName || '';
+        renderMonoAccounts();
+        monoShow('monoStepPick');
+      } catch (err) {
+        console.error('[ACCOUNTING][MONO_ACCOUNTS]', err);
+        monoMsg(err.message);
+      } finally {
+        mono.busy = false;
+        qs('monoFind').disabled = false;
+        qs('monoFind').textContent = 'Найти мои карты';
+      }
+    }
+
+    function renderMonoAccounts() {
+      qs('monoClient').textContent = mono.clientName ? mono.clientName : '';
+      qs('monoProgress').textContent = '';
+      var box = qs('monoAccounts');
+      box.innerHTML = '';
+
+      var def = mono.accounts.filter(function (a) { return a.currency === 'UAH' && (a.type === 'black' || a.type === 'white'); })[0] ||
+                mono.accounts.filter(function (a) { return a.currency === 'UAH'; })[0] || mono.accounts[0];
+
+      mono.accounts.forEach(function (a) {
+        var label = document.createElement('label');
+        label.className = 'monoPick';
+
+        var input = document.createElement('input');
+        input.type = 'radio';
+        input.name = 'monoAcc';
+        input.value = a.id;
+        input.checked = a === def;
+
+        var text = document.createElement('div');
+        var title = document.createElement('div');
+        title.className = 'monoPickTitle';
+        var pan = (a.maskedPan && a.maskedPan[0]) ? a.maskedPan[0].replace(/\*+/g, '•••• ') : 'без номера карты';
+        title.textContent = pan;
+        var sub = document.createElement('div');
+        sub.className = 'monoPickSub';
+        var own = (Number(a.balance || 0) - Number(a.creditLimit || 0)) / 100;
+        var parts = [CARD_TYPE[a.type] || a.type, a.currency, moneyCur(own, a.currency)];
+        if (Number(a.creditLimit) > 0) parts.push('лимит ' + moneyCur(Number(a.creditLimit) / 100, a.currency));
+        sub.textContent = parts.join(' · ');
+        text.append(title, sub);
+
+        label.append(input, text);
+        box.appendChild(label);
+      });
+    }
+
+    // ----- шаг 2: подключить выбранную карту
+    async function monoConnectCard() {
+      if (mono.busy) return;
+      var chosenId = (document.querySelector('input[name="monoAcc"]:checked') || {}).value;
+      var chosen = mono.accounts.filter(function (a) { return a.id === chosenId; })[0];
+      monoMsg('');
+      if (!chosen) { monoMsg('Выбери карту.'); return; }
+
+      mono.busy = true;
+      qs('monoConnect').disabled = true;
+      qs('monoRetry').disabled = true;
+      qs('monoConnect').textContent = 'Подключаю…';
+      qs('monoProgress').textContent = 'Привязываю карту, включаю автообновление и загружаю операции за 31 день. Это может занять до минуты.';
+
+      try {
+        var data = await monoCall({ action: 'connect', token: mono.token, clientName: mono.clientName, account: chosen });
+        renderMonoResult(data);
+        mono.token = '';
+        qs('monoToken').value = '';
+        lastLoadAt = 0;
+        monoShow('monoResult');
+      } catch (err) {
+        console.error('[ACCOUNTING][MONO_CONNECT]', err);
+        monoMsg(err.message);
+        qs('monoProgress').textContent = '';
+      } finally {
+        mono.busy = false;
+        qs('monoConnect').disabled = false;
+        qs('monoRetry').disabled = false;
+        qs('monoConnect').textContent = 'Подключить';
+      }
+    }
+
+    function monoLine(kind, text) {
+      var row = document.createElement('div');
+      row.className = 'monoLine ' + kind;
+      var mark = document.createElement('span');
+      mark.className = 'mark';
+      mark.textContent = kind === 'ok' ? '✓' : '!';
+      var t = document.createElement('div');
+      t.textContent = text;
+      row.append(mark, t);
+      return row;
+    }
+
+    function renderMonoResult(d) {
+      var box = qs('monoResultBody');
+      box.innerHTML = '';
+      var card = d.account && d.account.card ? d.account.card.replace(/\*+/g, '•••• ') : '';
+      box.appendChild(monoLine('ok', 'Карта ' + card + ' привязана к счёту «' + (d.account ? d.account.name : 'Monobank') + '».'));
+      box.appendChild(monoLine('ok', 'Банк будет присылать новые операции сразу после покупки.'));
+
+      if (d.polling) box.appendChild(monoLine('ok', 'Автоопрос каждые 2 минуты включён: если банк пропустит операцию, она всё равно появится.'));
+      else box.appendChild(monoLine('warn', 'Автоопрос по расписанию не включился (' + (d.pollingNote || 'нужны pg_cron и pg_net') + '). Включи расширения в Supabase → Database → Extensions, потом нажми «Обновить сейчас».'));
+
+      if (d.imported) {
+        box.appendChild(monoLine('ok', 'Загружено операций за 31 день: ' + d.imported.created +
+          (d.imported.duplicates ? ' (уже были: ' + d.imported.duplicates + ')' : '') +
+          '. Категории расставлены по твоим правилам.'));
+        if (d.imported.errors) box.appendChild(monoLine('warn', 'Не удалось разобрать операций: ' + d.imported.errors + '.'));
+      } else {
+        box.appendChild(monoLine('warn', 'Загрузку за 31 день банк отложил (лимит запросов). Нажми «Обновить сейчас» через минуту.'));
+      }
+      box.appendChild(monoLine('ok', 'Баланс карты: ' + moneyCur(d.balance - d.creditLimit, d.account ? d.account.currency : 'UAH') + '.'));
+    }
+
+    // ----- подключено: обновить сейчас / отключить
+    async function monoSyncNow() {
+      if (mono.busy) return;
+      mono.busy = true;
+      monoMsg('');
+      qs('monoSyncMsg').textContent = '';
+      qs('monoSyncBtn').disabled = true;
+      qs('monoSyncBtn').textContent = 'Обновляю…';
+      try {
+        var d = await monoCall({ action: 'sync' });
+        lastLoadAt = 0;
+        await loadMonoStatus();
+        qs('monoSyncMsg').textContent = 'Готово: новых операций ' + d.created + (d.duplicates ? ', уже были ' + d.duplicates : '') + '.';
+      } catch (err) {
+        console.error('[ACCOUNTING][MONO_SYNC]', err);
+        monoMsg(err.message);
+      } finally {
+        mono.busy = false;
+        qs('monoSyncBtn').disabled = false;
+        qs('monoSyncBtn').textContent = 'Обновить сейчас';
+      }
+    }
+
+    function disarmMonoDisconnect() {
+      mono.armed = false;
+      clearTimeout(mono.armTimer);
+      qs('monoDisconnect').textContent = 'Отключить';
+      qs('monoDisconnect').classList.remove('dangerSolid');
+    }
+
+    async function monoDisconnectCard() {
+      if (mono.busy) return;
+      if (!mono.armed) {
+        mono.armed = true;
+        qs('monoDisconnect').textContent = 'Нажми ещё раз';
+        qs('monoDisconnect').classList.add('dangerSolid');
+        mono.armTimer = setTimeout(disarmMonoDisconnect, 4000);
+        return;
+      }
+      mono.busy = true;
+      qs('monoDisconnect').disabled = true;
+      monoMsg('');
+      try {
+        await monoCall({ action: 'disconnect' });
+        lastLoadAt = 0;
+        mono.busy = false;
+        await loadMonoStatus();
+        qs('monoIntro').textContent = 'Monobank отключён. Все операции остались в приложении.';
+      } catch (err) {
+        console.error('[ACCOUNTING][MONO_DISCONNECT]', err);
+        disarmMonoDisconnect();
+        monoMsg(err.message);
+      } finally {
+        mono.busy = false;
+        qs('monoDisconnect').disabled = false;
+      }
+    }
+
+    qs('openMono').addEventListener('click', function () { setPage('mono'); });
+    qs('monoBack').addEventListener('click', function () { setPage('more'); });
+    qs('monoFind').addEventListener('click', monoFindCards);
+    qs('monoToken').addEventListener('keydown', function (e) { if (e.key === 'Enter') monoFindCards(); });
+    qs('monoConnect').addEventListener('click', monoConnectCard);
+    qs('monoRetry').addEventListener('click', function () {
+      mono.token = ''; qs('monoToken').value = ''; monoMsg(''); monoShow('monoStepToken');
+    });
+    qs('monoDone').addEventListener('click', function () { loadMonoStatus(); });
+    qs('monoSyncBtn').addEventListener('click', monoSyncNow);
+    qs('monoDisconnect').addEventListener('click', monoDisconnectCard);
+
+    // ---------------------------------------------------------------
     // Вход / выход
     // ---------------------------------------------------------------
     qs('authForm').addEventListener('submit', async function (event) {
@@ -7959,6 +8445,7 @@
       acc.req++; acc.histReq++; acc.current = null; acc.rows = [];
       qs('accTxOverlay').classList.remove('open'); qs('accTxOverlay').style.display = 'none';
       dash.req++; dash.donutReq++; dash.rows = [];
+      mono.req++; mono.token = ''; qs('monoToken').value = '';
       refs.loaded = false;
       setPage('dashboard');
       showAuth();
