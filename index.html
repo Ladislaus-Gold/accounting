@@ -4645,6 +4645,28 @@
     .budMsgLine{margin-top:8px;text-align:center}
     #budOverlay{z-index:1500 !important}
     #ruleOverlay{z-index:1500 !important}
+    #accOverlay{z-index:1500 !important}
+    .impStat{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px solid rgba(0,0,0,.06);font-size:15px}
+    .impStat:last-child{border-bottom:0}
+    .impStat strong{font-weight:600}
+    .impMapRow{padding:10px 0;border-bottom:1px solid rgba(0,0,0,.06)}
+    .impMapRow:last-child{border-bottom:0}
+    .impMapName{font-size:15px;font-weight:600;margin-bottom:6px;overflow-wrap:anywhere}
+    .impMapName span{font-weight:400;color:var(--muted);font-size:13px}
+    .impIssue{padding:6px 0;font-size:13px;color:var(--muted);overflow-wrap:anywhere}
+    .impGroupHead{margin:12px 0 0;font-size:12px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
+    .accRow{display:flex;align-items:center;gap:12px;width:100%;padding:12px 0;background:none;border:0;border-bottom:1px solid rgba(0,0,0,.06);text-align:left;color:inherit;cursor:pointer}
+    .accRow:last-child{border-bottom:0}
+    .accRow:active{opacity:.6}
+    .accIcon{width:38px;height:38px;border-radius:12px;background:var(--saldo-blue-soft);display:grid;place-items:center;font-size:19px;flex:0 0 auto}
+    .accRow.mono .accIcon{background:#17181C}
+    .accMain{flex:1 1 auto;min-width:0}
+    .accName{font-size:15px;font-weight:600;letter-spacing:-.01em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .accSub{margin-top:2px;font-size:12px;color:var(--muted)}
+    .accBal{font-size:15px;font-weight:600;letter-spacing:-.01em;white-space:nowrap}
+    .accBal.neg{color:var(--red)}
+    .accChevron{color:rgba(60,60,67,.3);font-size:18px;flex:0 0 auto}
+    #accEdit[hidden]{display:none !important}
     .dangerSolid{color:#fff !important}
     .moreRow{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;padding:14px 0;background:none;border:0;text-align:left;color:inherit;cursor:pointer}
     .moreRow:active{opacity:.6}
@@ -4938,10 +4960,51 @@
         </div>
       </section>
 
+      <!-- Счета -->
       <section class="page" id="page-accounts">
-        <div class="card stubCard">
-          <h2 class="h1">Счета</h2>
-          <p class="p">Подробный список счетов появится на следующем этапе.</p>
+        <div class="budgetShell" style="display:grid;gap:14px;width:100%;">
+          <section class="card" style="padding:14px 16px;">
+            <div style="display:grid;grid-template-columns:40px minmax(0,1fr) 40px;align-items:center;gap:8px;">
+              <span></span>
+              <div style="text-align:center;min-width:0;">
+                <div class="dashEyebrow">ВСЕ СЧЕТА</div>
+                <div id="accTotal" style="margin-top:4px;font-size:22px;font-weight:700;letter-spacing:-.02em;">—</div>
+              </div>
+              <button class="repNav" id="accAdd" type="button" aria-label="Добавить счёт">＋</button>
+            </div>
+            <div class="muted" id="accTotalCaption" style="margin-top:6px;text-align:center;">—</div>
+          </section>
+
+          <section class="card" style="padding-top:6px;padding-bottom:6px;">
+            <div id="accList"><div class="saldoEmpty">Загрузка…</div></div>
+          </section>
+
+          <div class="authError" id="accError" role="alert"></div>
+        </div>
+      </section>
+
+      <!-- Один счёт -->
+      <section class="page" id="page-account">
+        <div class="budgetShell" style="display:grid;gap:14px;width:100%;">
+          <section class="card" style="padding:14px 16px;">
+            <div style="display:grid;grid-template-columns:40px minmax(0,1fr) 40px;align-items:center;gap:8px;">
+              <button class="repNav" id="accBack" type="button" aria-label="Назад">‹</button>
+              <div style="text-align:center;min-width:0;">
+                <div class="dashEyebrow" id="accDetailEyebrow">СЧЁТ</div>
+                <div id="accDetailName" style="margin-top:4px;font-size:18px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">—</div>
+              </div>
+              <button class="repNav" id="accEdit" type="button" aria-label="Изменить счёт">✎</button>
+            </div>
+            <div id="accDetailBalance" style="margin-top:12px;text-align:center;font-size:28px;font-weight:700;letter-spacing:-.02em;">—</div>
+            <div class="muted" id="accDetailCaption" style="margin-top:4px;text-align:center;">—</div>
+          </section>
+
+          <section class="saldoSection saldoTransactionsSection">
+            <div id="accTxList" class="txList saldoTxList"></div>
+            <div id="accTxEmpty" class="saldoEmpty" hidden>По этому счёту операций пока нет</div>
+          </section>
+
+          <div class="authError" id="accDetailError" role="alert"></div>
         </div>
       </section>
 
@@ -4957,11 +5020,73 @@
             </button>
           </section>
 
+          <section class="card" style="padding:4px 16px;">
+            <button class="moreRow" id="openImport" type="button">
+              <span>
+                <span class="moreRowTitle">Импорт из CSV</span>
+                <span class="muted moreRowSub">Перенос операций из листа Transactions 🔄</span>
+              </span>
+              <span class="moreRowEnd">›</span>
+            </button>
+          </section>
+
           <section class="card">
             <div class="cardTitle">Аккаунт</div>
             <p class="p" id="moreUser" style="margin:6px 0 14px">—</p>
             <button class="btnTintRed btnFull" id="logoutBtn" type="button">Выйти</button>
           </section>
+        </div>
+      </section>
+
+      <!-- Импорт из CSV -->
+      <section class="page" id="page-import">
+        <div class="budgetShell" style="display:grid;gap:14px;width:100%;">
+
+          <section class="card" style="padding:14px 16px;">
+            <div style="display:grid;grid-template-columns:40px minmax(0,1fr) 40px;align-items:center;gap:8px;">
+              <button class="repNav" id="impBack" type="button" aria-label="Назад">‹</button>
+              <div style="text-align:center;min-width:0;">
+                <div class="dashEyebrow">МИГРАЦИЯ</div>
+                <div style="margin-top:4px;font-size:18px;font-weight:700;">Импорт из CSV</div>
+              </div>
+              <span></span>
+            </div>
+            <div class="muted" style="margin-top:10px;text-align:center;">
+              В Google Sheets открой лист «Transactions 🔄» → Файл → Скачать → CSV (.csv) и выбери этот файл.
+            </div>
+            <div class="field" style="margin:14px 0 0;">
+              <button class="btnTint btnFull" id="impChoose" type="button">Выбрать файл</button>
+              <input type="file" id="impFile" accept=".csv,.tsv,.txt,text/csv,text/plain" hidden>
+            </div>
+          </section>
+
+          <section class="card" id="impFound" hidden>
+            <div class="cardTitle">Что найдено в файле</div>
+            <div id="impStats" style="margin-top:8px;"></div>
+          </section>
+
+          <section class="card" id="impMapCard" hidden>
+            <div class="cardTitle">Не нашлось в базе</div>
+            <div class="muted" style="margin-top:3px;">
+              Для каждого названия выбери, куда его отнести, или создай новое.
+            </div>
+            <div id="impMaps" style="margin-top:6px;"></div>
+          </section>
+
+          <section class="card" id="impIssuesCard" hidden>
+            <div class="cardTitle">Пропущенные записи</div>
+            <div class="muted" style="margin-top:3px;">Эти записи не будут загружены.</div>
+            <div id="impIssues" style="margin-top:8px;"></div>
+          </section>
+
+          <section class="card" id="impRunCard" hidden>
+            <div class="muted" id="impWarn" style="margin-bottom:12px;"></div>
+            <button class="btnPrimary btnFull" id="impGo" type="button">Импортировать</button>
+            <div class="budBar" style="margin-top:14px;" id="impBarWrap" hidden><div class="budFill" id="impBar"></div></div>
+            <div class="muted" id="impStatus" style="margin-top:10px;text-align:center;"></div>
+          </section>
+
+          <div class="authError" id="impError" role="alert"></div>
         </div>
       </section>
 
@@ -5182,6 +5307,42 @@
     </div>
   </div>
 
+  <!-- ===================== СЧЁТ ===================== -->
+  <div class="sheetOverlay" id="accOverlay">
+    <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="accTitle">
+      <div class="sheetHeader">
+        <div class="sheetTitle" id="accTitle">Новый счёт</div>
+        <div class="xbtn" id="accClose" role="button" tabindex="0" aria-label="Закрыть">×</div>
+      </div>
+
+      <div class="field">
+        <div class="label">Название</div>
+        <input class="input" id="accName" type="text" maxlength="40" autocomplete="off" placeholder="Например: Копилка 🐷">
+      </div>
+
+      <div class="field" id="accCurrencyField">
+        <div class="label">Валюта</div>
+        <select class="select" id="accCurrency">
+          <option value="UAH">UAH</option>
+          <option value="USD">USD</option>
+          <option value="EUR">EUR</option>
+        </select>
+      </div>
+
+      <div class="muted" id="accHint">Эмодзи в конце названия станет значком счёта.</div>
+      <div class="authError" id="accSheetError" role="alert"></div>
+
+      <div class="btnRow">
+        <button class="btnGhost" id="accCancel" type="button">Отмена</button>
+        <button class="btnPrimary" id="accSave" type="button">Сохранить</button>
+      </div>
+
+      <div class="field" id="accDeleteWrap" hidden>
+        <button class="btnTintRed btnFull" id="accDelete" type="button">Удалить счёт</button>
+      </div>
+    </div>
+  </div>
+
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
   (function () {
@@ -5237,7 +5398,7 @@
       document.querySelectorAll('.page').forEach(function (p) {
         p.classList.toggle('active', p.id === 'page-' + name);
       });
-      var tabName = name === 'rules' ? 'more' : name;
+      var tabName = (name === 'rules' || name === 'import') ? 'more' : (name === 'account' ? 'accounts' : name);
       document.querySelectorAll('.tab').forEach(function (t) {
         t.classList.toggle('active', t.getAttribute('data-page') === tabName);
       });
@@ -5248,6 +5409,8 @@
       if (name === 'transactions') loadTransactions(false);
       if (name === 'budget') loadBudget();
       if (name === 'rules' || name === 'more') loadRules();
+      if (name === 'accounts') loadAccounts();
+      if (name === 'account') loadAccountDetail();
     }
 
     // Перезагрузить то, что видно на экране, после изменения операции
@@ -5255,6 +5418,7 @@
       lastLoadAt = 0;
       if (currentPage === 'transactions') loadTransactions(false);
       else if (currentPage === 'dashboard') loadDashboard();
+      else if (currentPage === 'account') loadAccountDetail();
     }
 
     // ---------------------------------------------------------------
@@ -5290,7 +5454,10 @@
         var card = document.createElement('button');
         card.type = 'button';
         card.className = 'saldoAccountCard' + (a.is_monobank ? ' mono' : '');
-        card.addEventListener('click', function () { setPage('accounts'); });
+        card.addEventListener('click', function () {
+          acc.list = accounts.slice().sort(function (x, y) { return x.id - y.id; });
+          openAccountById(a.id);
+        });
 
         var top = document.createElement('div');
         top.className = 'saldoAccountTop';
@@ -5616,6 +5783,19 @@
       }
       empty.hidden = true;
 
+      renderTxGroups(list, box, null);
+    }
+
+    // Знак перевода зависит от счёта, на странице которого мы находимся
+    function txAmountView(row, ctx) {
+      if (ctx && row.action === 'TRANSFER') {
+        if (row.from_account_id === ctx) return { text: '−' + txAmountText(row), cls: 'txAmount txAmountExpense' };
+        if (row.to_account_id === ctx) return { text: '+' + txAmountText(row), cls: 'txAmount txAmountIncome' };
+      }
+      return { text: txAmountText(row), cls: txAmountClass(row) };
+    }
+
+    function renderTxGroups(list, box, ctx) {
       var groups = [];
       var byKey = {};
 
@@ -5631,6 +5811,10 @@
         var n = Math.abs(Number(row.amount || 0));
         if (row.action === 'EXPENSE') g.net -= n;
         else if (row.action === 'INCOME' || row.action === 'RETURN') g.net += n;
+        else if (ctx && row.action === 'TRANSFER') {
+          if (row.from_account_id === ctx) g.net -= n;
+          else if (row.to_account_id === ctx) g.net += n;
+        }
       });
 
       groups.forEach(function (g) {
@@ -5673,8 +5857,9 @@
           var right = document.createElement('div');
           right.className = 'txRight';
           var amount = document.createElement('div');
-          amount.className = txAmountClass(row);
-          amount.textContent = txAmountText(row);
+          var view = txAmountView(row, ctx);
+          amount.className = view.cls;
+          amount.textContent = view.text;
           var badge = document.createElement('div');
           badge.className = 'txBadge';
           var d = new Date(row.date);
@@ -5842,7 +6027,8 @@
     }
 
     function openEdit(id) {
-      var row = tx.rows.find(function (r) { return r.id === id; });
+      var row = tx.rows.find(function (r) { return r.id === id; }) ||
+                acc.rows.find(function (r) { return r.id === id; });
       if (!row) return;
       openForm(row.mono_op_id ? 'bank' : 'manual', row);
     }
@@ -6591,6 +6777,715 @@
     });
 
     // ---------------------------------------------------------------
+    // Счета
+    // ---------------------------------------------------------------
+    var acc = {
+      list: [],
+      current: null,
+      rows: [],
+      req: 0,
+      detailReq: 0,
+      editing: null,
+      busy: false,
+      armed: false,
+      armTimer: null
+    };
+
+    var CUR_SYMBOL = { UAH: '₴', USD: '$', EUR: '€' };
+
+    function moneyCur(value, cur) {
+      var code = String(cur || 'UAH').toUpperCase();
+      var n = new Intl.NumberFormat('ru-RU', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(Number(value || 0));
+      return n + ' ' + (CUR_SYMBOL[code] || code);
+    }
+
+    function accErr(err) {
+      if (err && (err.code === '23505' || /duplicate key/i.test(err.message || ''))) {
+        return 'Счёт с таким названием уже есть.';
+      }
+      if (err && (err.code === '23503' || /foreign key/i.test(err.message || ''))) {
+        return 'У счёта есть операции, поэтому удалить его нельзя. Можно переименовать.';
+      }
+      return err && err.message ? err.message : 'неизвестная ошибка';
+    }
+
+    async function loadAccounts() {
+      var reqId = ++acc.req;
+      qs('accError').textContent = '';
+      try {
+        var res = await sb.from('account_balances').select('id,name,currency,is_monobank,balance');
+        if (reqId !== acc.req) return;
+        if (res.error) throw res.error;
+
+        acc.list = (res.data || []).slice().sort(function (a, b) { return a.id - b.id; });
+        renderAccounts_();
+      } catch (err) {
+        if (reqId !== acc.req) return;
+        console.error('[ACCOUNTING][ACCOUNTS]', err);
+        qs('accError').textContent = 'Не удалось загрузить счета: ' + accErr(err);
+      }
+    }
+
+    function renderAccounts_() {
+      var uah = acc.list.filter(function (a) { return String(a.currency || 'UAH').toUpperCase() === 'UAH'; });
+      var total = uah.reduce(function (sum, a) { return sum + Number(a.balance || 0); }, 0);
+      qs('accTotal').textContent = money(total);
+      qs('accTotalCaption').textContent = acc.list.length + ' ' + (acc.list.length === 1 ? 'счёт' : 'счетов') +
+        (uah.length !== acc.list.length ? ' · в итог входят только UAH' : '');
+
+      var box = qs('accList');
+      box.innerHTML = '';
+      if (!acc.list.length) {
+        box.innerHTML = '<div class="saldoEmpty">Счетов пока нет</div>';
+        return;
+      }
+
+      acc.list.forEach(function (a) {
+        var row = document.createElement('button');
+        row.type = 'button';
+        row.className = 'accRow' + (a.is_monobank ? ' mono' : '');
+
+        var icon = document.createElement('span');
+        icon.className = 'accIcon';
+        icon.textContent = accountIcon(a.name);
+
+        var main = document.createElement('div');
+        main.className = 'accMain';
+        var name = document.createElement('div');
+        name.className = 'accName';
+        name.textContent = accountLabel(a.name);
+        var sub = document.createElement('div');
+        sub.className = 'accSub';
+        sub.textContent = String(a.currency || 'UAH').toUpperCase() + (a.is_monobank ? ' · Monobank' : '');
+        main.append(name, sub);
+
+        var bal = document.createElement('div');
+        bal.className = 'accBal' + (Number(a.balance) < 0 ? ' neg' : '');
+        bal.textContent = moneyCur(a.balance, a.currency);
+
+        var chevron = document.createElement('span');
+        chevron.className = 'accChevron';
+        chevron.textContent = '›';
+
+        row.append(icon, main, bal, chevron);
+        row.addEventListener('click', function () {
+          acc.current = a;
+          setPage('account');
+        });
+        box.appendChild(row);
+      });
+    }
+
+    async function loadAccountDetail() {
+      var a = acc.current;
+      if (!a) { setPage('accounts'); return; }
+
+      var reqId = ++acc.detailReq;
+      qs('accDetailError').textContent = '';
+
+      qs('accDetailName').textContent = a.name;
+      qs('accDetailBalance').textContent = moneyCur(a.balance, a.currency);
+      qs('accDetailCaption').textContent = String(a.currency || 'UAH').toUpperCase() + (a.is_monobank ? ' · Monobank' : '');
+      qs('accEdit').hidden = Boolean(a.is_monobank);
+
+      try {
+        if (!refs.loaded) await loadRefs();
+        if (reqId !== acc.detailReq) return;
+
+        var filter = 'account_id.eq.' + a.id + ',from_account_id.eq.' + a.id + ',to_account_id.eq.' + a.id;
+        var res = await Promise.all([
+          sb.from('transactions')
+            .select('id,date,action,amount,currency,note,mono_op_id,category_id,account_id,from_account_id,to_account_id')
+            .or(filter)
+            .order('date', { ascending: false })
+            .order('created_at', { ascending: false })
+            .limit(100),
+          sb.from('account_balances').select('id,balance').eq('id', a.id)
+        ]);
+        if (reqId !== acc.detailReq) return;
+        if (res[0].error) throw res[0].error;
+        if (res[1].error) throw res[1].error;
+
+        var fresh = (res[1].data || []).filter(function (r) { return r.id === a.id; })[0];
+        if (fresh) {
+          a.balance = fresh.balance;
+          qs('accDetailBalance').textContent = moneyCur(a.balance, a.currency);
+        }
+
+        acc.rows = res[0].data || [];
+        qs('accDetailCaption').textContent =
+          String(a.currency || 'UAH').toUpperCase() + (a.is_monobank ? ' · Monobank' : '') +
+          (acc.rows.length >= 100 ? ' · последние 100 операций' : '');
+
+        var box = qs('accTxList');
+        box.innerHTML = '';
+        qs('accTxEmpty').hidden = acc.rows.length > 0;
+        renderTxGroups(acc.rows, box, a.id);
+      } catch (err) {
+        if (reqId !== acc.detailReq) return;
+        console.error('[ACCOUNTING][ACCOUNT_DETAIL]', err);
+        qs('accDetailError').textContent = 'Не удалось загрузить операции: ' + accErr(err);
+      }
+    }
+
+    // ----- лист «Счёт»: создание, переименование, удаление
+    function disarmAccDelete() {
+      acc.armed = false;
+      clearTimeout(acc.armTimer);
+      var btn = qs('accDelete');
+      btn.textContent = 'Удалить счёт';
+      btn.classList.remove('dangerSolid');
+    }
+
+    function openAccForm(account) {
+      acc.editing = account || null;
+      acc.busy = false;
+      disarmAccDelete();
+
+      qs('accTitle').textContent = account ? 'Изменить счёт' : 'Новый счёт';
+      qs('accName').value = account ? account.name : '';
+      qs('accCurrency').value = account ? String(account.currency || 'UAH').toUpperCase() : 'UAH';
+      qs('accCurrencyField').hidden = Boolean(account);
+      qs('accHint').textContent = account
+        ? 'Валюту существующего счёта менять нельзя. Удалить можно только счёт без операций.'
+        : 'Эмодзи в конце названия станет значком счёта.';
+      qs('accDeleteWrap').hidden = !account;
+      qs('accSheetError').textContent = '';
+      qs('accSave').disabled = false;
+      qs('accSave').textContent = 'Сохранить';
+      qs('accOverlay').classList.add('open');
+    }
+
+    function closeAccForm() {
+      qs('accOverlay').classList.remove('open');
+      acc.editing = null;
+      acc.busy = false;
+      disarmAccDelete();
+    }
+
+    async function afterAccountChange() {
+      refs.loaded = false;
+      try { await loadRefs(); } catch (e) { /* справочник обновится при следующем открытии */ }
+      lastLoadAt = 0;
+    }
+
+    async function saveAccount() {
+      if (acc.busy) return;
+      var name = qs('accName').value.trim();
+      var errorBox = qs('accSheetError');
+      errorBox.textContent = '';
+
+      if (!name) { errorBox.textContent = 'Введи название счёта.'; return; }
+      if (name.length > 40) { errorBox.textContent = 'Название не длиннее 40 символов.'; return; }
+
+      acc.busy = true;
+      qs('accSave').disabled = true;
+      qs('accSave').textContent = 'Сохраняем…';
+
+      try {
+        var res;
+        if (acc.editing) {
+          res = await sb.from('accounts').update({ name: name }).eq('id', acc.editing.id).select('id');
+        } else {
+          res = await sb.from('accounts')
+            .insert({ name: name, currency: qs('accCurrency').value || 'UAH', is_monobank: false })
+            .select('id');
+        }
+        if (res.error) throw res.error;
+        if (!res.data || !res.data.length) throw new Error('Не удалось сохранить счёт.');
+
+        var wasEditing = Boolean(acc.editing);
+        if (wasEditing && acc.current && acc.current.id === acc.editing.id) acc.current.name = name;
+
+        closeAccForm();
+        await afterAccountChange();
+        if (wasEditing && currentPage === 'account') loadAccountDetail();
+        else loadAccounts();
+      } catch (err) {
+        console.error('[ACCOUNTING][ACCOUNT_SAVE]', err);
+        errorBox.textContent = 'Не удалось сохранить: ' + accErr(err);
+        acc.busy = false;
+        qs('accSave').disabled = false;
+        qs('accSave').textContent = 'Сохранить';
+      }
+    }
+
+    async function deleteAccount() {
+      var account = acc.editing;
+      if (!account || acc.busy) return;
+
+      var btn = qs('accDelete');
+      if (!acc.armed) {
+        acc.armed = true;
+        btn.textContent = 'Нажми ещё раз, чтобы удалить';
+        btn.classList.add('dangerSolid');
+        acc.armTimer = setTimeout(disarmAccDelete, 4000);
+        return;
+      }
+
+      acc.busy = true;
+      btn.disabled = true;
+      try {
+        var res = await sb.from('accounts').delete().eq('id', account.id).select('id');
+        if (res.error) throw res.error;
+        if (!res.data || !res.data.length) throw new Error('Счёт не найден или нет доступа.');
+
+        closeAccForm();
+        acc.current = null;
+        await afterAccountChange();
+        setPage('accounts');
+      } catch (err) {
+        console.error('[ACCOUNTING][ACCOUNT_DELETE]', err);
+        disarmAccDelete();
+        qs('accSheetError').textContent = 'Не удалось удалить: ' + accErr(err);
+        acc.busy = false;
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
+    qs('accAdd').addEventListener('click', function () { openAccForm(null); });
+    qs('accBack').addEventListener('click', function () { setPage('accounts'); });
+    qs('accEdit').addEventListener('click', function () { if (acc.current) openAccForm(acc.current); });
+    qs('accSave').addEventListener('click', saveAccount);
+    qs('accCancel').addEventListener('click', closeAccForm);
+    qs('accClose').addEventListener('click', closeAccForm);
+    qs('accDelete').addEventListener('click', deleteAccount);
+    qs('accOverlay').addEventListener('click', function (event) {
+      if (event.target === qs('accOverlay')) closeAccForm();
+    });
+    document.addEventListener('keydown', function (event) {
+      if (event.key === 'Escape' && qs('accOverlay').classList.contains('open')) closeAccForm();
+    });
+
+    // Карточка счёта на главной открывает его историю
+    function openAccountById(id) {
+      var found = acc.list.filter(function (a) { return a.id === id; })[0];
+      if (found) { acc.current = found; setPage('account'); }
+      else setPage('accounts');
+    }
+
+    // ---------------------------------------------------------------
+    // Импорт операций из CSV (лист Transactions 🔄 из Google Sheets)
+    // ---------------------------------------------------------------
+    var imp = { valid: [], skipped: [], cats: {}, accs: {}, existing: 0, armed: false, armTimer: null, busy: false, total: 0 };
+
+    var IMP_ACTIONS = ['EXPENSE', 'INCOME', 'RETURN', 'TRANSFER'];
+    var IMP_CURRENCIES = ['UAH', 'USD', 'EUR'];
+    var IMP_FALLBACK_CATEGORY = 'Uncategorized 🤷🏻‍♂️';
+    var IMP_BATCH = 200;
+
+    function parseCsv(text) {
+      if (text.charCodeAt(0) === 0xFEFF) text = text.slice(1);
+      var first = text.split(/\r?\n/, 1)[0] || '';
+      var best = ',', bestCount = 0;
+      [',', ';', '\t'].forEach(function (d) {
+        var c = first.split(d).length;
+        if (c > bestCount) { best = d; bestCount = c; }
+      });
+
+      var rows = [], row = [], field = '', inQ = false;
+      for (var i = 0; i < text.length; i++) {
+        var c = text[i];
+        if (inQ) {
+          if (c === '"') {
+            if (text[i + 1] === '"') { field += '"'; i++; } else inQ = false;
+          } else field += c;
+        } else if (c === '"') inQ = true;
+        else if (c === best) { row.push(field); field = ''; }
+        else if (c === '\n') { row.push(field); rows.push(row); row = []; field = ''; }
+        else if (c !== '\r') field += c;
+      }
+      if (field !== '' || row.length) { row.push(field); rows.push(row); }
+      return rows.filter(function (r) { return r.some(function (x) { return String(x).trim() !== ''; }); });
+    }
+
+    function impMakeDate(y, mo, d, h, mi, s) {
+      var dt = new Date(Number(y), Number(mo) - 1, Number(d), Number(h || 0), Number(mi || 0), Number(s || 0));
+      if (dt.getFullYear() !== Number(y) || dt.getMonth() !== Number(mo) - 1 || dt.getDate() !== Number(d)) return null;
+      return dt;
+    }
+
+    // Даты листа считаются киевскими: разбираем их как местное время браузера
+    function parseDateCell(v) {
+      v = String(v || '').trim();
+      if (!v) return null;
+      var m = v.match(/^(\d{1,2})\.(\d{1,2})\.(\d{4})(?:[ T]+(\d{1,2}):(\d{2})(?::(\d{2}))?)?$/);
+      if (m) return impMakeDate(m[3], m[2], m[1], m[4], m[5], m[6]);
+      m = v.match(/^(\d{4})-(\d{2})-(\d{2})(?:[ T]+(\d{1,2}):(\d{2})(?::(\d{2}))?(?:\.\d+)?)?\s*(Z|[+-]\d{2}:?\d{2})?$/);
+      if (m) {
+        if (m[7]) { var iso = new Date(v.replace(' ', 'T')); return isNaN(iso.getTime()) ? null : iso; }
+        return impMakeDate(m[1], m[2], m[3], m[4], m[5], m[6]);
+      }
+      return null;
+    }
+
+    function parseAmount(v) {
+      var t = String(v === undefined || v === null ? '' : v)
+        .replace(/[\s\u00A0\u202F]/g, '').replace(/[^\d,.\-]/g, '');
+      if (!t) return NaN;
+      var lc = t.lastIndexOf(','), ld = t.lastIndexOf('.');
+      if (lc > -1 && ld > -1) {
+        if (lc > ld) t = t.replace(/\./g, '').replace(',', '.');
+        else t = t.replace(/,/g, '');
+      } else if (lc > -1) t = t.replace(',', '.');
+      return Number(t);
+    }
+
+    function normName(v) {
+      return String(v || '').normalize('NFC').replace(/\uFE0F/g, '').replace(/\s+/g, ' ').trim().toLowerCase();
+    }
+    function lettersOnly(v) {
+      return normName(v).replace(/[^\p{L}\p{N}]+/gu, '');
+    }
+
+    function impTypeOf(action) { return action === 'INCOME' ? 'INCOME' : 'EXPENSE'; }
+
+    // Ищем существующую категорию/счёт: точно, затем «по буквам»
+    function impFind(list, name, filterFn) {
+      var items = list.filter(filterFn);
+      var n = normName(name);
+      var exact = items.filter(function (x) { return normName(x.name) === n; })[0];
+      if (exact) return { item: exact, fuzzy: false };
+      var l = lettersOnly(name);
+      if (l) {
+        var loose = items.filter(function (x) { return lettersOnly(x.name) === l; });
+        if (loose.length === 1) return { item: loose[0], fuzzy: true };
+      }
+      return null;
+    }
+
+    function impAnalyze(text) {
+      var table = parseCsv(text);
+      if (table.length < 2) throw new Error('В файле нет данных.');
+
+      var head = table[0].map(function (h) { return String(h).replace(/\s+/g, '').toLowerCase(); });
+      var col = {};
+      ['id', 'createdat', 'date', 'action', 'amount', 'category', 'fromaccount', 'toaccount', 'account', 'currency', 'note', 'updatedat', 'monoopid']
+        .forEach(function (name) { col[name] = head.indexOf(name); });
+      ['date', 'action', 'amount'].forEach(function (name) {
+        if (col[name] < 0) throw new Error('В файле нет колонки «' + name.charAt(0).toUpperCase() + name.slice(1) + '». Нужен CSV с листа Transactions 🔄 (первая строка с заголовками).');
+      });
+
+      function cell(row, name) { return col[name] >= 0 ? String(row[col[name]] === undefined ? '' : row[col[name]]).trim() : ''; }
+
+      var valid = [], skipped = [];
+      table.slice(1).forEach(function (row, idx) {
+        var no = idx + 1;
+        var action = cell(row, 'action').toUpperCase();
+        if (IMP_ACTIONS.indexOf(action) < 0) { skipped.push('Запись №' + no + ': неизвестное действие «' + cell(row, 'action') + '»'); return; }
+
+        var date = parseDateCell(cell(row, 'date'));
+        if (!date) { skipped.push('Запись №' + no + ': не удалось прочитать дату «' + cell(row, 'date') + '»'); return; }
+
+        var amount = parseAmount(cell(row, 'amount'));
+        if (!isFinite(amount) || amount <= 0) { skipped.push('Запись №' + no + ': сумма «' + cell(row, 'amount') + '» не больше нуля'); return; }
+        amount = Math.round(amount * 100) / 100;
+
+        var currency = cell(row, 'currency').toUpperCase();
+        if (IMP_CURRENCIES.indexOf(currency) < 0) currency = 'UAH';
+
+        var created = parseDateCell(cell(row, 'createdat')) || date;
+        var updated = parseDateCell(cell(row, 'updatedat')) || created;
+
+        var rec = {
+          action: action, date: date, amount: amount, currency: currency,
+          note: cell(row, 'note'), mono_op_id: cell(row, 'monoopid') || null,
+          created_at: created, updated_at: updated
+        };
+
+        if (action === 'TRANSFER') {
+          rec.from = cell(row, 'fromaccount');
+          rec.to = cell(row, 'toaccount');
+          if (!rec.from || !rec.to) { skipped.push('Запись №' + no + ': у перевода не указаны оба счёта'); return; }
+          if (normName(rec.from) === normName(rec.to)) { skipped.push('Запись №' + no + ': счета перевода совпадают'); return; }
+        } else {
+          rec.account = cell(row, 'account');
+          if (!rec.account) { skipped.push('Запись №' + no + ': не указан счёт'); return; }
+          rec.category = cell(row, 'category') || IMP_FALLBACK_CATEGORY;
+        }
+        valid.push(rec);
+      });
+
+      // Что уже есть в базе и чего нет
+      var cats = {}, accs = {};
+      function needAccount(name) {
+        var key = normName(name);
+        if (accs[key]) { accs[key].count++; return; }
+        var found = impFind(refs.accounts, name, function () { return true; });
+        accs[key] = { label: name, count: 1, found: found && !found.fuzzy ? found.item : null,
+                      choice: found ? String(found.item.id) : 'NEW', currency: 'UAH' };
+      }
+      valid.forEach(function (r) {
+        if (r.action === 'TRANSFER') { needAccount(r.from); needAccount(r.to); }
+        else {
+          needAccount(r.account);
+          var type = impTypeOf(r.action), key = type + '|' + normName(r.category);
+          if (cats[key]) { cats[key].count++; return; }
+          var f = impFind(refs.categories, r.category, function (c) { return c.type === type; });
+          cats[key] = { label: r.category, type: type, count: 1, found: f && !f.fuzzy ? f.item : null,
+                        choice: f ? String(f.item.id) : 'NEW' };
+        }
+      });
+      valid.forEach(function (r) {
+        if (r.action !== 'TRANSFER') {
+          var a = accs[normName(r.account)];
+          if (a && !a.found && r.currency) a.currency = r.currency;
+        }
+      });
+
+      imp.valid = valid;
+      imp.skipped = skipped;
+      imp.cats = cats;
+      imp.accs = accs;
+      imp.total = table.length - 1;
+    }
+
+    function impStat(label, value) {
+      var row = document.createElement('div');
+      row.className = 'impStat';
+      var a = document.createElement('span'); a.textContent = label;
+      var b = document.createElement('strong'); b.textContent = value;
+      row.append(a, b);
+      return row;
+    }
+
+    function impFmtDate(d) { return pad2(d.getDate()) + '.' + pad2(d.getMonth() + 1) + '.' + d.getFullYear(); }
+
+    function impRender() {
+      var valid = imp.valid;
+
+      // Статистика
+      var stats = qs('impStats');
+      stats.innerHTML = '';
+      stats.appendChild(impStat('Записей в файле', String(imp.total)));
+      stats.appendChild(impStat('Будет загружено', String(valid.length)));
+      if (imp.skipped.length) stats.appendChild(impStat('Пропущено', String(imp.skipped.length)));
+      if (valid.length) {
+        var times = valid.map(function (r) { return r.date.getTime(); });
+        stats.appendChild(impStat('Период', impFmtDate(new Date(Math.min.apply(null, times))) + ' – ' + impFmtDate(new Date(Math.max.apply(null, times)))));
+        var by = { EXPENSE: 0, INCOME: 0, RETURN: 0, TRANSFER: 0 };
+        valid.forEach(function (r) { by[r.action]++; });
+        stats.appendChild(impStat('Расходы / доходы', by.EXPENSE + ' / ' + by.INCOME));
+        stats.appendChild(impStat('Возвраты / переводы', by.RETURN + ' / ' + by.TRANSFER));
+        var bank = valid.filter(function (r) { return r.mono_op_id; }).length;
+        stats.appendChild(impStat('Из них банковских', String(bank)));
+      }
+      qs('impFound').hidden = false;
+
+      // Пропущенные
+      var issues = qs('impIssues');
+      issues.innerHTML = '';
+      imp.skipped.slice(0, 10).forEach(function (t) {
+        var d = document.createElement('div'); d.className = 'impIssue'; d.textContent = t; issues.appendChild(d);
+      });
+      if (imp.skipped.length > 10) {
+        var more = document.createElement('div'); more.className = 'impIssue';
+        more.textContent = 'и ещё ' + (imp.skipped.length - 10); issues.appendChild(more);
+      }
+      qs('impIssuesCard').hidden = imp.skipped.length === 0;
+
+      // Сопоставление
+      var maps = qs('impMaps');
+      maps.innerHTML = '';
+      var unresolvedCats = Object.keys(imp.cats).filter(function (k) { return !imp.cats[k].found; });
+      var unresolvedAccs = Object.keys(imp.accs).filter(function (k) { return !imp.accs[k].found; });
+
+      function addGroup(title) {
+        var h = document.createElement('div'); h.className = 'impGroupHead'; h.textContent = title; maps.appendChild(h);
+      }
+      function addRow(entry, options) {
+        var row = document.createElement('div'); row.className = 'impMapRow';
+        var name = document.createElement('div'); name.className = 'impMapName';
+        name.textContent = entry.label + ' ';
+        var cnt = document.createElement('span'); cnt.textContent = '· ' + entry.count + ' оп.'; name.appendChild(cnt);
+        var select = document.createElement('select'); select.className = 'select';
+        var optNew = document.createElement('option'); optNew.value = 'NEW'; optNew.textContent = 'Создать новую: ' + entry.label;
+        select.appendChild(optNew);
+        options.forEach(function (o) {
+          var opt = document.createElement('option'); opt.value = String(o.id); opt.textContent = o.name; select.appendChild(opt);
+        });
+        select.value = entry.choice;
+        if (select.value !== entry.choice) select.value = 'NEW';
+        select.addEventListener('change', function () { entry.choice = select.value; });
+        row.append(name, select);
+        maps.appendChild(row);
+      }
+
+      if (unresolvedCats.length) {
+        addGroup('Категории');
+        unresolvedCats.forEach(function (k) {
+          var e = imp.cats[k];
+          addRow(e, refs.categories.filter(function (c) { return c.type === e.type; }));
+        });
+      }
+      if (unresolvedAccs.length) {
+        addGroup('Счета');
+        unresolvedAccs.forEach(function (k) { addRow(imp.accs[k], refs.accounts); });
+      }
+      qs('impMapCard').hidden = !(unresolvedCats.length || unresolvedAccs.length);
+
+      // Запуск
+      qs('impWarn').textContent = imp.existing > 0
+        ? 'В базе уже есть операций: ' + imp.existing + '. Повторная загрузка того же файла задвоит ручные операции (банковские задвоиться не могут). Тестовые записи [demo] лучше удалить заранее.'
+        : 'База операций пуста, можно загружать.';
+      qs('impGo').disabled = valid.length === 0;
+      qs('impGo').textContent = valid.length ? 'Импортировать ' + valid.length : 'Нечего импортировать';
+      qs('impStatus').textContent = '';
+      qs('impBarWrap').hidden = true;
+      qs('impRunCard').hidden = false;
+    }
+
+    function disarmImport() {
+      imp.armed = false;
+      clearTimeout(imp.armTimer);
+      qs('impGo').classList.remove('dangerSolid');
+      if (imp.valid.length) qs('impGo').textContent = 'Импортировать ' + imp.valid.length;
+    }
+
+    async function impHandleFile(file) {
+      qs('impError').textContent = '';
+      ['impFound', 'impMapCard', 'impIssuesCard', 'impRunCard'].forEach(function (id) { qs(id).hidden = true; });
+      disarmImport();
+      if (!file) return;
+
+      try {
+        if (!refs.loaded) await loadRefs();
+        var text = await file.text();
+        impAnalyze(text);
+
+        var head = await sb.from('transactions').select('id', { count: 'exact', head: true });
+        imp.existing = head && !head.error && head.count ? head.count : 0;
+
+        impRender();
+      } catch (err) {
+        console.error('[ACCOUNTING][IMPORT]', err);
+        qs('impError').textContent = 'Не удалось прочитать файл: ' + (err && err.message ? err.message : 'неизвестная ошибка');
+      }
+    }
+
+    function impProgress(done, total, text) {
+      qs('impBarWrap').hidden = false;
+      qs('impBar').style.width = (total ? Math.round(done / total * 100) : 0) + '%';
+      qs('impStatus').textContent = text;
+    }
+
+    async function runImport() {
+      if (imp.busy || !imp.valid.length) return;
+
+      // Если в базе уже есть операции, просим подтверждение вторым нажатием
+      if (imp.existing > 0 && !imp.armed) {
+        imp.armed = true;
+        qs('impGo').textContent = 'Нажми ещё раз, чтобы загрузить';
+        qs('impGo').classList.add('dangerSolid');
+        imp.armTimer = setTimeout(disarmImport, 5000);
+        return;
+      }
+      disarmImport();
+
+      imp.busy = true;
+      qs('impGo').disabled = true;
+      qs('impError').textContent = '';
+      var inserted = 0, duplicates = 0;
+
+      try {
+        // 1. Создаём недостающие категории и счета
+        impProgress(0, 1, 'Готовим справочники…');
+
+        var newCats = Object.keys(imp.cats).map(function (k) { return imp.cats[k]; })
+          .filter(function (c) { return !c.found && c.choice === 'NEW'; });
+        if (newCats.length) {
+          var maxSort = refs.categories.reduce(function (m, c) { return Math.max(m, Number(c.sort_order || 0)); }, 0);
+          var catRes = await sb.from('categories').insert(newCats.map(function (c, i) {
+            return { name: c.label, type: c.type, sort_order: maxSort + i + 1 };
+          })).select('id,name,type');
+          if (catRes.error) throw catRes.error;
+          (catRes.data || []).forEach(function (row) {
+            newCats.forEach(function (c) { if (c.label === row.name && c.type === row.type) c.created = row.id; });
+          });
+        }
+
+        var newAccs = Object.keys(imp.accs).map(function (k) { return imp.accs[k]; })
+          .filter(function (a) { return !a.found && a.choice === 'NEW'; });
+        if (newAccs.length) {
+          var accRes = await sb.from('accounts').insert(newAccs.map(function (a) {
+            return { name: a.label, currency: a.currency || 'UAH', is_monobank: false };
+          })).select('id,name');
+          if (accRes.error) throw accRes.error;
+          (accRes.data || []).forEach(function (row) {
+            newAccs.forEach(function (a) { if (a.label === row.name) a.created = row.id; });
+          });
+        }
+
+        function catId(name, action) {
+          var e = imp.cats[impTypeOf(action) + '|' + normName(name)];
+          if (e.found) return e.found.id;
+          return e.choice === 'NEW' ? e.created : Number(e.choice);
+        }
+        function accId(name) {
+          var e = imp.accs[normName(name)];
+          if (e.found) return e.found.id;
+          return e.choice === 'NEW' ? e.created : Number(e.choice);
+        }
+
+        // 2. Собираем строки для базы
+        var payload = imp.valid.map(function (r) {
+          var out = {
+            date: r.date.toISOString(), action: r.action, amount: r.amount, currency: r.currency,
+            note: r.note, mono_op_id: r.mono_op_id,
+            created_at: r.created_at.toISOString(), updated_at: r.updated_at.toISOString(),
+            category_id: null, account_id: null, from_account_id: null, to_account_id: null
+          };
+          if (r.action === 'TRANSFER') { out.from_account_id = accId(r.from); out.to_account_id = accId(r.to); }
+          else { out.account_id = accId(r.account); out.category_id = catId(r.category, r.action); }
+          return out;
+        });
+
+        var bad = payload.filter(function (r) {
+          return r.action === 'TRANSFER' ? (!r.from_account_id || !r.to_account_id) : (!r.account_id || !r.category_id);
+        });
+        if (bad.length) throw new Error('Не удалось сопоставить категорию или счёт у ' + bad.length + ' записей. Проверь сопоставление.');
+
+        // 3. Загружаем пачками. Банковские дубли (по MonoOpId) база пропускает сама
+        for (var i = 0; i < payload.length; i += IMP_BATCH) {
+          var chunk = payload.slice(i, i + IMP_BATCH);
+          impProgress(i, payload.length, 'Загружено ' + i + ' из ' + payload.length + '…');
+          var res = await sb.from('transactions')
+            .upsert(chunk, { onConflict: 'mono_op_id', ignoreDuplicates: true })
+            .select('id');
+          if (res.error) throw res.error;
+          var added = (res.data || []).length;
+          inserted += added;
+          duplicates += chunk.length - added;
+        }
+
+        impProgress(payload.length, payload.length,
+          'Готово. Добавлено: ' + inserted + (duplicates ? ', пропущено дублей: ' + duplicates : '') + '.');
+
+        refs.loaded = false;
+        try { await loadRefs(); } catch (e) { /* обновится позже */ }
+        lastLoadAt = 0;
+        imp.existing += inserted;
+        qs('impGo').textContent = 'Загружено';
+      } catch (err) {
+        console.error('[ACCOUNTING][IMPORT_RUN]', err);
+        qs('impError').textContent =
+          'Загрузка остановлена: ' + (err && err.message ? err.message : 'неизвестная ошибка') +
+          (inserted ? ' Уже добавлено операций: ' + inserted + '. Не загружай файл повторно целиком без очистки: ручные операции задвоятся.' : '');
+        qs('impGo').disabled = false;
+        qs('impGo').textContent = 'Импортировать ' + imp.valid.length;
+      } finally {
+        imp.busy = false;
+      }
+    }
+
+    qs('openImport').addEventListener('click', function () { setPage('import'); });
+    qs('impBack').addEventListener('click', function () { setPage('more'); });
+    qs('impChoose').addEventListener('click', function () { qs('impFile').value = ''; qs('impFile').click(); });
+    qs('impFile').addEventListener('change', function () { impHandleFile(qs('impFile').files[0]); });
+    qs('impGo').addEventListener('click', runImport);
+
+    // ---------------------------------------------------------------
     // Вход / выход
     // ---------------------------------------------------------------
     qs('authForm').addEventListener('submit', async function (event) {
@@ -6633,6 +7528,7 @@
       tx.req++;
       bud.req++;
       rulesState.req++;
+      acc.req++; acc.detailReq++; acc.current = null; acc.rows = [];
       refs.loaded = false;
       setPage('dashboard');
       showAuth();
