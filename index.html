@@ -8478,6 +8478,7 @@
       qs('accTxOverlay').classList.remove('open'); qs('accTxOverlay').style.display = 'none';
       dash.req++; dash.donutReq++; dash.rows = [];
       mono.req++; mono.token = ''; qs('monoToken').value = '';
+      live.sig = null;
       refs.loaded = false;
       setPage('dashboard');
       showAuth();
@@ -8496,7 +8497,43 @@
       if (!document.hidden && !qs('appView').hidden && Date.now() - lastLoadAt > 60000) {
         loadDashboard();
       }
+      if (!document.hidden) liveTick();
     });
+
+    // ---------------------------------------------------------------
+    // Живое обновление: пока приложение открыто, раз в 15 секунд проверяем,
+    // не пришла ли новая операция или новый баланс из банка. Если пришла,
+    // экран обновляется сам (без перезагрузки страницы).
+    // ---------------------------------------------------------------
+    var live = { sig: null, busy: false };
+
+    async function liveTick() {
+      if (document.hidden || qs('appView').hidden || live.busy || loading) return;
+      if (currentPage !== 'dashboard' && currentPage !== 'transactions' && currentPage !== 'accounts') return;
+      live.busy = true;
+      try {
+        var t = await sb.from('transactions').select('id,created_at').order('created_at', { ascending: false }).limit(1);
+        if (t.error) return;
+        var m = await sb.from('mono_state').select('balance_kop,updated_at').eq('id', 1).limit(1);
+        var sig = JSON.stringify([t.data || [], m.error ? [] : (m.data || [])]);
+
+        if (live.sig === null) { live.sig = sig; return; } // первая проверка только запоминает состояние
+        if (sig === live.sig) return;
+
+        // Не мешаем, пока открыта форма или идёт ввод: попробуем на следующей проверке
+        var busyUi = document.querySelector('[id$="Overlay"].open') ||
+          (document.activeElement && /^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement.tagName));
+        if (busyUi) return;
+
+        live.sig = sig;
+        refreshAfterChange();
+      } catch (err) {
+        /* нет связи: попробуем в следующий раз */
+      } finally {
+        live.busy = false;
+      }
+    }
+    setInterval(liveTick, 15000);
 
     // ---------------------------------------------------------------
     // Старт
