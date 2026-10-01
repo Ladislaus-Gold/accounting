@@ -4647,6 +4647,151 @@
     #ruleOverlay{z-index:1500 !important}
     #ruleTransferFields[hidden]{display:none !important}
     #accOverlay{z-index:1700 !important}
+    /* ---------- iPhone: непрозрачная полоса под строкой статуса (чёткая граница, без размытия) ---------- */
+    html{background:var(--bg)}
+    .safeTopCover{position:fixed;top:0;left:0;right:0;height:env(safe-area-inset-top);background:var(--bg);z-index:30;pointer-events:none}
+    .loadingOverlay.nonblock{-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
+
+    /* ---------- «Ещё» ---------- */
+    .moreShell{display:grid;gap:14px;width:100%}
+    .moreTop{padding:3px 2px 0}
+    .moreSub{margin-top:6px;font-size:13px;color:var(--saldo-muted,#8A8F99)}
+    .moreHero{background:linear-gradient(145deg,#16181D 0%,#262A33 100%);color:#fff;border-radius:26px;padding:18px;box-shadow:0 18px 36px rgba(20,22,28,.22);position:relative;overflow:hidden}
+    .moreHero:after{content:"";position:absolute;width:210px;height:210px;border-radius:999px;background:rgba(255,255,255,.05);right:-90px;top:-110px}
+    .moreHeroHead{display:flex;align-items:center;gap:14px;position:relative;z-index:1}
+    .moreHeroIcon{width:48px;height:48px;border-radius:15px;background:rgba(255,255,255,.1);display:grid;place-items:center;flex:0 0 auto}
+    .moreHeroIcon svg{width:24px;height:24px}
+    .moreHeroText{min-width:0;flex:1}
+    .moreHeroTitle{font-size:18px;font-weight:800;letter-spacing:-.02em}
+    .moreHeroSub{margin-top:3px;font-size:12px;line-height:1.35;color:rgba(255,255,255,.62)}
+    .moreHeroBadge{padding:6px 9px;border-radius:999px;background:rgba(255,255,255,.12);font-size:10px;font-weight:800;letter-spacing:.06em;color:rgba(255,255,255,.8);flex:0 0 auto}
+    .moreHeroStats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:16px;position:relative;z-index:1}
+    .moreHeroStats div{background:rgba(255,255,255,.07);border-radius:14px;padding:10px 12px}
+    .moreHeroStats strong{display:block;font-size:18px;font-weight:800;letter-spacing:-.02em}
+    .moreHeroStats span{display:block;margin-top:2px;font-size:11px;color:rgba(255,255,255,.55)}
+    .moreHeroLive{display:flex;align-items:center;gap:8px;margin-top:12px;font-size:12px;color:rgba(255,255,255,.72);position:relative;z-index:1}
+    .moreHeroLive .dot{width:8px;height:8px;border-radius:99px;background:#8E8E93;flex:0 0 auto}
+    .moreHeroLive.live .dot{background:#34C759;box-shadow:0 0 0 4px rgba(52,199,89,.18)}
+    .moreHeroLive.warn .dot{background:#FF9500;box-shadow:0 0 0 4px rgba(255,149,0,.18)}
+    .moreSection{padding:6px 6px 0;font-size:11px;font-weight:800;letter-spacing:.1em;color:#A1A5AF}
+    .moreGroup{background:var(--card);border-radius:20px;box-shadow:var(--shadow);overflow:hidden}
+    .moreItem{display:flex;align-items:center;gap:14px;width:100%;border:0;background:transparent;padding:14px 16px;text-align:left;color:var(--text);cursor:pointer;position:relative}
+    .moreItem + .moreItem:before{content:"";position:absolute;left:70px;right:0;top:0;height:1px;background:rgba(0,0,0,.06)}
+    .moreItem:active{background:rgba(0,0,0,.03)}
+    .moreIco{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;flex:0 0 auto}
+    .moreIco svg{width:21px;height:21px}
+    .moreIco.blue{background:#EAF0FF;color:#2F5BFF}
+    .moreIco.green{background:#E6F6EC;color:#1E9E5A}
+    .moreIco.dark{background:#1B1D22;color:#fff}
+    .moreIco.orange{background:#FFF1DD;color:#E08400}
+    .moreIco.violet{background:#F1E9FB;color:#8E44C9}
+    .moreItemText{min-width:0;flex:1}
+    .moreItemTitle{display:block;font-size:15.5px;font-weight:700;letter-spacing:-.01em}
+    .moreItemSub{display:block;margin-top:2px;font-size:12.5px;line-height:1.35;color:var(--muted)}
+    .moreItemEnd{display:flex;align-items:center;gap:8px;flex:0 0 auto;font-size:12.5px;font-weight:700;color:#8A8F99}
+    .moreItemEnd .chev{font-size:20px;font-weight:500;color:#C3C6CE;line-height:1}
+    .moreItemEnd.ok{color:#1E9E5A}
+    .moreItemEnd.warn{color:#E08400}
+    .moreItemEnd.bad{color:#D93025}
+    .moreAccount{padding:14px 16px}
+    .moreAccount .p{margin:0 0 12px}
+
+    /* ---------- Состояние ---------- */
+    .stHero{display:flex;align-items:center;gap:14px}
+    .stHeroIco{width:52px;height:52px;border-radius:16px;display:grid;place-items:center;font-size:24px;font-weight:800;flex:0 0 auto}
+    .stHeroIco.ok{background:#E6F6EC;color:#1E9E5A}
+    .stHeroIco.warn{background:#FFF1DD;color:#E08400}
+    .stHeroIco.bad{background:#FDE7E5;color:#D93025}
+    .stHeroTitle{font-size:19px;font-weight:800;letter-spacing:-.02em}
+    .stHeroSub{margin-top:3px;font-size:13px;color:var(--muted)}
+    .stRow{display:flex;gap:12px;padding:13px 0;border-top:1px solid rgba(0,0,0,.06)}
+    .stRow:first-child{border-top:0}
+    .stDot{width:10px;height:10px;border-radius:99px;margin-top:5px;flex:0 0 auto;background:#C3C6CE}
+    .stDot.ok{background:#34C759}.stDot.warn{background:#FF9500}.stDot.bad{background:#FF3B30}
+    .stBody{min-width:0;flex:1}
+    .stTitle{font-size:13px;color:var(--muted);font-weight:650}
+    .stValue{margin-top:2px;font-size:15px;font-weight:700;letter-spacing:-.01em;word-break:break-word}
+    .stHint{margin-top:3px;font-size:12.5px;line-height:1.4;color:var(--muted)}
+
+    /* ---------- Аналитика ---------- */
+    .anChips{display:flex;gap:8px;overflow-x:auto;margin:12px -4px 0;padding:2px 4px 4px;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+    .anChips::-webkit-scrollbar{display:none}
+    .anChip{flex:0 0 auto;border:0;border-radius:999px;padding:8px 14px;background:rgba(120,120,128,.12);color:var(--text);font-size:13.5px;font-weight:650;cursor:pointer}
+    .anChip.active{background:var(--saldo-blue,#2F5BFF);color:#fff}
+    .anNav{display:grid;grid-template-columns:40px minmax(0,1fr) 40px;align-items:center;gap:8px;margin-top:12px}
+    .anNav .repNav[disabled]{opacity:.35}
+    .anNavLabel{text-align:center;min-width:0}
+    .anNavLabel b{display:block;font-size:17px;font-weight:800;letter-spacing:-.02em}
+    .anNavLabel span{display:block;margin-top:2px;font-size:12px;color:var(--muted)}
+    .anCustom{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px;margin-top:12px}
+    .anCustom input,.anAccSel{width:100%;border:0;border-radius:12px;background:rgba(120,120,128,.12);padding:10px 12px;font-size:14px;color:var(--text)}
+    .anAccSel{margin-top:12px;-webkit-appearance:none;appearance:none}
+    .anKpiGrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .anKpi{background:var(--card);border-radius:20px;box-shadow:var(--shadow);padding:14px 15px;min-width:0}
+    .anKpi .t{font-size:12px;font-weight:700;color:#8A8F99}
+    .anKpi .v{margin-top:6px;font-size:21px;font-weight:850;letter-spacing:-.035em;white-space:nowrap}
+    .anKpi .v.pos{color:#1E9E5A}.anKpi .v.neg{color:#D93025}.anKpi .v.blue{color:#2F5BFF}
+    .anKpi .s{margin-top:6px;font-size:12px;color:var(--muted);line-height:1.35}
+    .anDelta{display:inline-block;margin-left:6px;font-weight:750}
+    .anDelta.good{color:#1E9E5A}.anDelta.bad{color:#D93025}.anDelta.flat{color:#8A8F99}
+    .anCard{background:var(--card);border-radius:22px;box-shadow:var(--shadow);padding:16px}
+    .anCardHead{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+    .anCardTitle{font-size:16px;font-weight:800;letter-spacing:-.02em}
+    .anCardSub{margin-top:3px;font-size:12.5px;color:var(--muted)}
+    .anLegend{display:flex;gap:14px;margin-top:10px;font-size:12px;color:var(--muted)}
+    .anLegend i{display:inline-block;width:9px;height:9px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+    .anChart{margin-top:8px}
+    .anChart svg{display:block;width:100%;height:auto}
+    .anChartCap{margin-top:8px;min-height:36px;font-size:13px;color:var(--text);line-height:1.45}
+    .anChartCap b{font-weight:800}
+    .anDonutRow{display:grid;grid-template-columns:164px minmax(0,1fr);gap:12px;align-items:center;margin-top:12px}
+    .anDonutBox{position:relative;width:164px;height:164px}
+    .anDonutCenter{position:absolute;inset:0;display:grid;place-items:center;text-align:center;pointer-events:none}
+    .anDonutCenter b{display:block;font-size:15px;font-weight:850;letter-spacing:-.03em}
+    .anDonutCenter span{display:block;font-size:11px;color:#8A8F99;margin-top:2px}
+    .anDonutLeg{display:grid;gap:7px;min-width:0}
+    .anDonutLeg div{display:flex;align-items:center;gap:8px;font-size:12.5px;min-width:0}
+    .anDonutLeg i{width:9px;height:9px;border-radius:3px;flex:0 0 auto}
+    .anDonutLeg span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
+    .anDonutLeg em{font-style:normal;font-weight:750;color:var(--muted)}
+    @media (max-width:380px){.anDonutRow{grid-template-columns:1fr}.anDonutBox{margin:0 auto}}
+    .anCat{display:flex;align-items:center;gap:12px;width:100%;border:0;background:transparent;padding:11px 0;text-align:left;color:var(--text);cursor:pointer;border-top:1px solid rgba(0,0,0,.06)}
+    .anCat:first-child{border-top:0}
+    .anCatDot{width:10px;height:10px;border-radius:3px;flex:0 0 auto}
+    .anCatMain{min-width:0;flex:1}
+    .anCatName{display:block;font-size:14.5px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .anBar{display:block;height:6px;border-radius:99px;background:rgba(120,120,128,.14);margin-top:7px;overflow:hidden}
+    .anBar i{display:block;height:100%;border-radius:99px}
+    .anCatSide{text-align:right;flex:0 0 auto}
+    .anCatSide strong{display:block;font-size:14.5px;font-weight:800;letter-spacing:-.02em}
+    .anCatSide span{display:block;margin-top:3px;font-size:11.5px;color:#8A8F99}
+    .anMore{padding:2px 0 10px 22px}
+    .anMoreRow{display:flex;justify-content:space-between;gap:10px;padding:6px 0;font-size:13px}
+    .anMoreRow span:first-child{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text)}
+    .anMoreRow span:last-child{flex:0 0 auto;color:var(--muted);font-weight:650}
+    .anOp{display:flex;gap:12px;align-items:center;padding:11px 0;border-top:1px solid rgba(0,0,0,.06)}
+    .anOp:first-child{border-top:0}
+    .anOpDate{flex:0 0 46px;font-size:12px;font-weight:700;color:#8A8F99;line-height:1.25}
+    .anOpMain{min-width:0;flex:1}
+    .anOpTitle{display:block;font-size:14.5px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .anOpSub{display:block;margin-top:2px;font-size:12px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .anOpAmt{flex:0 0 auto;font-size:14.5px;font-weight:800;letter-spacing:-.02em}
+    .anEmpty{padding:22px 8px;text-align:center;color:var(--muted);font-size:14px}
+    .anSeg{display:grid;grid-template-columns:1fr 1fr;gap:2px;background:rgba(120,120,128,.12);border-radius:10px;padding:2px;margin-top:12px}
+    .anSeg button{height:32px;border:0;border-radius:8px;background:transparent;font-size:13.5px;font-weight:650;color:var(--text);cursor:pointer}
+    .anSeg button.active{background:#fff;box-shadow:0 3px 8px rgba(0,0,0,.12),0 0 0 .5px rgba(0,0,0,.04)}
+    .anLoading{padding:34px 8px;text-align:center;color:var(--muted);font-size:14px}
+    .anWd{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;align-items:end;height:120px;margin-top:14px}
+    .anWdCol{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;gap:6px;font-size:11px;font-weight:650;color:#8A8F99}
+    .anWdBar{width:100%;max-width:28px;border-radius:7px 7px 3px 3px;background:#C9D3FF;min-height:3px}
+    .anWdBar.max{background:#2F5BFF}
+    #page-analytics .budgetShell,#page-status .budgetShell,#anBody{grid-template-columns:minmax(0,1fr)!important}
+    #page-analytics .card,#page-analytics .anCard{min-width:0;max-width:100%}
+    .anChips{max-width:100%}
+    #anError:empty,#stError:empty{display:none}
+    #page-more,#page-status,#page-analytics{padding-bottom:24px}
+    #page-status .btnRow{display:grid;grid-template-columns:1fr;gap:10px}
+    #page-status #stFixWebhook{order:-1}
     .monoSteps{margin:8px 0 12px;padding-left:20px;line-height:1.5;font-size:14px;color:var(--muted)}
     .monoSteps li{margin-bottom:4px}
     .monoSteps a{color:var(--saldo-blue);font-weight:600;text-decoration:none}
@@ -4692,6 +4837,7 @@
 </head>
 
 <body>
+  <div class="safeTopCover" aria-hidden="true"></div>
 
   <!-- ===================== ВХОД ===================== -->
   <div class="authShell" id="authView" hidden>
@@ -5059,42 +5205,147 @@
       </section>
 
       <section class="page" id="page-more">
-        <div class="budgetShell" style="display:grid;gap:14px;width:100%;">
-          <section class="card" style="padding:4px 16px;">
-            <button class="moreRow" id="openMono" type="button">
-              <span>
-                <span class="moreRowTitle">Monobank</span>
-                <span class="muted moreRowSub">Привязка карты и автоматические операции</span>
-              </span>
-              <span class="moreRowEnd">›</span>
-            </button>
-          </section>
+        <div class="moreShell">
 
-          <section class="card" style="padding:4px 16px;">
-            <button class="moreRow" id="openRules" type="button">
-              <span>
-                <span class="moreRowTitle">Правила категоризации</span>
-                <span class="muted moreRowSub">Заметка → категория для банковских операций</span>
-              </span>
-              <span class="moreRowEnd"><span id="rulesCount"></span> ›</span>
-            </button>
-          </section>
+          <div class="moreTop">
+            <div class="saldoOverline">ACCOUNTING</div>
+            <div class="saldoPageTitle">Ещё</div>
+            <div class="moreSub">Аналитика и управление приложением</div>
+          </div>
 
-          <section class="card" style="padding:4px 16px;">
-            <button class="moreRow" id="openImport" type="button">
-              <span>
-                <span class="moreRowTitle">Импорт из CSV</span>
-                <span class="muted moreRowSub">Перенос операций из листа Transactions 🔄</span>
-              </span>
-              <span class="moreRowEnd">›</span>
-            </button>
-          </section>
+          <div class="moreHero">
+            <div class="moreHeroHead">
+              <div class="moreHeroIcon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7.5A2.5 2.5 0 0 1 5.5 5H18a2 2 0 0 1 2 2v1"/><path d="M3 7.5V17a2 2 0 0 0 2 2h13.5a1.5 1.5 0 0 0 1.5-1.5v-8A1.5 1.5 0 0 0 18.5 8H5.5A2.5 2.5 0 0 1 3 5.5"/><circle cx="16" cy="13.5" r="1.2" fill="#fff" stroke="none"/></svg>
+              </div>
+              <div class="moreHeroText">
+                <div class="moreHeroTitle">Финансовый центр</div>
+                <div class="moreHeroSub">Статистика, подключения и автоматизация</div>
+              </div>
+              <div class="moreHeroBadge" id="moreVersion">v—</div>
+            </div>
+            <div class="moreHeroStats">
+              <div><strong id="moreStatTx">—</strong><span>операций</span></div>
+              <div><strong id="moreStatAcc">—</strong><span>счетов</span></div>
+              <div><strong id="moreStatRules">—</strong><span>правил</span></div>
+            </div>
+            <div class="moreHeroLive" id="moreHeroLive"><span class="dot"></span><span id="moreHeroLiveText">Проверяю Monobank…</span></div>
+          </div>
 
-          <section class="card">
-            <div class="cardTitle">Аккаунт</div>
-            <p class="p" id="moreUser" style="margin:6px 0 14px">—</p>
+          <div class="moreSection">ОБЗОР</div>
+          <div class="moreGroup">
+            <button class="moreItem" id="openAnalytics" type="button">
+              <span class="moreIco blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 20V11"/><path d="M12 20V5"/><path d="M19 20v-6"/></svg></span>
+              <span class="moreItemText"><span class="moreItemTitle">Аналитика</span><span class="moreItemSub">Доходы, расходы, категории и динамика по периодам</span></span>
+              <span class="moreItemEnd"><span>Периоды</span><span class="chev">›</span></span>
+            </button>
+            <button class="moreItem" id="openStatus" type="button">
+              <span class="moreIco green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m8.5 12.2 2.4 2.4 4.6-5"/></svg></span>
+              <span class="moreItemText"><span class="moreItemTitle">Состояние</span><span class="moreItemSub">Банк, мгновенные операции, данные и версия</span></span>
+              <span class="moreItemEnd"><span>Система</span><span class="chev">›</span></span>
+            </button>
+          </div>
+
+          <div class="moreSection">УПРАВЛЕНИЕ</div>
+          <div class="moreGroup">
+            <button class="moreItem" id="openMono" type="button">
+              <span class="moreIco dark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5.5" width="18" height="13" rx="2.5"/><path d="M3 10h18"/><path d="M7 15h3"/></svg></span>
+              <span class="moreItemText"><span class="moreItemTitle">Monobank</span><span class="moreItemSub">Карта, мгновенные операции и автоопрос банка</span></span>
+              <span class="moreItemEnd" id="moreMonoEnd"><span id="moreMonoState">—</span><span class="chev">›</span></span>
+            </button>
+            <button class="moreItem" id="openRules" type="button">
+              <span class="moreIco orange"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h12"/><path d="M8 12h12"/><path d="M8 18h12"/><circle cx="4" cy="6" r="1" fill="currentColor"/><circle cx="4" cy="12" r="1" fill="currentColor"/><circle cx="4" cy="18" r="1" fill="currentColor"/></svg></span>
+              <span class="moreItemText"><span class="moreItemTitle">Правила категоризации</span><span class="moreItemSub">Заметка → категория для банковских операций</span></span>
+              <span class="moreItemEnd"><span id="rulesCount"></span><span class="chev">›</span></span>
+            </button>
+            <button class="moreItem" id="openImport" type="button">
+              <span class="moreIco violet"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V4"/><path d="m7.5 8.5 4.5-4.5 4.5 4.5"/><path d="M5 15v3a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-3"/></svg></span>
+              <span class="moreItemText"><span class="moreItemTitle">Импорт из CSV</span><span class="moreItemSub">Перенос операций из листа Transactions 🔄</span></span>
+              <span class="moreItemEnd"><span class="chev">›</span></span>
+            </button>
+          </div>
+
+          <div class="moreSection">АККАУНТ</div>
+          <div class="moreGroup moreAccount">
+            <p class="p" id="moreUser">—</p>
             <button class="btnTintRed btnFull" id="logoutBtn" type="button">Выйти</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Состояние -->
+      <section class="page" id="page-status">
+        <div class="budgetShell" style="display:grid;gap:14px;width:100%;">
+          <section class="card" style="padding:14px 16px;">
+            <div style="display:grid;grid-template-columns:40px minmax(0,1fr) 40px;align-items:center;gap:8px;">
+              <button class="repNav" id="stBack" type="button" aria-label="Назад">‹</button>
+              <div style="text-align:center;min-width:0;">
+                <div class="dashEyebrow">СИСТЕМА</div>
+                <div style="margin-top:4px;font-size:18px;font-weight:700;">Состояние</div>
+              </div>
+              <span></span>
+            </div>
           </section>
+
+          <section class="card" id="stSummaryCard">
+            <div class="stHero">
+              <div class="stHeroIco" id="stHeroIco">…</div>
+              <div style="min-width:0;">
+                <div class="stHeroTitle" id="stHeroTitle">Проверяю…</div>
+                <div class="stHeroSub" id="stHeroSub">Опрашиваю базу и банк</div>
+              </div>
+            </div>
+          </section>
+
+          <section class="card" id="stList" style="padding:6px 16px;"></section>
+
+          <div class="authError" id="stError" role="alert"></div>
+          <div class="btnRow">
+            <button class="btnTint" id="stRefresh" type="button">Проверить снова</button>
+            <button class="btnPrimary" id="stFixWebhook" type="button" hidden>Включить мгновенные операции</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Аналитика -->
+      <section class="page" id="page-analytics">
+        <div class="budgetShell" style="display:grid;gap:14px;width:100%;">
+          <section class="card" style="padding:14px 16px;">
+            <div style="display:grid;grid-template-columns:40px minmax(0,1fr) 40px;align-items:center;gap:8px;">
+              <button class="repNav" id="anBack" type="button" aria-label="Назад">‹</button>
+              <div style="text-align:center;min-width:0;">
+                <div class="dashEyebrow">ОБЗОР</div>
+                <div style="margin-top:4px;font-size:18px;font-weight:700;">Аналитика</div>
+              </div>
+              <span></span>
+            </div>
+
+            <div class="anChips" id="anChips">
+              <button class="anChip" data-mode="WEEK" type="button">Неделя</button>
+              <button class="anChip active" data-mode="MONTH" type="button">Месяц</button>
+              <button class="anChip" data-mode="QUARTER" type="button">Квартал</button>
+              <button class="anChip" data-mode="YEAR" type="button">Год</button>
+              <button class="anChip" data-mode="ALL" type="button">Всё время</button>
+              <button class="anChip" data-mode="CUSTOM" type="button">Свой период</button>
+            </div>
+
+            <div class="anNav" id="anNav">
+              <button class="repNav" id="anPrev" type="button" aria-label="Предыдущий период">‹</button>
+              <div class="anNavLabel"><b id="anLabel">—</b><span id="anSubLabel"></span></div>
+              <button class="repNav" id="anNext" type="button" aria-label="Следующий период">›</button>
+            </div>
+
+            <div class="anCustom" id="anCustom" hidden>
+              <input type="date" id="anFrom" aria-label="С даты">
+              <span>—</span>
+              <input type="date" id="anTo" aria-label="По дату">
+            </div>
+
+            <select class="anAccSel" id="anAccount" aria-label="Счёт"></select>
+          </section>
+
+          <div class="authError" id="anError" role="alert"></div>
+          <div id="anBody" style="display:grid;gap:14px;"></div>
         </div>
       </section>
 
@@ -5180,9 +5431,13 @@
             <div class="impStat"><span>Баланс</span><strong id="monoConnBalance">—</strong></div>
             <div class="impStat"><span>Обновлено</span><strong id="monoConnUpdated">—</strong></div>
             <div class="impStat"><span>Автоопрос банка</span><strong id="monoConnPolling">—</strong></div>
+            <div class="impStat" id="monoWebhookRow" hidden><span>Мгновенные операции</span><strong id="monoConnWebhook">—</strong></div>
             <div class="btnRow">
               <button class="btnTint" id="monoSyncBtn" type="button">Обновить сейчас</button>
               <button class="btnTintRed" id="monoDisconnect" type="button">Отключить</button>
+            </div>
+            <div class="field" id="monoWebhookFix" hidden style="margin:12px 0 0;">
+              <button class="btnPrimary btnFull" id="monoWebhookBtn" type="button">Включить мгновенные операции</button>
             </div>
             <div class="muted" id="monoSyncMsg" style="text-align:center;margin-top:10px;"></div>
           </section>
@@ -5596,7 +5851,7 @@
       document.querySelectorAll('.page').forEach(function (p) {
         p.classList.toggle('active', p.id === 'page-' + name);
       });
-      var tabName = (name === 'rules' || name === 'import' || name === 'mono') ? 'more' : name;
+      var tabName = ['rules', 'import', 'mono', 'analytics', 'status'].indexOf(name) >= 0 ? 'more' : name;
       document.querySelectorAll('.tab').forEach(function (t) {
         t.classList.toggle('active', t.getAttribute('data-page') === tabName);
       });
@@ -5606,7 +5861,10 @@
       if (name === 'dashboard') { qs('dPeriod').value = 'TODAY'; loadDashboard(); }
       if (name === 'transactions') loadTransactions(false);
       if (name === 'budget') loadBudget();
-      if (name === 'rules' || name === 'more') loadRules();
+      if (name === 'rules') loadRules();
+      if (name === 'more') loadMoreHub();
+      if (name === 'analytics') openAnalytics();
+      if (name === 'status') loadStatusPage();
       if (name === 'accounts') loadAccounts();
       if (name === 'mono') loadMonoStatus();
     }
@@ -5617,6 +5875,8 @@
       if (currentPage === 'transactions') loadTransactions(false);
       else if (currentPage === 'dashboard') loadDashboard();
       else if (currentPage === 'accounts') loadAccounts();
+      else if (currentPage === 'analytics') anLoad(true);
+      else if (currentPage === 'more') loadMoreHub();
     }
 
     // ---------------------------------------------------------------
@@ -8224,6 +8484,13 @@
 
       qs('monoSyncMsg').textContent = st.polling === true ? '' :
         'Опрос по расписанию не работает: включи расширения pg_cron и pg_net (Supabase → Database → Extensions) и нажми «Обновить сейчас». Вебхук от банка при этом работает.';
+      var WH = { active: 'работают', missing: 'отключены банком', other: 'идут в другое место', unknown: 'не удалось проверить' };
+      qs('monoWebhookRow').hidden = !WH[st.webhook];
+      qs('monoConnWebhook').textContent = WH[st.webhook] || '—';
+      qs('monoWebhookFix').hidden = !(st.webhook === 'missing' || st.webhook === 'other');
+      if (st.webhook === 'missing' || st.webhook === 'other') {
+        qs('monoSyncMsg').textContent = 'Банк не присылает операции сразу, они приходят раз в 2 минуты. Нажми «Включить мгновенные операции».';
+      }
       disarmMonoDisconnect();
       monoShow('monoConnected');
     }
@@ -8428,8 +8695,719 @@
       mono.token = ''; qs('monoToken').value = ''; monoMsg(''); monoShow('monoStepToken');
     });
     qs('monoDone').addEventListener('click', function () { loadMonoStatus(); });
+    async function monoEnableWebhook() {
+      if (mono.busy) return;
+      mono.busy = true;
+      monoMsg('');
+      qs('monoWebhookBtn').disabled = true;
+      qs('monoWebhookBtn').textContent = 'Включаю…';
+      try {
+        await monoCall({ action: 'webhook' });
+        mono.busy = false;
+        await loadMonoStatus();
+      } catch (err) {
+        console.error('[ACCOUNTING][MONO_WEBHOOK]', err);
+        monoMsg(err.message);
+      } finally {
+        mono.busy = false;
+        qs('monoWebhookBtn').disabled = false;
+        qs('monoWebhookBtn').textContent = 'Включить мгновенные операции';
+      }
+    }
+    qs('monoWebhookBtn').addEventListener('click', monoEnableWebhook);
     qs('monoSyncBtn').addEventListener('click', monoSyncNow);
     qs('monoDisconnect').addEventListener('click', monoDisconnectCard);
+
+    // ---------------------------------------------------------------
+    // «Ещё»: сводка и переходы
+    // ---------------------------------------------------------------
+    var APP_VERSION = '2.1';
+    var moreReq = 0;
+
+    function escHtml(v) {
+      return String(v === null || v === undefined ? '' : v).replace(/[&<>"']/g, function (c) {
+        return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+      });
+    }
+    function fmtInt(n) { return new Intl.NumberFormat('ru-RU').format(Number(n || 0)); }
+    function timeHM(iso) {
+      var d = new Date(iso);
+      return isNaN(d.getTime()) ? '' : d.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+    }
+    function isToday(iso) {
+      var d = new Date(iso), n = new Date();
+      return d.getFullYear() === n.getFullYear() && d.getMonth() === n.getMonth() && d.getDate() === n.getDate();
+    }
+    function whenShort(iso) {
+      var d = new Date(iso);
+      if (isNaN(d.getTime())) return '—';
+      return isToday(iso) ? 'сегодня, ' + timeHM(iso)
+        : d.toLocaleString('ru-RU', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+    }
+
+    async function loadMoreHub() {
+      var reqId = ++moreReq;
+      qs('moreVersion').textContent = 'v' + APP_VERSION;
+      try {
+        var r = await Promise.all([
+          sb.from('transactions').select('id', { count: 'exact', head: true }),
+          sb.from('accounts').select('id', { count: 'exact', head: true }),
+          sb.from('rules').select('id', { count: 'exact', head: true }),
+          fetchBalances()
+        ]);
+        if (reqId !== moreReq) return;
+
+        qs('moreStatTx').textContent = r[0].error ? '—' : fmtInt(r[0].count);
+        qs('moreStatAcc').textContent = r[1].error ? '—' : fmtInt(r[1].count);
+        qs('moreStatRules').textContent = r[2].error ? '—' : fmtInt(r[2].count);
+        qs('rulesCount').textContent = r[2].error ? '' : fmtInt(r[2].count);
+
+        var monoRow = ((r[3].data || []).filter(function (a) { return a.is_monobank; }))[0];
+        var st = monoRow ? monoStatus(monoRow) : 'APP';
+        var live = qs('moreHeroLive'), end = qs('moreMonoEnd');
+        live.className = 'moreHeroLive';
+        end.className = 'moreItemEnd';
+
+        if (monoRow && monoRow.live) {
+          live.classList.add(st === 'LIVE' ? 'live' : 'warn');
+          qs('moreHeroLiveText').textContent = 'Monobank · ' + st + ' · обновлено ' + whenShort(monoRow.live_at);
+          qs('moreMonoState').textContent = st;
+          end.classList.add(st === 'LIVE' ? 'ok' : 'warn');
+        } else {
+          qs('moreHeroLiveText').textContent = 'Monobank не подключён · баланс по операциям';
+          qs('moreMonoState').textContent = 'Не подключён';
+        }
+      } catch (err) {
+        console.error('[ACCOUNTING][MORE]', err);
+      }
+    }
+
+    qs('openAnalytics').addEventListener('click', function () { setPage('analytics'); });
+    qs('openStatus').addEventListener('click', function () { setPage('status'); });
+    qs('anBack').addEventListener('click', function () { setPage('more'); });
+    qs('stBack').addEventListener('click', function () { setPage('more'); });
+
+    // ---------------------------------------------------------------
+    // Состояние: что работает, а что нет
+    // ---------------------------------------------------------------
+    var stReq = 0;
+
+    function stRow(state, title, value, hint) {
+      return '<div class="stRow"><span class="stDot ' + state + '"></span><div class="stBody">' +
+        '<div class="stTitle">' + escHtml(title) + '</div>' +
+        '<div class="stValue">' + escHtml(value) + '</div>' +
+        (hint ? '<div class="stHint">' + escHtml(hint) + '</div>' : '') +
+        '</div></div>';
+    }
+
+    async function loadStatusPage() {
+      var reqId = ++stReq;
+      qs('stError').textContent = '';
+      qs('stFixWebhook').hidden = true;
+      qs('stHeroIco').className = 'stHeroIco';
+      qs('stHeroIco').textContent = '…';
+      qs('stHeroTitle').textContent = 'Проверяю…';
+      qs('stHeroSub').textContent = 'Опрашиваю базу и банк';
+      qs('stList').innerHTML = '';
+
+      var rows = [], needFix = false;
+      var t0 = Date.now();
+
+      // 1. База данных
+      var counts = null, lastTx = null;
+      try {
+        var r = await Promise.all([
+          sb.from('transactions').select('id', { count: 'exact', head: true }),
+          sb.from('accounts').select('id', { count: 'exact', head: true }),
+          sb.from('categories').select('id', { count: 'exact', head: true }),
+          sb.from('rules').select('id', { count: 'exact', head: true }),
+          sb.from('transactions').select('date,mono_op_id,created_at').order('created_at', { ascending: false }).limit(1)
+        ]);
+        r.forEach(function (x) { if (x.error) throw x.error; });
+        counts = { tx: r[0].count, acc: r[1].count, cat: r[2].count, rules: r[3].count };
+        lastTx = (r[4].data || [])[0] || null;
+        rows.push({ s: 'ok', t: 'База данных', v: 'Работает · ответ за ' + (Date.now() - t0) + ' мс' });
+      } catch (err) {
+        console.error('[ACCOUNTING][STATUS_DB]', err);
+        rows.push({ s: 'bad', t: 'База данных', v: 'Нет ответа', h: err && err.message ? err.message : '' });
+      }
+
+      // 2. Monobank (серверная функция)
+      var st = null, stErr = '';
+      try { st = await monoCall({ action: 'status' }); } catch (err) { stErr = err.message; }
+      if (reqId !== stReq) return;
+
+      if (stErr) {
+        rows.push({ s: 'bad', t: 'Monobank', v: 'Серверная функция недоступна', h: stErr });
+      } else if (!st.connected) {
+        rows.push({ s: 'warn', t: 'Monobank', v: 'Не подключён', h: 'Открой Ещё → Monobank и привяжи карту.' });
+      } else {
+        var who = [st.card ? st.card.replace(/\*+/g, '•••• ') : '', st.clientName || ''].filter(Boolean).join(' · ');
+        rows.push({ s: 'ok', t: 'Monobank', v: 'Подключён' + (who ? ' · ' + who : '') });
+
+        // 3. Вебхук
+        if (st.webhook === 'active') {
+          rows.push({ s: 'ok', t: 'Мгновенные операции (вебхук)', v: 'Работают', h: 'Банк присылает операцию сразу после покупки.' });
+        } else if (st.webhook === 'missing') {
+          rows.push({ s: 'bad', t: 'Мгновенные операции (вебхук)', v: 'Отключены банком', h: 'Операции приходят только раз в 2 минуты через опрос. Нажми кнопку ниже, чтобы включить заново.' });
+          needFix = true;
+        } else if (st.webhook === 'other') {
+          rows.push({ s: 'warn', t: 'Мгновенные операции (вебхук)', v: 'Банк шлёт в другое место', h: 'Вероятно, остался старый вебхук (Cloudflare или Apps Script). Нажми кнопку ниже, чтобы направить сюда.' });
+          needFix = true;
+        } else if (st.webhook === 'unknown') {
+          rows.push({ s: 'warn', t: 'Мгновенные операции (вебхук)', v: 'Не удалось проверить', h: 'Банк ограничивает частоту запросов. Подожди минуту и нажми «Проверить снова».' });
+        } else {
+          rows.push({ s: 'warn', t: 'Мгновенные операции (вебхук)', v: 'Нет данных', h: 'В Supabase стоит старая версия кода функции: вставь актуальный mono_function.ts и нажми Deploy.' });
+        }
+
+        // 4. Автоопрос
+        if (st.polling === true) rows.push({ s: 'ok', t: 'Автоопрос банка', v: 'Каждые 2 минуты', h: 'Страховка: подберёт операцию, если вебхук опоздал.' });
+        else if (st.polling === false) rows.push({ s: 'warn', t: 'Автоопрос банка', v: 'Выключен', h: 'Запусти mono_setup.sql в Supabase и включи расширения pg_cron и pg_net.' });
+        else rows.push({ s: 'warn', t: 'Автоопрос банка', v: 'Нет данных' });
+
+        // 5. Баланс
+        var state = st.state;
+        if (state && state.updated_at) {
+          var fresh = Date.now() - new Date(state.updated_at).getTime() <= 48 * 3600 * 1000;
+          var src = { webhook: 'от банка', poll: 'опрос', 'client-info': 'запрос баланса' }[state.source] || '';
+          rows.push({ s: fresh ? 'ok' : 'warn', t: 'Баланс из банка', v: 'Обновлён ' + whenShort(state.updated_at) + (src ? ' · ' + src : '') });
+        } else {
+          rows.push({ s: 'warn', t: 'Баланс из банка', v: 'Ещё не получен' });
+        }
+      }
+
+      // 6. Последняя операция
+      if (lastTx) {
+        rows.push({ s: 'ok', t: 'Последняя операция', v: whenShort(lastTx.date) + (lastTx.mono_op_id ? ' · из банка' : ' · вручную') });
+      }
+
+      // 7. Данные и версия
+      if (counts) {
+        rows.push({ s: 'ok', t: 'Данные', v: fmtInt(counts.tx) + ' операций · ' + fmtInt(counts.acc) + ' счетов · ' + fmtInt(counts.cat) + ' категорий · ' + fmtInt(counts.rules) + ' правил' });
+      }
+      rows.push({ s: 'ok', t: 'Приложение', v: 'Версия ' + APP_VERSION, h: 'Экран обновляется сам, когда появляется новая операция.' });
+
+      qs('stList').innerHTML = rows.map(function (x) { return stRow(x.s, x.t, x.v, x.h); }).join('');
+
+      var bad = rows.filter(function (x) { return x.s === 'bad'; }).length;
+      var warn = rows.filter(function (x) { return x.s === 'warn'; }).length;
+      var level = bad ? 'bad' : (warn ? 'warn' : 'ok');
+      qs('stHeroIco').className = 'stHeroIco ' + level;
+      qs('stHeroIco').textContent = level === 'ok' ? '✓' : '!';
+      qs('stHeroTitle').textContent = level === 'ok' ? 'Всё в порядке' : (level === 'warn' ? 'Есть замечания' : 'Есть проблемы');
+      qs('stHeroSub').textContent = level === 'ok' ? 'База, банк и обновления работают' :
+        (bad ? bad + ' ' + (bad === 1 ? 'проблема' : 'проблем') : '') + (bad && warn ? ' · ' : '') + (warn ? warn + ' ' + (warn === 1 ? 'замечание' : 'замечаний') : '');
+      qs('stFixWebhook').hidden = !needFix;
+    }
+
+    async function stFixWebhook() {
+      var btn = qs('stFixWebhook');
+      btn.disabled = true;
+      btn.textContent = 'Включаю…';
+      qs('stError').textContent = '';
+      try {
+        await monoCall({ action: 'webhook' });
+        await loadStatusPage();
+      } catch (err) {
+        console.error('[ACCOUNTING][STATUS_WEBHOOK]', err);
+        qs('stError').textContent = err.message;
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Включить мгновенные операции';
+      }
+    }
+
+    qs('stRefresh').addEventListener('click', loadStatusPage);
+    qs('stFixWebhook').addEventListener('click', stFixWebhook);
+
+    // ---------------------------------------------------------------
+    // Аналитика по периодам
+    // ---------------------------------------------------------------
+    var an = { mode: 'MONTH', offset: 0, from: '', to: '', acc: 'ALL', type: 'EXPENSE', req: 0, data: null, sel: -1, open: {}, earliest: null };
+    var AN_MON = ['янв', 'фев', 'мар', 'апр', 'мая', 'июн', 'июл', 'авг', 'сен', 'окт', 'ноя', 'дек'];
+    var AN_WD = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
+    var AN_WD_DAT = ['понедельникам', 'вторникам', 'средам', 'четвергам', 'пятницам', 'субботам', 'воскресеньям'];
+    var AN_Q = ['I', 'II', 'III', 'IV'];
+
+    function anDay(d) { return new Date(d.getFullYear(), d.getMonth(), d.getDate()); }
+    function anAdd(d, n) { return new Date(d.getFullYear(), d.getMonth(), d.getDate() + n); }
+    function anMonday(d) { return anAdd(anDay(d), -((d.getDay() + 6) % 7)); }
+    function anShort(d) { return d.getDate() + ' ' + AN_MON[d.getMonth()]; }
+    function anInput(d) { return d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate()); }
+    function anParse(v) {
+      var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(v || '');
+      return m ? new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3])) : null;
+    }
+    function anCap(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
+
+    // Границы выбранного периода и предыдущего (для сравнения)
+    function anRange() {
+      var now = new Date(), today = anDay(now);
+      var y = now.getFullYear(), m = now.getMonth(), o = an.offset;
+      var r = { start: null, end: null, label: '', sub: '', prevStart: null, prevEnd: null, nav: true, valid: true };
+
+      if (an.mode === 'WEEK') {
+        r.start = anAdd(anMonday(now), o * 7); r.end = anAdd(r.start, 7);
+        r.label = o === 0 ? 'Эта неделя' : (o === -1 ? 'Прошлая неделя' : anShort(r.start) + ' – ' + anShort(anAdd(r.end, -1)));
+        r.sub = anShort(r.start) + ' – ' + anShort(anAdd(r.end, -1)) + ' ' + anAdd(r.end, -1).getFullYear();
+        r.prevStart = anAdd(r.start, -7); r.prevEnd = r.start;
+      } else if (an.mode === 'MONTH') {
+        r.start = new Date(y, m + o, 1); r.end = new Date(y, m + o + 1, 1);
+        r.label = anCap(MONTHS[r.start.getMonth()]) + ' ' + r.start.getFullYear();
+        r.sub = anShort(r.start) + ' – ' + anShort(anAdd(r.end, -1));
+        r.prevStart = new Date(y, m + o - 1, 1); r.prevEnd = r.start;
+      } else if (an.mode === 'QUARTER') {
+        var qm = Math.floor(m / 3) * 3 + o * 3;
+        r.start = new Date(y, qm, 1); r.end = new Date(y, qm + 3, 1);
+        r.label = AN_Q[Math.floor(r.start.getMonth() / 3)] + ' квартал ' + r.start.getFullYear();
+        r.sub = anShort(r.start) + ' – ' + anShort(anAdd(r.end, -1));
+        r.prevStart = new Date(y, qm - 3, 1); r.prevEnd = r.start;
+      } else if (an.mode === 'YEAR') {
+        r.start = new Date(y + o, 0, 1); r.end = new Date(y + o + 1, 0, 1);
+        r.label = String(r.start.getFullYear()); r.sub = 'С 1 января по 31 декабря';
+        r.prevStart = new Date(y + o - 1, 0, 1); r.prevEnd = r.start;
+      } else if (an.mode === 'ALL') {
+        r.start = an.earliest ? anDay(an.earliest) : today; r.end = anAdd(today, 1);
+        r.label = 'За всё время'; r.sub = 'С ' + anShort(r.start) + ' ' + r.start.getFullYear() + ' по сегодня';
+        r.nav = false;
+      } else {
+        var f = anParse(an.from), t = anParse(an.to);
+        r.nav = false;
+        if (!f || !t || f > t) { r.valid = false; r.label = 'Выбери даты'; r.sub = 'Начало и конец периода'; }
+        else {
+          r.start = f; r.end = anAdd(t, 1);
+          var days = Math.max(1, Math.round((r.end - r.start) / 864e5));
+          r.label = anShort(f) + ' – ' + anShort(t); r.sub = days + ' ' + (days === 1 ? 'день' : (days < 5 ? 'дня' : 'дней')) + ' · ' + t.getFullYear();
+          r.prevStart = anAdd(r.start, -days); r.prevEnd = r.start;
+        }
+      }
+      return r;
+    }
+
+    // Все операции за период: страницами по 1000
+    async function anFetch(start, end, accId) {
+      var all = [], size = 1000;
+      for (var page = 0; page < 60; page++) {
+        var q = sb.from('transactions')
+          .select('date,action,amount,category_id,account_id,note')
+          .order('date', { ascending: false })
+          .range(page * size, page * size + size - 1);
+        if (start) q = q.gte('date', start.toISOString());
+        q = q.lt('date', end.toISOString());
+        if (accId !== 'ALL') q = q.eq('account_id', Number(accId));
+        var res = await q;
+        if (res.error) throw res.error;
+        var chunk = res.data || [];
+        all = all.concat(chunk);
+        if (chunk.length < size) break;
+      }
+      return all;
+    }
+
+    function anBuckets(start, end, gran) {
+      var list = [], d;
+      if (gran === 'day') {
+        for (d = anDay(start); d < end; d = anAdd(d, 1)) list.push({ from: d, to: anAdd(d, 1), income: 0, expense: 0 });
+      } else if (gran === 'week') {
+        for (d = anMonday(start); d < end; d = anAdd(d, 7)) list.push({ from: d, to: anAdd(d, 7), income: 0, expense: 0 });
+      } else {
+        for (d = new Date(start.getFullYear(), start.getMonth(), 1); d < end; d = new Date(d.getFullYear(), d.getMonth() + 1, 1)) {
+          list.push({ from: d, to: new Date(d.getFullYear(), d.getMonth() + 1, 1), income: 0, expense: 0 });
+        }
+      }
+      return list;
+    }
+
+    function anBucketIndex(buckets, d) {
+      var t = d.getTime();
+      for (var i = 0; i < buckets.length; i++) {
+        if (t >= buckets[i].from.getTime() && t < buckets[i].to.getTime()) return i;
+      }
+      return -1;
+    }
+
+    function anAddTo(map, key, n) { map[key] = (map[key] || 0) + n; }
+
+    function anAddMerch(map, name, n) {
+      var key = name.toLowerCase();
+      var m = map[key] || (map[key] = { name: name, sum: 0, count: 0 });
+      m.sum += n; m.count++;
+    }
+
+    // Сводка по строкам: доходы, расходы, возвраты, категории, магазины, счета, дни недели
+    function anAggregate(rows, start, end) {
+      var days = Math.max(1, Math.round((end - start) / 864e5));
+      var gran = days <= 35 ? 'day' : (days <= 140 ? 'week' : 'month');
+      var out = {
+        income: 0, expense: 0, returns: 0, count: 0, gran: gran,
+        cat: { EXPENSE: {}, INCOME: {}, RETURN: {} },
+        merch: {}, merchCat: { EXPENSE: {}, INCOME: {} },
+        acc: {}, wd: [0, 0, 0, 0, 0, 0, 0], top: [],
+        buckets: anBuckets(start, end, gran)
+      };
+
+      rows.forEach(function (r) {
+        if (r.action === 'TRANSFER') return;
+        var d = new Date(r.date);
+        if (isNaN(d.getTime())) return;
+        var n = Math.abs(Number(r.amount || 0));
+        var key = r.category_id === null || r.category_id === undefined ? 'none' : String(r.category_id);
+        var bi = anBucketIndex(out.buckets, d);
+        var b = bi >= 0 ? out.buckets[bi] : null;
+        var accKey = r.account_id === null || r.account_id === undefined ? 'none' : String(r.account_id);
+        var acc = out.acc[accKey] || (out.acc[accKey] = { income: 0, expense: 0 });
+        var name = cleanNote(r.note) || 'Без названия';
+
+        if (r.action === 'INCOME') {
+          out.income += n; out.count++; acc.income += n;
+          if (b) b.income += n;
+          anAddTo(out.cat.INCOME, key, n);
+          anAddMerch(out.merchCat.INCOME[key] || (out.merchCat.INCOME[key] = {}), name, n);
+        } else if (r.action === 'EXPENSE') {
+          out.expense += n; out.count++; acc.expense += n;
+          if (b) b.expense += n;
+          out.wd[(d.getDay() + 6) % 7] += n;
+          anAddTo(out.cat.EXPENSE, key, n);
+          anAddMerch(out.merch, name, n);
+          anAddMerch(out.merchCat.EXPENSE[key] || (out.merchCat.EXPENSE[key] = {}), name, n);
+          out.top.push({ date: d, amount: n, name: name, key: key });
+        } else if (r.action === 'RETURN') {
+          out.returns += n; out.count++; acc.expense -= n;
+          if (b) b.expense -= n;
+          anAddTo(out.cat.RETURN, key, n);
+        }
+      });
+
+      out.net = Math.max(0, out.expense - out.returns);
+      out.top.sort(function (a, b) { return b.amount - a.amount; });
+      out.top = out.top.slice(0, 5);
+      return out;
+    }
+
+    function anCatLabel(key) {
+      if (key === 'none') return 'Без категории';
+      var c = refs.catById[key];
+      return c ? c.name : 'Категория ' + key;
+    }
+
+    function anCatItems(agg, type) {
+      var items = [];
+      Object.keys(agg.cat[type]).forEach(function (k) {
+        var v = agg.cat[type][k];
+        if (type === 'EXPENSE') v = Math.max(0, v - (agg.cat.RETURN[k] || 0));
+        if (v > 0.004) items.push({ key: k, name: anCatLabel(k), amount: v });
+      });
+      items.sort(function (a, b) { return b.amount - a.amount; });
+      return items;
+    }
+
+    // ▲ / ▼ относительно прошлого периода
+    function anDelta(cur, prev, upIsGood) {
+      if (prev === null || prev === undefined) return '';
+      if (!(prev > 0)) return cur > 0 ? '<span class="anDelta flat">новое</span>' : '';
+      var pct = Math.round((cur - prev) / prev * 100);
+      if (pct === 0) return '<span class="anDelta flat">0%</span>';
+      var up = pct > 0;
+      return '<span class="anDelta ' + (up === upIsGood ? 'good' : 'bad') + '">' + (up ? '▲' : '▼') + ' ' + Math.abs(pct) + '%</span>';
+    }
+
+    // ---------- карточки ----------
+    function anKpiHtml(cur, prev, r) {
+      var tomorrow = anAdd(anDay(new Date()), 1);
+      var elapsed = Math.max(1, Math.round((Math.min(r.end, tomorrow) - r.start) / 864e5));
+      var result = cur.income - cur.net;
+      var prevResult = prev ? prev.income - prev.net : null;
+      var avg = cur.net / elapsed;
+      var prevDays = prev && r.prevStart ? Math.max(1, Math.round((r.prevEnd - r.prevStart) / 864e5)) : 0;
+      var prevAvg = prev && prevDays ? prev.net / prevDays : null;
+
+      var savings = cur.income > 0 ? Math.round(result / cur.income * 100) : null;
+      var expSub = cur.returns > 0 ? 'с учётом возвратов ' + money(cur.returns) : (cur.expense > 0 ? 'без возвратов' : '');
+
+      return '<div class="anKpiGrid">' +
+        '<div class="anKpi"><div class="t">Доходы</div><div class="v pos">' + money(cur.income) + '</div><div class="s">' +
+          (prev ? 'было ' + money(prev.income) : '') + anDelta(cur.income, prev ? prev.income : null, true) + '</div></div>' +
+        '<div class="anKpi"><div class="t">Расходы</div><div class="v neg">' + money(cur.net) + '</div><div class="s">' +
+          (expSub ? expSub + '<br>' : '') + (prev ? 'было ' + money(prev.net) : '') + anDelta(cur.net, prev ? prev.net : null, false) + '</div></div>' +
+        '<div class="anKpi"><div class="t">Результат</div><div class="v ' + (result >= 0 ? 'pos' : 'neg') + '">' + signedMoney(result) + '</div><div class="s">' +
+          (savings === null ? 'доходов в периоде нет' : (result >= 0 ? 'сохранено ' + savings + '% дохода' : 'расходы выше доходов')) +
+          (prevResult !== null ? '<br>было ' + signedMoney(prevResult) : '') + '</div></div>' +
+        '<div class="anKpi"><div class="t">Тратишь в день</div><div class="v blue">' + money(avg) + '</div><div class="s">' +
+          fmtInt(cur.count) + ' ' + (cur.count === 1 ? 'операция' : 'операций') + anDelta(avg, prevAvg, false) + '</div></div>' +
+        '</div>';
+    }
+
+    function anBucketLabel(b, gran, long) {
+      if (gran === 'day') return long ? AN_WD[(b.from.getDay() + 6) % 7] + ', ' + anShort(b.from) : String(b.from.getDate());
+      if (gran === 'week') return long ? anShort(b.from) + ' – ' + anShort(anAdd(b.to, -1)) : anShort(b.from);
+      return long ? anCap(MONTHS[b.from.getMonth()]) + ' ' + b.from.getFullYear() : AN_MON[b.from.getMonth()] + ' ' + String(b.from.getFullYear()).slice(2);
+    }
+
+    function anChartHtml(cur) {
+      var b = cur.buckets, n = b.length;
+      if (!n) return '';
+      var W = 340, H = 150, top = 12, base = 122, plot = base - top, max = 0;
+      b.forEach(function (x) { max = Math.max(max, x.income, Math.max(0, x.expense)); });
+      if (max <= 0) max = 1;
+      var gw = (W - 8) / n, bw = Math.max(1.6, Math.min(14, gw * 0.36)), svg = '';
+
+      svg += '<line x1="4" x2="' + (W - 4) + '" y1="' + base + '" y2="' + base + '" stroke="rgba(0,0,0,.12)"/>';
+      svg += '<line x1="4" x2="' + (W - 4) + '" y1="' + (top + plot / 2) + '" y2="' + (top + plot / 2) + '" stroke="rgba(0,0,0,.05)" stroke-dasharray="3 4"/>';
+      svg += '<line x1="4" x2="' + (W - 4) + '" y1="' + top + '" y2="' + top + '" stroke="rgba(0,0,0,.05)" stroke-dasharray="3 4"/>';
+
+      b.forEach(function (x, i) {
+        var cx = 4 + gw * i + gw / 2;
+        var hi = x.income / max * plot, he = Math.max(0, x.expense) / max * plot;
+        var rx = Math.min(3, bw / 2);
+        if (i === an.sel) svg += '<rect x="' + (4 + gw * i) + '" y="0" width="' + gw + '" height="' + base + '" rx="5" fill="rgba(47,91,255,.09)"/>';
+        if (hi > 0.2) svg += '<rect x="' + (cx - bw - 0.5) + '" y="' + (base - hi) + '" width="' + bw + '" height="' + hi + '" rx="' + rx + '" fill="#34C759"/>';
+        if (he > 0.2) svg += '<rect x="' + (cx + 0.5) + '" y="' + (base - he) + '" width="' + bw + '" height="' + he + '" rx="' + rx + '" fill="#FF6B5E"/>';
+        svg += '<rect data-bar="' + i + '" x="' + (4 + gw * i) + '" y="0" width="' + gw + '" height="' + base + '" fill="transparent"/>';
+      });
+
+      var labelCount = Math.min(n, 6);
+      for (var k = 0; k < labelCount; k++) {
+        var idx = labelCount === 1 ? 0 : Math.round(k * (n - 1) / (labelCount - 1));
+        svg += '<text x="' + (4 + gw * idx + gw / 2) + '" y="140" text-anchor="middle" font-size="9.5" fill="#8A8F99">' + escHtml(anBucketLabel(b[idx], cur.gran, false)) + '</text>';
+      }
+
+      var cap;
+      if (an.sel >= 0 && b[an.sel]) {
+        var s = b[an.sel];
+        cap = '<b>' + escHtml(anBucketLabel(s, cur.gran, true)) + '</b><br>Доходы ' + money(s.income) + ' · Расходы ' + money(Math.max(0, s.expense));
+      } else {
+        var peak = 0;
+        b.forEach(function (x, i) { if (x.expense > b[peak].expense) peak = i; });
+        cap = b[peak].expense > 0
+          ? 'Больше всего потрачено: <b>' + escHtml(anBucketLabel(b[peak], cur.gran, true)) + '</b> — ' + money(b[peak].expense) + '<br><span style="color:#8A8F99">Нажми на столбец, чтобы увидеть детали</span>'
+          : 'Расходов в этом периоде нет';
+      }
+
+      var gname = cur.gran === 'day' ? 'по дням' : (cur.gran === 'week' ? 'по неделям' : 'по месяцам');
+      return '<section class="anCard" id="anCardChart"><div class="anCardHead"><div><div class="anCardTitle">Динамика</div><div class="anCardSub">Доходы и расходы ' + gname + '</div></div></div>' +
+        '<div class="anLegend"><span><i style="background:#34C759"></i>Доходы</span><span><i style="background:#FF6B5E"></i>Расходы</span></div>' +
+        '<div class="anChart"><svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="График доходов и расходов">' + svg + '</svg></div>' +
+        '<div class="anChartCap">' + cap + '</div></section>';
+    }
+
+    function anColor(i) { return i < 7 ? DONUT_COLORS[i] : '#8E8E93'; }
+
+    function anCategoriesHtml(cur, prev) {
+      var type = an.type;
+      var items = anCatItems(cur, type);
+      var prevItems = prev ? anCatItems(prev, type) : null;
+      var prevMap = {};
+      if (prevItems) prevItems.forEach(function (x) { prevMap[x.key] = x.amount; });
+      var total = items.reduce(function (s, x) { return s + x.amount; }, 0);
+      var word = type === 'EXPENSE' ? 'Расходы' : 'Доходы';
+
+      var head = '<div class="anCardHead"><div><div class="anCardTitle">По категориям</div><div class="anCardSub">' + (type === 'EXPENSE' ? 'Расходы за вычетом возвратов' : 'Откуда приходят деньги') + '</div></div></div>' +
+        '<div class="anSeg"><button type="button" data-type="EXPENSE" class="' + (type === 'EXPENSE' ? 'active' : '') + '">Расходы</button>' +
+        '<button type="button" data-type="INCOME" class="' + (type === 'INCOME' ? 'active' : '') + '">Доходы</button></div>';
+
+      if (!items.length) {
+        return '<section class="anCard" id="anCardCats">' + head + '<div class="anEmpty">' + word + ' в этом периоде нет</div></section>';
+      }
+
+      // кольцо: топ-7 + «остальное»
+      var ring = items.slice(0, 7);
+      var rest = items.slice(7).reduce(function (s, x) { return s + x.amount; }, 0);
+      if (rest > 0) ring.push({ key: 'rest', name: 'Остальное', amount: rest });
+      var legend = ring.slice(0, 4).map(function (x, i) {
+        return '<div><i style="background:' + anColor(i) + '"></i><span>' + escHtml(x.name) + '</span><em>' + Math.round(x.amount / total * 100) + '%</em></div>';
+      }).join('') + (ring.length > 4 ? '<div><span style="color:#8A8F99">и ещё ' + (items.length - 4) + '</span></div>' : '');
+
+      var donut = '<div class="anDonutRow"><div class="anDonutBox">' + donutSvgMarkup(ring, total) +
+        '<div class="anDonutCenter"><div><b>' + escHtml(moneyShort(total)) + '</b><span>' + word.toLowerCase() + '</span></div></div></div>' +
+        '<div class="anDonutLeg">' + legend + '</div></div>';
+
+      var max = items[0].amount;
+      var rows = items.slice(0, 40).map(function (x, i) {
+        var pct = total > 0 ? x.amount / total * 100 : 0;
+        var open = an.open[type + ':' + x.key];
+        var delta = prevItems ? anDelta(x.amount, prevMap[x.key] || 0, type === 'INCOME') : '';
+        var html = '<button type="button" class="anCat" data-cat="' + escHtml(x.key) + '">' +
+          '<span class="anCatDot" style="background:' + anColor(i) + '"></span>' +
+          '<span class="anCatMain"><span class="anCatName">' + escHtml(x.name) + '</span><span class="anBar"><i style="width:' + (x.amount / max * 100).toFixed(1) + '%;background:' + anColor(i) + '"></i></span></span>' +
+          '<span class="anCatSide"><strong>' + money(x.amount) + '</strong><span>' + pct.toFixed(pct < 10 ? 1 : 0) + '%' + delta + '</span></span></button>';
+        if (open) {
+          var mm = cur.merchCat[type][x.key] || {};
+          var list = Object.keys(mm).map(function (k) { return mm[k]; }).sort(function (a, b) { return b.sum - a.sum; }).slice(0, 6);
+          var cnt = list.reduce(function (s, y) { return s + y.count; }, 0);
+          html += '<div class="anMore">' + list.map(function (y) {
+            return '<div class="anMoreRow"><span>' + escHtml(y.name) + (y.count > 1 ? ' ×' + y.count : '') + '</span><span>' + money(y.sum) + '</span></div>';
+          }).join('') + (cnt > 0 ? '<div class="anMoreRow"><span style="color:#8A8F99">Средняя операция</span><span>' + money(Object.keys(mm).reduce(function (s, k) { return s + mm[k].sum; }, 0) / Math.max(1, Object.keys(mm).reduce(function (s, k) { return s + mm[k].count; }, 0))) + '</span></div>' : '') + '</div>';
+        }
+        return html;
+      }).join('');
+
+      return '<section class="anCard" id="anCardCats">' + head + donut + '<div style="margin-top:10px">' + rows + '</div></section>';
+    }
+
+    function anMerchantsHtml(cur) {
+      var list = Object.keys(cur.merch).map(function (k) { return cur.merch[k]; }).sort(function (a, b) { return b.sum - a.sum; }).slice(0, 8);
+      if (!list.length) return '';
+      var max = list[0].sum;
+      return '<section class="anCard"><div class="anCardHead"><div><div class="anCardTitle">Куда уходят деньги</div><div class="anCardSub">Топ получателей и магазинов</div></div></div><div style="margin-top:6px">' +
+        list.map(function (m, i) {
+          return '<div class="anCat" style="cursor:default"><span class="anCatDot" style="background:' + anColor(i) + '"></span>' +
+            '<span class="anCatMain"><span class="anCatName">' + escHtml(m.name) + '</span><span class="anBar"><i style="width:' + (m.sum / max * 100).toFixed(1) + '%;background:' + anColor(i) + '"></i></span></span>' +
+            '<span class="anCatSide"><strong>' + money(m.sum) + '</strong><span>×' + m.count + ' · ср. ' + escHtml(moneyShort(m.sum / m.count)) + '</span></span></div>';
+        }).join('') + '</div></section>';
+    }
+
+    function anTopHtml(cur) {
+      if (!cur.top.length) return '';
+      return '<section class="anCard"><div class="anCardHead"><div><div class="anCardTitle">Крупнейшие расходы</div><div class="anCardSub">Пять самых больших трат периода</div></div></div><div style="margin-top:6px">' +
+        cur.top.map(function (t) {
+          return '<div class="anOp"><span class="anOpDate">' + escHtml(anShort(t.date)) + '</span>' +
+            '<span class="anOpMain"><span class="anOpTitle">' + escHtml(t.name) + '</span><span class="anOpSub">' + escHtml(anCatLabel(t.key)) + '</span></span>' +
+            '<span class="anOpAmt">−' + escHtml(money(t.amount)) + '</span></div>';
+        }).join('') + '</div></section>';
+    }
+
+    function anAccountsHtml(cur) {
+      if (an.acc !== 'ALL') return '';
+      var keys = Object.keys(cur.acc).filter(function (k) { return cur.acc[k].income > 0 || cur.acc[k].expense > 0; });
+      if (keys.length < 2) return '';
+      keys.sort(function (a, b) { return cur.acc[b].expense - cur.acc[a].expense; });
+      var max = Math.max.apply(null, keys.map(function (k) { return cur.acc[k].expense; })) || 1;
+      return '<section class="anCard"><div class="anCardHead"><div><div class="anCardTitle">По счетам</div><div class="anCardSub">Сколько прошло через каждый счёт</div></div></div><div style="margin-top:6px">' +
+        keys.map(function (k, i) {
+          var a = cur.acc[k], acc = refs.accById[k];
+          return '<div class="anCat" style="cursor:default"><span class="anCatDot" style="background:' + anColor(i) + '"></span>' +
+            '<span class="anCatMain"><span class="anCatName">' + escHtml(acc ? acc.name : 'Без счёта') + '</span><span class="anBar"><i style="width:' + (Math.max(0, a.expense) / max * 100).toFixed(1) + '%;background:' + anColor(i) + '"></i></span></span>' +
+            '<span class="anCatSide"><strong>' + money(Math.max(0, a.expense)) + '</strong><span>доходы ' + escHtml(moneyShort(a.income)) + '</span></span></div>';
+        }).join('') + '</div></section>';
+    }
+
+    function anWeekdayHtml(cur) {
+      var max = Math.max.apply(null, cur.wd), total = cur.wd.reduce(function (s, x) { return s + x; }, 0);
+      if (!(total > 0)) return '';
+      var peak = cur.wd.indexOf(max);
+      return '<section class="anCard"><div class="anCardHead"><div><div class="anCardTitle">По дням недели</div><div class="anCardSub">Когда ты тратишь больше всего</div></div></div>' +
+        '<div class="anWd">' + cur.wd.map(function (v, i) {
+          return '<div class="anWdCol"><div class="anWdBar' + (i === peak ? ' max' : '') + '" style="height:' + Math.max(3, v / max * 82) + '%"></div>' + AN_WD[i] + '</div>';
+        }).join('') + '</div>' +
+        '<div class="anChartCap" style="margin-top:12px">Больше всего ты тратишь по <b>' + AN_WD_DAT[peak] + '</b>: ' + money(max) + ' (' + Math.round(max / total * 100) + '% всех расходов).</div></section>';
+    }
+
+    function anRender() {
+      var D = an.data;
+      if (!D) return;
+      if (!D.count) {
+        qs('anBody').innerHTML = '<section class="anCard"><div class="anEmpty">За этот период операций нет.<br>Выбери другой период или счёт.</div></section>';
+        return;
+      }
+      qs('anBody').innerHTML = anKpiHtml(D.cur, D.prev, D.range) + anChartHtml(D.cur) + anCategoriesHtml(D.cur, D.prev) +
+        anMerchantsHtml(D.cur) + anTopHtml(D.cur) + anAccountsHtml(D.cur) + anWeekdayHtml(D.cur);
+    }
+
+    function anRenderHeader(r) {
+      document.querySelectorAll('#anChips .anChip').forEach(function (b) {
+        b.classList.toggle('active', b.getAttribute('data-mode') === an.mode);
+      });
+      qs('anLabel').textContent = r.label;
+      qs('anSubLabel').textContent = r.sub;
+      qs('anPrev').disabled = !r.nav;
+      qs('anNext').disabled = !r.nav || an.offset >= 0;
+      qs('anCustom').hidden = an.mode !== 'CUSTOM';
+    }
+
+    async function anLoad(silent) {
+      var reqId = ++an.req;
+      qs('anError').textContent = '';
+      try {
+        if (!refs.loaded) await loadRefs();
+        if (an.mode === 'ALL' && !an.earliest) {
+          var e = await sb.from('transactions').select('date').order('date', { ascending: true }).limit(1);
+          if (e.error) throw e.error;
+          an.earliest = e.data && e.data[0] ? new Date(e.data[0].date) : null;
+        }
+        var r = anRange();
+        anRenderHeader(r);
+        if (!r.valid) {
+          an.data = null;
+          qs('anBody').innerHTML = '<section class="anCard"><div class="anEmpty">Выбери дату начала и конца периода</div></section>';
+          return;
+        }
+        if (!silent) qs('anBody').innerHTML = '<div class="anLoading">Считаю…</div>';
+
+        var res = await Promise.all([
+          anFetch(r.start, r.end, an.acc),
+          r.prevStart ? anFetch(r.prevStart, r.prevEnd, an.acc) : Promise.resolve(null)
+        ]);
+        if (reqId !== an.req) return;
+
+        an.data = {
+          range: r,
+          count: res[0].length,
+          cur: anAggregate(res[0], r.start, r.end),
+          prev: res[1] ? anAggregate(res[1], r.prevStart, r.prevEnd) : null
+        };
+        if (!silent) an.sel = -1;
+        anRender();
+      } catch (err) {
+        if (reqId !== an.req) return;
+        console.error('[ACCOUNTING][ANALYTICS]', err);
+        qs('anError').textContent = 'Не удалось загрузить аналитику: ' + (err && err.message ? err.message : 'неизвестная ошибка');
+      }
+    }
+
+    async function openAnalytics() {
+      try { if (!refs.loaded) await loadRefs(); } catch (err) { /* покажем ошибку ниже */ }
+      var sel = qs('anAccount');
+      sel.innerHTML = '<option value="ALL">Все счета</option>' + refs.accounts.map(function (a) {
+        return '<option value="' + a.id + '"' + (String(a.id) === String(an.acc) ? ' selected' : '') + '>' + escHtml(a.name) + '</option>';
+      }).join('');
+      sel.value = an.acc;
+      anLoad(false);
+    }
+
+    document.querySelectorAll('#anChips .anChip').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        an.mode = btn.getAttribute('data-mode');
+        an.offset = 0;
+        if (an.mode === 'CUSTOM' && (!an.from || !an.to)) {
+          var now = new Date();
+          an.from = anInput(new Date(now.getFullYear(), now.getMonth(), 1));
+          an.to = anInput(now);
+          qs('anFrom').value = an.from;
+          qs('anTo').value = an.to;
+        }
+        anLoad(false);
+      });
+    });
+    qs('anPrev').addEventListener('click', function () { an.offset--; anLoad(false); });
+    qs('anNext').addEventListener('click', function () { if (an.offset < 0) { an.offset++; anLoad(false); } });
+    qs('anFrom').addEventListener('change', function () { an.from = qs('anFrom').value; anLoad(false); });
+    qs('anTo').addEventListener('change', function () { an.to = qs('anTo').value; anLoad(false); });
+    qs('anAccount').addEventListener('change', function () { an.acc = qs('anAccount').value; anLoad(false); });
+
+    // нажатия внутри карточек: столбец графика, переключатель расходы/доходы, раскрытие категории
+    qs('anBody').addEventListener('click', function (e) {
+      var bar = e.target.closest('[data-bar]');
+      if (bar && an.data) {
+        var i = Number(bar.getAttribute('data-bar'));
+        an.sel = an.sel === i ? -1 : i;
+        var chart = qs('anCardChart');
+        if (chart) chart.outerHTML = anChartHtml(an.data.cur);
+        return;
+      }
+      var seg = e.target.closest('[data-type]');
+      if (seg && an.data) {
+        an.type = seg.getAttribute('data-type');
+        an.open = {};
+        qs('anCardCats').outerHTML = anCategoriesHtml(an.data.cur, an.data.prev);
+        return;
+      }
+      var cat = e.target.closest('[data-cat]');
+      if (cat && an.data) {
+        var k = an.type + ':' + cat.getAttribute('data-cat');
+        an.open[k] = !an.open[k];
+        qs('anCardCats').outerHTML = anCategoriesHtml(an.data.cur, an.data.prev);
+      }
+    });
 
     // ---------------------------------------------------------------
     // Вход / выход
@@ -8509,7 +9487,7 @@
 
     async function liveTick() {
       if (document.hidden || qs('appView').hidden || live.busy || loading) return;
-      if (currentPage !== 'dashboard' && currentPage !== 'transactions' && currentPage !== 'accounts') return;
+      if (['dashboard', 'transactions', 'accounts', 'analytics', 'more'].indexOf(currentPage) < 0) return;
       live.busy = true;
       try {
         var t = await sb.from('transactions').select('id,created_at').order('created_at', { ascending: false }).limit(1);
