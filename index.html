@@ -4645,7 +4645,9 @@
     .budMsgLine{margin-top:8px;text-align:center}
     #budOverlay{z-index:1500 !important}
     #ruleOverlay{z-index:1500 !important}
-    #accOverlay{z-index:1500 !important}
+    #accOverlay{z-index:1700 !important}
+    .saldoAccountsSectionHead{display:flex !important;align-items:flex-start;justify-content:space-between;gap:12px}
+    .saldoAccountsSectionHead .saldoLinkBtn{flex:0 0 auto;white-space:nowrap;padding:2px 0 0}
     .impStat{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px solid rgba(0,0,0,.06);font-size:15px}
     .impStat:last-child{border-bottom:0}
     .impStat strong{font-weight:600}
@@ -4655,18 +4657,6 @@
     .impMapName span{font-weight:400;color:var(--muted);font-size:13px}
     .impIssue{padding:6px 0;font-size:13px;color:var(--muted);overflow-wrap:anywhere}
     .impGroupHead{margin:12px 0 0;font-size:12px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
-    .accRow{display:flex;align-items:center;gap:12px;width:100%;padding:12px 0;background:none;border:0;border-bottom:1px solid rgba(0,0,0,.06);text-align:left;color:inherit;cursor:pointer}
-    .accRow:last-child{border-bottom:0}
-    .accRow:active{opacity:.6}
-    .accIcon{width:38px;height:38px;border-radius:12px;background:var(--saldo-blue-soft);display:grid;place-items:center;font-size:19px;flex:0 0 auto}
-    .accRow.mono .accIcon{background:#17181C}
-    .accMain{flex:1 1 auto;min-width:0}
-    .accName{font-size:15px;font-weight:600;letter-spacing:-.01em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-    .accSub{margin-top:2px;font-size:12px;color:var(--muted)}
-    .accBal{font-size:15px;font-weight:600;letter-spacing:-.01em;white-space:nowrap}
-    .accBal.neg{color:var(--red)}
-    .accChevron{color:rgba(60,60,67,.3);font-size:18px;flex:0 0 auto}
-    #accEdit[hidden]{display:none !important}
     .dangerSolid{color:#fff !important}
     .moreRow{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;padding:14px 0;background:none;border:0;text-align:left;color:inherit;cursor:pointer}
     .moreRow:active{opacity:.6}
@@ -4807,6 +4797,60 @@
               </div>
             </section>
           </div>
+
+          <!-- Последние операции -->
+          <section class="saldoSection saldoTransactionsSection" id="dashRecent">
+            <div class="saldoSectionHead">
+              <div>
+                <div class="saldoSectionTitle">Последние операции</div>
+                <div class="saldoSectionSub">Нажмите на операцию для действий</div>
+              </div>
+              <button class="saldoLinkBtn" id="dashAllTx" type="button">Все</button>
+            </div>
+
+            <div class="saldoFilters">
+              <select class="saldoSelect" id="dPeriod" aria-label="Период">
+                <option value="TODAY">Сегодня</option>
+                <option value="7D">7 дней</option>
+                <option value="MONTH">Месяц</option>
+                <option value="ALL">Все</option>
+              </select>
+              <select class="saldoSelect" id="dAction" aria-label="Тип операции">
+                <option value="ALL">Все типы</option>
+                <option value="EXPENSE">Расходы</option>
+                <option value="INCOME">Доходы</option>
+                <option value="RETURN">Возвраты</option>
+                <option value="TRANSFER">Переводы</option>
+              </select>
+              <select class="saldoSelect saldoSelectWide" id="dCategory" aria-label="Категория">
+                <option value="ALL">Все категории</option>
+              </select>
+            </div>
+
+            <div id="dashTxList" class="txList saldoTxList"></div>
+            <div id="dashTxEmpty" class="saldoEmpty" hidden>Операций пока нет</div>
+            <div class="authError" id="dashTxError" role="alert"></div>
+          </section>
+
+          <!-- Топ категорий расходов -->
+          <section class="saldoPanel saldoInsightsPanel">
+            <div class="saldoSectionHead compact">
+              <div>
+                <div class="saldoSectionTitle" id="dashDonutTitle">Топ категорий расходов</div>
+                <div class="saldoSectionSub">Структура расходов за период</div>
+              </div>
+            </div>
+            <div class="donutWrap saldoDonutWrap">
+              <div class="donutBox">
+                <div id="dashDonutSvg"></div>
+                <div class="donutCenter">
+                  <div class="donutSum" id="dashDonutTotal">0 ₴</div>
+                  <div class="donutSub">расходы</div>
+                </div>
+              </div>
+              <div class="donutLegend" id="dashDonutLegend"></div>
+            </div>
+          </section>
 
           <div class="authError" id="dashError" role="alert"></div>
         </div>
@@ -4962,49 +5006,42 @@
 
       <!-- Счета -->
       <section class="page" id="page-accounts">
-        <div class="budgetShell" style="display:grid;gap:14px;width:100%;">
-          <section class="card" style="padding:14px 16px;">
-            <div style="display:grid;grid-template-columns:40px minmax(0,1fr) 40px;align-items:center;gap:8px;">
-              <span></span>
-              <div style="text-align:center;min-width:0;">
-                <div class="dashEyebrow">ВСЕ СЧЕТА</div>
-                <div id="accTotal" style="margin-top:4px;font-size:22px;font-weight:700;letter-spacing:-.02em;">—</div>
-              </div>
-              <button class="repNav" id="accAdd" type="button" aria-label="Добавить счёт">＋</button>
+        <div class="saldoAccountsShell">
+
+          <div class="saldoAccountsTop">
+            <div>
+              <div class="saldoAccountsEyebrow">МОИ ДЕНЬГИ</div>
+              <div class="saldoAccountsTitle">Счета</div>
+              <div class="saldoAccountsSubtitle">Баланс и история по каждому счёту</div>
             </div>
-            <div class="muted" id="accTotalCaption" style="margin-top:6px;text-align:center;">—</div>
+            <div class="saldoAccountsCount" id="accountsCount">0</div>
+          </div>
+
+          <section class="saldoAccountsTotalCard">
+            <div class="saldoAccountsTotalHead">
+              <span>Общий баланс</span>
+              <span class="saldoAccountsTotalBadge">UAH</span>
+            </div>
+            <div class="saldoAccountsTotalValue" id="accountsTotalBalance">—</div>
+            <div class="saldoAccountsTotalMeta" id="accountsTotalMeta">Загрузка счетов…</div>
           </section>
 
-          <section class="card" style="padding-top:6px;padding-bottom:6px;">
-            <div id="accList"><div class="saldoEmpty">Загрузка…</div></div>
+          <div id="accountsMonoHost"></div>
+
+          <section class="saldoAccountsSection">
+            <div class="saldoAccountsSectionHead">
+              <div>
+                <div class="saldoAccountsSectionTitle">Остальные счета</div>
+                <div class="saldoAccountsSectionSub">Баланс рассчитывается по Transactions 🔄</div>
+              </div>
+              <button class="saldoLinkBtn" id="accAdd" type="button">＋ Счёт</button>
+            </div>
+
+            <div id="accList" class="saldoAccountsList"></div>
+            <div id="accEmpty" class="saldoEmpty" hidden>Нет счетов</div>
           </section>
 
           <div class="authError" id="accError" role="alert"></div>
-        </div>
-      </section>
-
-      <!-- Один счёт -->
-      <section class="page" id="page-account">
-        <div class="budgetShell" style="display:grid;gap:14px;width:100%;">
-          <section class="card" style="padding:14px 16px;">
-            <div style="display:grid;grid-template-columns:40px minmax(0,1fr) 40px;align-items:center;gap:8px;">
-              <button class="repNav" id="accBack" type="button" aria-label="Назад">‹</button>
-              <div style="text-align:center;min-width:0;">
-                <div class="dashEyebrow" id="accDetailEyebrow">СЧЁТ</div>
-                <div id="accDetailName" style="margin-top:4px;font-size:18px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">—</div>
-              </div>
-              <button class="repNav" id="accEdit" type="button" aria-label="Изменить счёт">✎</button>
-            </div>
-            <div id="accDetailBalance" style="margin-top:12px;text-align:center;font-size:28px;font-weight:700;letter-spacing:-.02em;">—</div>
-            <div class="muted" id="accDetailCaption" style="margin-top:4px;text-align:center;">—</div>
-          </section>
-
-          <section class="saldoSection saldoTransactionsSection">
-            <div id="accTxList" class="txList saldoTxList"></div>
-            <div id="accTxEmpty" class="saldoEmpty" hidden>По этому счёту операций пока нет</div>
-          </section>
-
-          <div class="authError" id="accDetailError" role="alert"></div>
         </div>
       </section>
 
@@ -5307,6 +5344,56 @@
     </div>
   </div>
 
+  <!-- ===================== ИСТОРИЯ СЧЁТА ===================== -->
+  <div class="mTxOverlay saldoAccountHistoryOverlay" id="accTxOverlay" style="display:none;">
+    <div class="mTxSheet saldoAccountHistorySheet">
+
+      <div class="saldoAccountHistoryHandle" aria-hidden="true"></div>
+
+      <div class="saldoAccountHistoryHead">
+        <div class="saldoAccountHistoryHeadLeft">
+          <div class="saldoAccountHistoryIcon" id="accTxHeroIcon">◉</div>
+          <div class="saldoAccountHistoryHeadText">
+            <div class="saldoAccountHistoryEyebrow">ИСТОРИЯ СЧЁТА</div>
+            <div class="saldoAccountHistoryTitle" id="accTxTitle">Счёт</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <button class="saldoAccountHistoryClose" id="accTxEdit" type="button" aria-label="Изменить счёт">✎</button>
+          <button class="saldoAccountHistoryClose" id="accTxClose" type="button" aria-label="Закрыть">×</button>
+        </div>
+      </div>
+
+      <div class="saldoAccountHistoryHero">
+        <div>
+          <div class="saldoAccountHistoryBalanceLabel">Текущий баланс</div>
+          <div class="saldoAccountHistoryBalance" id="accTxHeroBalance">—</div>
+        </div>
+        <div class="saldoAccountHistorySource" id="accTxHeroSource">APP</div>
+      </div>
+
+      <div class="saldoAccountHistoryStats">
+        <div>
+          <span>Операций</span>
+          <strong id="accTxCount">—</strong>
+        </div>
+        <div>
+          <span>Показано</span>
+          <strong id="accTxShown">—</strong>
+        </div>
+      </div>
+
+      <div class="mTxList saldoAccountHistoryList" id="accTxList"></div>
+      <div class="authError" id="accTxError" role="alert"></div>
+
+      <div class="saldoAccountHistoryMoreWrap" id="accTxMoreWrap" hidden>
+        <button class="saldoAccountHistoryMore" id="accTxMore" type="button">Показать ещё</button>
+      </div>
+
+      <div class="saldoAccountHistoryScrollEnd" aria-hidden="true"></div>
+    </div>
+  </div>
+
   <!-- ===================== СЧЁТ ===================== -->
   <div class="sheetOverlay" id="accOverlay">
     <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="accTitle">
@@ -5398,19 +5485,18 @@
       document.querySelectorAll('.page').forEach(function (p) {
         p.classList.toggle('active', p.id === 'page-' + name);
       });
-      var tabName = (name === 'rules' || name === 'import') ? 'more' : (name === 'account' ? 'accounts' : name);
+      var tabName = (name === 'rules' || name === 'import') ? 'more' : name;
       document.querySelectorAll('.tab').forEach(function (t) {
         t.classList.toggle('active', t.getAttribute('data-page') === tabName);
       });
       window.scrollTo(0, 0);
       currentPage = name;
       qs('fab').hidden = !(name === 'dashboard' || name === 'transactions');
-      if (name === 'dashboard') loadDashboard();
+      if (name === 'dashboard') { qs('dPeriod').value = 'TODAY'; loadDashboard(); }
       if (name === 'transactions') loadTransactions(false);
       if (name === 'budget') loadBudget();
       if (name === 'rules' || name === 'more') loadRules();
       if (name === 'accounts') loadAccounts();
-      if (name === 'account') loadAccountDetail();
     }
 
     // Перезагрузить то, что видно на экране, после изменения операции
@@ -5418,7 +5504,7 @@
       lastLoadAt = 0;
       if (currentPage === 'transactions') loadTransactions(false);
       else if (currentPage === 'dashboard') loadDashboard();
-      else if (currentPage === 'account') loadAccountDetail();
+      else if (currentPage === 'accounts') loadAccounts();
     }
 
     // ---------------------------------------------------------------
@@ -5532,6 +5618,7 @@
     }
 
     async function loadDashboard() {
+      loadDashRecent();
       if (loading) return;
       loading = true;
       qs('dashError').textContent = '';
@@ -5604,24 +5691,26 @@
     }
 
     function fillCategoryFilter() {
-      var select = qs('fCategory');
-      var current = select.value;
-      select.innerHTML = '<option value="ALL">Все категории</option>';
+      ['fCategory', 'dCategory'].forEach(function (id) {
+        var select = qs(id);
+        var current = select.value;
+        select.innerHTML = '<option value="ALL">Все категории</option>';
 
-      [['EXPENSE', 'Расходы'], ['INCOME', 'Доходы']].forEach(function (pair) {
-        var group = document.createElement('optgroup');
-        group.label = pair[1];
-        categoriesOfType(pair[0]).forEach(function (c) {
-          var opt = document.createElement('option');
-          opt.value = String(c.id);
-          opt.textContent = c.name;
-          group.appendChild(opt);
+        [['EXPENSE', 'Расходы'], ['INCOME', 'Доходы']].forEach(function (pair) {
+          var group = document.createElement('optgroup');
+          group.label = pair[1];
+          categoriesOfType(pair[0]).forEach(function (c) {
+            var opt = document.createElement('option');
+            opt.value = String(c.id);
+            opt.textContent = c.name;
+            group.appendChild(opt);
+          });
+          select.appendChild(group);
         });
-        select.appendChild(group);
-      });
 
-      select.value = current || 'ALL';
-      if (select.value !== current && current) select.value = 'ALL';
+        select.value = current || 'ALL';
+        if (select.value !== current && current) select.value = 'ALL';
+      });
     }
 
     // ---------------------------------------------------------------
@@ -6028,7 +6117,8 @@
 
     function openEdit(id) {
       var row = tx.rows.find(function (r) { return r.id === id; }) ||
-                acc.rows.find(function (r) { return r.id === id; });
+                acc.rows.find(function (r) { return r.id === id; }) ||
+                dash.rows.find(function (r) { return r.id === id; });
       if (!row) return;
       openForm(row.mono_op_id ? 'bank' : 'manual', row);
     }
@@ -6779,16 +6869,10 @@
     // ---------------------------------------------------------------
     // Счета
     // ---------------------------------------------------------------
+    var HIST_FIRST = 80, HIST_STEP = 80, HIST_MAX = 500;
     var acc = {
-      list: [],
-      current: null,
-      rows: [],
-      req: 0,
-      detailReq: 0,
-      editing: null,
-      busy: false,
-      armed: false,
-      armTimer: null
+      list: [], current: null, rows: [], req: 0, detailReq: 0, histReq: 0, histLimit: HIST_FIRST,
+      editing: null, busy: false, armed: false, armTimer: null
     };
 
     var CUR_SYMBOL = { UAH: '₴', USD: '$', EUR: '€' };
@@ -6796,6 +6880,13 @@
     function moneyCur(value, cur) {
       var code = String(cur || 'UAH').toUpperCase();
       var n = new Intl.NumberFormat('ru-RU', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(Number(value || 0));
+      return n + ' ' + (CUR_SYMBOL[code] || code);
+    }
+
+    // В списке суммы без лишних нулей: 200 ₴, 3 000 ₴, 1 250,5 ₴
+    function moneyItem(value, cur) {
+      var code = String(cur || 'UAH').toUpperCase();
+      var n = new Intl.NumberFormat('ru-RU', { minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(Number(value || 0));
       return n + ' ' + (CUR_SYMBOL[code] || code);
     }
 
@@ -6826,109 +6917,268 @@
       }
     }
 
+    function renderMonoCard_(a) {
+      var host = qs('accountsMonoHost');
+      host.innerHTML = '';
+      if (!a) return;
+
+      var neg = Number(a.balance) < 0;
+      var card = document.createElement('button');
+      card.type = 'button';
+      card.className = 'saldoAccountsMonoCard';
+      card.addEventListener('click', function () { openAccountHistory(a); });
+
+      card.innerHTML =
+        '<div class="saldoAccountsMonoTop">' +
+          '<div class="saldoAccountsMonoIdentity">' +
+            '<span class="saldoAccountsMonoIcon">💳</span>' +
+            '<div>' +
+              '<div class="saldoAccountsMonoName"></div>' +
+              '<div class="saldoAccountsMonoProvider">Банковский счёт</div>' +
+            '</div>' +
+          '</div>' +
+          '<span class="saldoAccountsMonoStatus">APP</span>' +
+        '</div>' +
+        '<div class="saldoAccountsMonoBalance' + (neg ? ' negative' : '') + '"></div>' +
+        '<div class="saldoAccountsMonoCaption">Баланс по операциям</div>' +
+        '<div class="saldoAccountsMonoStats">' +
+          '<div class="saldoAccountsMonoStat"><span>Доступно</span><strong>—</strong></div>' +
+          '<div class="saldoAccountsMonoStat"><span>Лимит</span><strong>—</strong></div>' +
+        '</div>' +
+        '<div class="saldoAccountsMonoFooter">' +
+          '<span>Источник: Transactions 🔄</span>' +
+          '<span class="saldoAccountsChevron">›</span>' +
+        '</div>';
+
+      // Текст кладём через textContent, чтобы название счёта не попало в разметку
+      card.querySelector('.saldoAccountsMonoName').textContent = a.name;
+      card.querySelector('.saldoAccountsMonoBalance').textContent = moneyCur(a.balance, a.currency);
+      host.appendChild(card);
+    }
+
     function renderAccounts_() {
       var uah = acc.list.filter(function (a) { return String(a.currency || 'UAH').toUpperCase() === 'UAH'; });
       var total = uah.reduce(function (sum, a) { return sum + Number(a.balance || 0); }, 0);
-      qs('accTotal').textContent = money(total);
-      qs('accTotalCaption').textContent = acc.list.length + ' ' + (acc.list.length === 1 ? 'счёт' : 'счетов') +
-        (uah.length !== acc.list.length ? ' · в итог входят только UAH' : '');
+
+      qs('accountsCount').textContent = String(acc.list.length);
+      qs('accountsTotalBalance').textContent = moneyCur(total, 'UAH');
+      qs('accountsTotalMeta').textContent = uah.length + ' счетов UAH · баланс по операциям';
+
+      renderMonoCard_(acc.list.filter(function (a) { return a.is_monobank; })[0] || null);
 
       var box = qs('accList');
       box.innerHTML = '';
-      if (!acc.list.length) {
-        box.innerHTML = '<div class="saldoEmpty">Счетов пока нет</div>';
-        return;
-      }
+      var others = acc.list.filter(function (a) { return !a.is_monobank; });
+      qs('accEmpty').hidden = others.length > 0;
 
-      acc.list.forEach(function (a) {
-        var row = document.createElement('button');
-        row.type = 'button';
-        row.className = 'accRow' + (a.is_monobank ? ' mono' : '');
+      others.forEach(function (a) {
+        var item = document.createElement('button');
+        item.type = 'button';
+        item.className = 'saldoAccountsItem';
+        item.addEventListener('click', function () { openAccountHistory(a); });
 
         var icon = document.createElement('span');
-        icon.className = 'accIcon';
+        icon.className = 'saldoAccountsItemIcon';
         icon.textContent = accountIcon(a.name);
 
-        var main = document.createElement('div');
-        main.className = 'accMain';
-        var name = document.createElement('div');
-        name.className = 'accName';
-        name.textContent = accountLabel(a.name);
-        var sub = document.createElement('div');
-        sub.className = 'accSub';
-        sub.textContent = String(a.currency || 'UAH').toUpperCase() + (a.is_monobank ? ' · Monobank' : '');
-        main.append(name, sub);
+        var center = document.createElement('span');
+        center.className = 'saldoAccountsItemCenter';
+        var name = document.createElement('strong');
+        name.className = 'saldoAccountsItemName';
+        name.textContent = a.name;
+        var source = document.createElement('small');
+        source.className = 'saldoAccountsItemSource';
+        source.textContent = 'По операциям';
+        center.append(name, source);
 
-        var bal = document.createElement('div');
-        bal.className = 'accBal' + (Number(a.balance) < 0 ? ' neg' : '');
-        bal.textContent = moneyCur(a.balance, a.currency);
+        var values = document.createElement('span');
+        values.className = 'saldoAccountsItemValues';
+        var n = Number(a.balance || 0);
+        var value = document.createElement('strong');
+        value.className = 'saldoAccountsItemBalance ' + (n < 0 ? 'negative' : (n > 0 ? 'positive' : 'zero'));
+        value.textContent = moneyItem(n, a.currency);
+        values.appendChild(value);
 
-        var chevron = document.createElement('span');
-        chevron.className = 'accChevron';
-        chevron.textContent = '›';
+        var chev = document.createElement('span');
+        chev.className = 'saldoAccountsChevron';
+        chev.textContent = '›';
 
-        row.append(icon, main, bal, chevron);
-        row.addEventListener('click', function () {
-          acc.current = a;
-          setPage('account');
-        });
-        box.appendChild(row);
+        item.append(icon, center, values, chev);
+        box.appendChild(item);
       });
     }
 
-    async function loadAccountDetail() {
+    // ----- история счёта (нижнее окно)
+    function histDirection(row, accId) {
+      var n = Math.abs(Number(row.amount || 0));
+      if (row.action === 'EXPENSE') return { value: -n, cls: 'expense' };
+      if (row.action === 'INCOME' || row.action === 'RETURN') return { value: n, cls: 'income' };
+      if (row.action === 'TRANSFER') {
+        if (row.from_account_id === accId) return { value: -n, cls: 'expense' };
+        if (row.to_account_id === accId) return { value: n, cls: 'income' };
+      }
+      return { value: 0, cls: 'neutral' };
+    }
+
+    var ACTION_LABEL = { EXPENSE: 'Расход', INCOME: 'Доход', RETURN: 'Возврат', TRANSFER: 'Перевод' };
+
+    function renderHistoryHeader_(a, total, shown) {
+      qs('accTxHeroIcon').textContent = accountIcon(a.name);
+      qs('accTxTitle').textContent = a.name;
+      var bal = qs('accTxHeroBalance');
+      bal.textContent = moneyCur(a.balance, a.currency);
+      bal.classList.toggle('negative', Number(a.balance || 0) < 0);
+      qs('accTxHeroSource').textContent = 'APP';
+      qs('accTxEdit').hidden = Boolean(a.is_monobank);
+      qs('accTxCount').textContent = total === null ? '…' : String(total);
+      qs('accTxShown').textContent = shown === null ? '…' : String(shown);
+    }
+
+    function openAccountHistory(a) {
+      acc.current = a;
+      acc.histLimit = HIST_FIRST;
+      acc.rows = [];
+      qs('accTxError').textContent = '';
+      qs('accTxList').innerHTML = '';
+      qs('accTxMoreWrap').hidden = true;
+      renderHistoryHeader_(a, null, null);
+
+      var overlay = qs('accTxOverlay');
+      overlay.classList.add('open');
+      overlay.style.display = 'flex';
+      loadAccountHistory();
+    }
+
+    function closeAccountHistory() {
+      var overlay = qs('accTxOverlay');
+      overlay.classList.remove('open');
+      overlay.style.display = 'none';
+      acc.histReq++;
+    }
+
+    async function loadAccountHistory() {
       var a = acc.current;
-      if (!a) { setPage('accounts'); return; }
-
-      var reqId = ++acc.detailReq;
-      qs('accDetailError').textContent = '';
-
-      qs('accDetailName').textContent = a.name;
-      qs('accDetailBalance').textContent = moneyCur(a.balance, a.currency);
-      qs('accDetailCaption').textContent = String(a.currency || 'UAH').toUpperCase() + (a.is_monobank ? ' · Monobank' : '');
-      qs('accEdit').hidden = Boolean(a.is_monobank);
+      if (!a) return;
+      var reqId = ++acc.histReq;
+      qs('accTxError').textContent = '';
 
       try {
         if (!refs.loaded) await loadRefs();
-        if (reqId !== acc.detailReq) return;
+        if (reqId !== acc.histReq) return;
 
         var filter = 'account_id.eq.' + a.id + ',from_account_id.eq.' + a.id + ',to_account_id.eq.' + a.id;
         var res = await Promise.all([
           sb.from('transactions')
-            .select('id,date,action,amount,currency,note,mono_op_id,category_id,account_id,from_account_id,to_account_id')
+            .select('id,date,action,amount,currency,note,mono_op_id,category_id,account_id,from_account_id,to_account_id', { count: 'exact' })
             .or(filter)
             .order('date', { ascending: false })
             .order('created_at', { ascending: false })
-            .limit(100),
+            .limit(acc.histLimit),
           sb.from('account_balances').select('id,balance').eq('id', a.id)
         ]);
-        if (reqId !== acc.detailReq) return;
+        if (reqId !== acc.histReq) return;
         if (res[0].error) throw res[0].error;
         if (res[1].error) throw res[1].error;
 
         var fresh = (res[1].data || []).filter(function (r) { return r.id === a.id; })[0];
-        if (fresh) {
-          a.balance = fresh.balance;
-          qs('accDetailBalance').textContent = moneyCur(a.balance, a.currency);
-        }
+        if (fresh) a.balance = fresh.balance;
 
         acc.rows = res[0].data || [];
-        qs('accDetailCaption').textContent =
-          String(a.currency || 'UAH').toUpperCase() + (a.is_monobank ? ' · Monobank' : '') +
-          (acc.rows.length >= 100 ? ' · последние 100 операций' : '');
+        var total = typeof res[0].count === 'number' ? res[0].count : acc.rows.length;
 
-        var box = qs('accTxList');
-        box.innerHTML = '';
-        qs('accTxEmpty').hidden = acc.rows.length > 0;
-        renderTxGroups(acc.rows, box, a.id);
+        renderHistoryHeader_(a, total, acc.rows.length);
+        renderHistoryList_(a);
+
+        var hasMore = total > acc.rows.length && acc.histLimit < HIST_MAX;
+        qs('accTxMoreWrap').hidden = !hasMore;
+        var btn = qs('accTxMore');
+        btn.disabled = false;
+        btn.textContent = hasMore ? 'Показать ещё · ' + acc.rows.length + ' из ' + total : 'Все операции показаны';
       } catch (err) {
-        if (reqId !== acc.detailReq) return;
-        console.error('[ACCOUNTING][ACCOUNT_DETAIL]', err);
-        qs('accDetailError').textContent = 'Не удалось загрузить операции: ' + accErr(err);
+        if (reqId !== acc.histReq) return;
+        console.error('[ACCOUNTING][ACCOUNT_HISTORY]', err);
+        qs('accTxError').textContent = 'Не удалось загрузить операции: ' + accErr(err);
       }
     }
 
-    // ----- лист «Счёт»: создание, переименование, удаление
+    function renderHistoryList_(a) {
+      var box = qs('accTxList');
+      box.innerHTML = '';
+
+      if (!acc.rows.length) {
+        box.innerHTML = '<div class="saldoEmpty">По этому счёту пока нет операций</div>';
+        return;
+      }
+
+      var groups = [], byKey = {};
+      acc.rows.forEach(function (row) {
+        var d = new Date(row.date);
+        var key = d.getFullYear() + '-' + d.getMonth() + '-' + d.getDate();
+        if (!byKey[key]) { byKey[key] = { label: dayLabel(d), items: [], net: 0 }; groups.push(byKey[key]); }
+        var dir = histDirection(row, a.id);
+        byKey[key].items.push({ row: row, dir: dir });
+        byKey[key].net += dir.value;
+      });
+
+      groups.forEach(function (g) {
+        var day = document.createElement('div');
+        day.className = 'saldoAccountHistoryDay';
+        var label = document.createElement('span');
+        label.textContent = g.label;
+        var total = document.createElement('strong');
+        total.className = g.net < 0 ? 'negative' : (g.net > 0 ? 'positive' : '');
+        total.textContent = Math.abs(g.net) < 0.000001 ? '' : (g.net < 0 ? '−' : '+') + money(Math.abs(g.net));
+        day.append(label, total);
+        box.appendChild(day);
+
+        var group = document.createElement('div');
+        group.className = 'saldoAccountHistoryGroup';
+
+        g.items.forEach(function (it) {
+          var row = it.row;
+          var item = document.createElement('button');
+          item.type = 'button';
+          item.className = 'saldoAccountHistoryItem';
+          item.addEventListener('click', function () {
+            closeAccountHistory();
+            openEdit(row.id);
+          });
+
+          var icon = document.createElement('span');
+          icon.className = 'saldoAccountHistoryTxIcon ' + String(row.action || '').toLowerCase();
+          icon.textContent = txIcon(row);
+
+          var center = document.createElement('span');
+          center.className = 'saldoAccountHistoryTxCenter';
+          var title = document.createElement('strong');
+          title.textContent = txTitle(row);
+          var meta = document.createElement('small');
+          var route = row.action === 'TRANSFER'
+            ? (accName(row.from_account_id) || '?') + ' → ' + (accName(row.to_account_id) || '?')
+            : cleanNote(row.note);
+          meta.textContent = [ACTION_LABEL[row.action] || row.action, route].filter(Boolean).join(' · ');
+          center.append(title, meta);
+
+          var right = document.createElement('span');
+          right.className = 'saldoAccountHistoryTxRight';
+          var amount = document.createElement('strong');
+          amount.className = 'saldoAccountHistoryTxAmount ' + it.dir.cls;
+          var abs = moneyItem(Math.abs(it.dir.value || Number(row.amount || 0)), row.currency || 'UAH');
+          amount.textContent = it.dir.value < 0 ? '−' + abs : (it.dir.value > 0 ? '+' + abs : abs);
+          var time = document.createElement('small');
+          var d = new Date(row.date);
+          time.textContent = isNaN(d.getTime()) ? '' : pad2(d.getHours()) + ':' + pad2(d.getMinutes());
+          right.append(amount, time);
+
+          item.append(icon, center, right);
+          group.appendChild(item);
+        });
+
+        box.appendChild(group);
+      });
+    }
+
+    // ----- окно «Счёт»: создание, переименование, удаление
     function disarmAccDelete() {
       acc.armed = false;
       clearTimeout(acc.armTimer);
@@ -6994,13 +7244,10 @@
         if (res.error) throw res.error;
         if (!res.data || !res.data.length) throw new Error('Не удалось сохранить счёт.');
 
-        var wasEditing = Boolean(acc.editing);
-        if (wasEditing && acc.current && acc.current.id === acc.editing.id) acc.current.name = name;
-
         closeAccForm();
+        closeAccountHistory();
         await afterAccountChange();
-        if (wasEditing && currentPage === 'account') loadAccountDetail();
-        else loadAccounts();
+        loadAccounts();
       } catch (err) {
         console.error('[ACCOUNTING][ACCOUNT_SAVE]', err);
         errorBox.textContent = 'Не удалось сохранить: ' + accErr(err);
@@ -7031,9 +7278,10 @@
         if (!res.data || !res.data.length) throw new Error('Счёт не найден или нет доступа.');
 
         closeAccForm();
+        closeAccountHistory();
         acc.current = null;
         await afterAccountChange();
-        setPage('accounts');
+        loadAccounts();
       } catch (err) {
         console.error('[ACCOUNTING][ACCOUNT_DELETE]', err);
         disarmAccDelete();
@@ -7045,8 +7293,17 @@
     }
 
     qs('accAdd').addEventListener('click', function () { openAccForm(null); });
-    qs('accBack').addEventListener('click', function () { setPage('accounts'); });
-    qs('accEdit').addEventListener('click', function () { if (acc.current) openAccForm(acc.current); });
+    qs('accTxEdit').addEventListener('click', function () { if (acc.current) openAccForm(acc.current); });
+    qs('accTxClose').addEventListener('click', closeAccountHistory);
+    qs('accTxMore').addEventListener('click', function () {
+      acc.histLimit = Math.min(HIST_MAX, acc.histLimit + HIST_STEP);
+      qs('accTxMore').disabled = true;
+      qs('accTxMore').textContent = 'Загружаю…';
+      loadAccountHistory();
+    });
+    qs('accTxOverlay').addEventListener('click', function (event) {
+      if (event.target === qs('accTxOverlay')) closeAccountHistory();
+    });
     qs('accSave').addEventListener('click', saveAccount);
     qs('accCancel').addEventListener('click', closeAccForm);
     qs('accClose').addEventListener('click', closeAccForm);
@@ -7055,14 +7312,16 @@
       if (event.target === qs('accOverlay')) closeAccForm();
     });
     document.addEventListener('keydown', function (event) {
-      if (event.key === 'Escape' && qs('accOverlay').classList.contains('open')) closeAccForm();
+      if (event.key !== 'Escape') return;
+      if (qs('accOverlay').classList.contains('open')) closeAccForm();
+      else if (qs('accTxOverlay').classList.contains('open')) closeAccountHistory();
     });
 
     // Карточка счёта на главной открывает его историю
     function openAccountById(id) {
       var found = acc.list.filter(function (a) { return a.id === id; })[0];
-      if (found) { acc.current = found; setPage('account'); }
-      else setPage('accounts');
+      setPage('accounts');
+      if (found) openAccountHistory(found);
     }
 
     // ---------------------------------------------------------------
@@ -7486,6 +7745,175 @@
     qs('impGo').addEventListener('click', runImport);
 
     // ---------------------------------------------------------------
+    // Главная: последние операции и топ категорий расходов
+    // ---------------------------------------------------------------
+    var dash = { rows: [], req: 0, donutReq: 0 };
+    var DONUT_COLORS = ['#2F5BFF', '#1FBAD6', '#34C759', '#A3D900', '#B9A8A0', '#AF52DE', '#FF9500', '#8E8E93'];
+
+    function moneyShort(value) {
+      var n = Number(value || 0);
+      return new Intl.NumberFormat('ru-RU', { minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(n) + ' ₴';
+    }
+
+    function donutTitle(period) {
+      if (period === 'TODAY') return 'Топ категорий расходов, сегодня';
+      if (period === '7D') return 'Топ категорий расходов, 7 дней';
+      if (period === 'MONTH') return 'Топ категорий расходов, ' + MONTHS[new Date().getMonth()];
+      return 'Топ категорий расходов';
+    }
+
+    async function loadDashRecent() {
+      var reqId = ++dash.req;
+      qs('dashTxError').textContent = '';
+      var period = qs('dPeriod').value;
+
+      loadDonut(period);
+
+      try {
+        if (!refs.loaded) await loadRefs();
+        if (reqId !== dash.req) return;
+
+        var query = sb.from('transactions')
+          .select('id,date,action,amount,currency,note,mono_op_id,category_id,account_id,from_account_id,to_account_id')
+          .order('date', { ascending: false })
+          .order('created_at', { ascending: false })
+          .limit(50);
+
+        var start = periodStart(period);
+        if (start) query = query.gte('date', start.toISOString());
+        var action = qs('dAction').value;
+        if (action !== 'ALL') query = query.eq('action', action);
+        var category = qs('dCategory').value;
+        if (category !== 'ALL') query = query.eq('category_id', Number(category));
+
+        var res = await query;
+        if (reqId !== dash.req) return;
+        if (res.error) throw res.error;
+
+        dash.rows = res.data || [];
+        var box = qs('dashTxList');
+        box.innerHTML = '';
+        qs('dashTxEmpty').textContent = period === 'TODAY' && action === 'ALL' && category === 'ALL'
+          ? 'Сегодня операций пока нет' : 'Операций пока нет';
+        qs('dashTxEmpty').hidden = dash.rows.length > 0;
+        renderTxGroups(dash.rows, box, null);
+      } catch (err) {
+        if (reqId !== dash.req) return;
+        console.error('[ACCOUNTING][DASH_RECENT]', err);
+        qs('dashTxError').textContent = 'Не удалось загрузить операции: ' + (err && err.message ? err.message : 'неизвестная ошибка');
+      }
+    }
+
+    // Расходы минус возвраты по категориям за период
+    async function fetchBreakdownRows(period) {
+      var start = periodStart(period);
+      var all = [], from = 0, size = 1000;
+      for (var page = 0; page < 10; page++) {
+        var q = sb.from('transactions')
+          .select('category_id,action,amount')
+          .in('action', ['EXPENSE', 'RETURN'])
+          .order('date', { ascending: false })
+          .range(from, from + size - 1);
+        if (start) q = q.gte('date', start.toISOString());
+        var res = await q;
+        if (res.error) throw res.error;
+        var data = res.data || [];
+        all = all.concat(data);
+        if (data.length < size) break;
+        from += size;
+      }
+      return all;
+    }
+
+    function donutSvgMarkup(items, total) {
+      var size = 164, r = 72, stroke = 12, cx = size / 2, cy = size / 2, C = 2 * Math.PI * r;
+      var base = '<circle cx="' + cx + '" cy="' + cy + '" r="' + r + '" fill="none" stroke="rgba(0,0,0,.08)" stroke-width="' + stroke + '"/>';
+      if (total <= 0 || !items.length) {
+        return '<svg width="' + size + '" height="' + size + '" viewBox="0 0 ' + size + ' ' + size + '">' + base + '</svg>';
+      }
+      var gap = items.length > 1 ? 2.2 : 0, offset = 0;
+      var segs = items.map(function (it, idx) {
+        var dash = Math.max(0, (it.amount / total) * C - gap);
+        var seg = '<circle cx="' + cx + '" cy="' + cy + '" r="' + r + '" fill="none" stroke="' + DONUT_COLORS[idx % DONUT_COLORS.length] +
+          '" stroke-width="' + stroke + '" stroke-linecap="butt" stroke-dasharray="' + dash + ' ' + (C - dash) +
+          '" stroke-dashoffset="' + (-offset) + '" transform="rotate(-90 ' + cx + ' ' + cy + ')"/>';
+        offset += dash + gap;
+        return seg;
+      }).join('');
+      return '<svg width="' + size + '" height="' + size + '" viewBox="0 0 ' + size + ' ' + size + '">' + base + segs + '</svg>';
+    }
+
+    function legendRow(color, label, value) {
+      var row = document.createElement('div'); row.className = 'legRow';
+      var left = document.createElement('div'); left.className = 'legLeft';
+      var dot = document.createElement('div'); dot.className = 'legDot'; dot.style.background = color;
+      var name = document.createElement('div'); name.className = 'legName'; name.textContent = label;
+      var val = document.createElement('div'); val.className = 'legValue'; val.textContent = value;
+      left.append(dot, name);
+      row.append(left, val);
+      return row;
+    }
+
+    async function loadDonut(period) {
+      var reqId = ++dash.donutReq;
+      qs('dashDonutTitle').textContent = donutTitle(period);
+
+      try {
+        if (!refs.loaded) await loadRefs();
+        if (reqId !== dash.donutReq) return;
+
+        var rows = await fetchBreakdownRows(period);
+        if (reqId !== dash.donutReq) return;
+
+        var expense = {}, returned = {};
+        rows.forEach(function (r) {
+          var key = r.category_id === null || r.category_id === undefined ? 'none' : String(r.category_id);
+          var n = Math.abs(Number(r.amount || 0));
+          if (r.action === 'EXPENSE') expense[key] = (expense[key] || 0) + n;
+          else if (r.action === 'RETURN') returned[key] = (returned[key] || 0) + n;
+        });
+
+        var items = Object.keys(expense).map(function (key) {
+          var c = refs.catById[key];
+          return {
+            category: key === 'none' ? 'Без категории' : (c ? c.name : 'Категория удалена'),
+            amount: Math.round(Math.max(0, expense[key] - (returned[key] || 0)) * 100) / 100
+          };
+        }).filter(function (it) { return it.amount > 0; })
+          .sort(function (a, b) { return b.amount - a.amount; });
+
+        var total = items.reduce(function (sum, it) { return sum + it.amount; }, 0);
+        qs('dashDonutTotal').textContent = moneyShort(total);
+        qs('dashDonutSvg').innerHTML = donutSvgMarkup(items, total);
+
+        var legend = qs('dashDonutLegend');
+        legend.innerHTML = '';
+        items.slice(0, 4).forEach(function (it, idx) {
+          legend.appendChild(legendRow(DONUT_COLORS[idx % DONUT_COLORS.length], it.category, moneyShort(it.amount)));
+        });
+        var rest = items.slice(4);
+        if (rest.length) {
+          var restSum = rest.reduce(function (sum, it) { return sum + it.amount; }, 0);
+          legend.appendChild(legendRow('rgba(185,168,160,.9)', 'ещё ' + rest.length, moneyShort(restSum)));
+        }
+        if (!items.length) {
+          var empty = document.createElement('div');
+          empty.className = 'muted';
+          empty.textContent = 'Расходов за этот период нет';
+          legend.appendChild(empty);
+        }
+      } catch (err) {
+        if (reqId !== dash.donutReq) return;
+        console.error('[ACCOUNTING][DONUT]', err);
+      }
+    }
+
+    ['dPeriod', 'dAction', 'dCategory'].forEach(function (id) {
+      qs(id).addEventListener('change', function () { loadDashRecent(); });
+    });
+    qs('dashAllTx').addEventListener('click', function () { setPage('transactions'); });
+
+    // ---------------------------------------------------------------
     // Вход / выход
     // ---------------------------------------------------------------
     qs('authForm').addEventListener('submit', async function (event) {
@@ -7528,7 +7956,9 @@
       tx.req++;
       bud.req++;
       rulesState.req++;
-      acc.req++; acc.detailReq++; acc.current = null; acc.rows = [];
+      acc.req++; acc.histReq++; acc.current = null; acc.rows = [];
+      qs('accTxOverlay').classList.remove('open'); qs('accTxOverlay').style.display = 'none';
+      dash.req++; dash.donutReq++; dash.rows = [];
       refs.loaded = false;
       setPage('dashboard');
       showAuth();
