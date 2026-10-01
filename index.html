@@ -4649,7 +4649,12 @@
     #accOverlay{z-index:1700 !important}
     /* ---------- iPhone: непрозрачная полоса под строкой статуса (чёткая граница, без размытия) ---------- */
     html{background:var(--bg)}
-    .safeTopCover{position:fixed;top:0;left:0;right:0;height:env(safe-area-inset-top);background:var(--bg);z-index:30;pointer-events:none}
+    /* iPhone: прокручивается не вся страница, а область приложения. Тогда iOS не рисует размытую дымку
+       под строкой статуса, как это было в старой версии (она жила внутри окна Google). */
+    html,body{height:100%;margin:0;overflow:hidden;overscroll-behavior:none}
+    #appView{position:fixed;left:0;right:0;top:env(safe-area-inset-top,0px);bottom:0}
+    #appView > main{position:absolute;top:0;right:0;bottom:0;left:0;overflow-x:hidden;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior-y:contain}
+    #authView{position:fixed;top:0;right:0;bottom:0;left:0;overflow-y:auto;-webkit-overflow-scrolling:touch}
     .loadingOverlay.nonblock{-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
 
     /* ---------- «Ещё» ---------- */
@@ -4860,7 +4865,6 @@
 </head>
 
 <body>
-  <div class="safeTopCover" aria-hidden="true"></div>
 
   <!-- ===================== ВХОД ===================== -->
   <div class="authShell" id="authView" hidden>
@@ -5878,6 +5882,8 @@
       document.querySelectorAll('.tab').forEach(function (t) {
         t.classList.toggle('active', t.getAttribute('data-page') === tabName);
       });
+      var scroller = document.querySelector('#appView > main');
+      if (scroller) scroller.scrollTop = 0;
       window.scrollTo(0, 0);
       currentPage = name;
       qs('fab').hidden = !(name === 'dashboard' || name === 'transactions');
