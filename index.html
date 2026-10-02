@@ -5369,6 +5369,9 @@
             </div>
 
             <select class="anAccSel" id="anAccount" aria-label="Счёт"></select>
+
+            <button class="btnTint btnFull" id="anExportBtn" type="button" style="margin-top:12px;">Выгрузить отчёт за период</button>
+            <div class="muted" id="anExportMsg" style="text-align:center;margin-top:8px;"></div>
           </section>
 
           <div class="authError" id="anError" role="alert"></div>
@@ -8750,7 +8753,8 @@
     // ---------------------------------------------------------------
     // «Ещё»: сводка и переходы
     // ---------------------------------------------------------------
-    var APP_VERSION = '2.1';
+    var APP_VERSION = '2.2';
+    var APP_BUILD = '20261002-0749';
     var moreReq = 0;
 
     function escHtml(v) {
@@ -8914,7 +8918,7 @@
       if (counts) {
         rows.push({ s: 'ok', t: 'Данные', v: fmtInt(counts.tx) + ' операций · ' + fmtInt(counts.acc) + ' счетов · ' + fmtInt(counts.cat) + ' категорий · ' + fmtInt(counts.rules) + ' правил' });
       }
-      rows.push({ s: 'ok', t: 'Приложение', v: 'Версия ' + APP_VERSION, h: 'Экран обновляется сам, когда появляется новая операция.' });
+      rows.push({ s: 'ok', t: 'Приложение', v: 'Версия ' + APP_VERSION + ' · сборка ' + APP_BUILD, h: 'Если здесь старый номер, закрой приложение полностью и открой заново. Экран обновляется сам, когда появляется новая операция.' });
 
       qs('stList').innerHTML = rows.map(function (x) { return stRow(x.s, x.t, x.v, x.h); }).join('');
 
@@ -9382,6 +9386,116 @@
         qs('anError').textContent = 'Не удалось загрузить аналитику: ' + (err && err.message ? err.message : 'неизвестная ошибка');
       }
     }
+
+    // ---------------------------------------------------------------
+    // Выгрузка отчёта за выбранный период в CSV (открывается в Excel)
+    // ---------------------------------------------------------------
+    function csvCell(v) {
+      var s = String(v === null || v === undefined ? '' : v);
+      return /[";\n\r]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+    }
+
+    // Excel с русской/украинской локалью ждёт запятую как разделитель дробной части
+    function csvNum(n) { return Number(n || 0).toFixed(2).replace('.', ','); }
+
+    function csvDate(d) {
+      return d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate()) + ' ' +
+        pad2(d.getHours()) + ':' + pad2(d.getMinutes());
+    }
+
+    var ACTION_RU = { EXPENSE: 'Расход', INCOME: 'Доход', RETURN: 'Возврат', TRANSFER: 'Перевод' };
+
+    // Полные строки операций за период (для отчёта нужны поля, которых нет в анализе графиков)
+    async function anFetchFull(start, end, accId) {
+      var all = [], size = 1000;
+      for (var page = 0; page < 60; page++) {
+        var q = sb.from('transactions')
+          .select('date,action,amount,currency,category_id,account_id,from_account_id,to_account_id,note,mono_op_id')
+          .order('date', { ascending: false })
+          .range(page * size, page * size + size - 1);
+        if (start) q = q.gte('date', start.toISOString());
+        q = q.lt('date', end.toISOString());
+        if (accId !== 'ALL') q = q.or('account_id.eq.' + accId + ',from_account_id.eq.' + accId + ',to_account_id.eq.' + accId);
+        var res = await q;
+        if (res.error) throw res.error;
+        var chunk = res.data || [];
+        all = all.concat(chunk);
+        if (chunk.length < size) break;
+      }
+      all.sort(function (a, b) { return new Date(a.date) - new Date(b.date); });
+      return all;
+    }
+
+    function anFileSuffix(r) {
+      var tag = { WEEK: 'неделя', MONTH: 'месяц', QUARTER: 'квартал', YEAR: 'год', ALL: 'всё-время', CUSTOM: 'период' }[an.mode] || 'период';
+      return tag + '_' + anInput(r.start) + '_' + anInput(anAdd(r.end, -1));
+    }
+
+    async function anExportReport() {
+      var btn = qs('anExportBtn');
+      if (btn.disabled) return;
+      qs('anExportMsg').textContent = '';
+
+      var r = anRange();
+      if (!r.valid) { qs('anExportMsg').textContent = 'Сначала выбери даты периода.'; return; }
+
+      btn.disabled = true;
+      btn.textContent = 'Готовлю файл…';
+      try {
+        if (!refs.loaded) await loadRefs();
+        var rows = await anFetchFull(r.start, r.end, an.acc);
+
+        if (!rows.length) {
+          qs('anExportMsg').textContent = 'За этот период операций нет — выгружать нечего.';
+          return;
+        }
+
+        var head = ['Дата', 'Тип', 'Сумма', 'Валюта', 'Категория', 'Счёт', 'Со счёта', 'На счёт', 'Заметка', 'Источник'];
+        var lines = [head.map(csvCell).join(';')];
+        var totals = { EXPENSE: 0, INCOME: 0, RETURN: 0 };
+
+        rows.forEach(function (row) {
+          var d = new Date(row.date);
+          var cat = row.category_id !== null && row.category_id !== undefined ? catName({ category_id: row.category_id }) : '';
+          var acc = row.account_id !== null && row.account_id !== undefined ? accName(row.account_id) : '';
+          var from = row.from_account_id !== null && row.from_account_id !== undefined ? accName(row.from_account_id) : '';
+          var to = row.to_account_id !== null && row.to_account_id !== undefined ? accName(row.to_account_id) : '';
+          if (totals[row.action] !== undefined) totals[row.action] += Math.abs(Number(row.amount || 0));
+          lines.push([
+            csvDate(d), ACTION_RU[row.action] || row.action, csvNum(row.amount), row.currency || '',
+            cat, acc, from, to, cleanNote(row.note), row.mono_op_id ? 'Банк' : 'Вручную'
+          ].map(csvCell).join(';'));
+        });
+
+        lines.push('');
+        lines.push(['Период', r.label + (an.acc !== 'ALL' && refs.accById[an.acc] ? ' · ' + refs.accById[an.acc].name : '')].map(csvCell).join(';'));
+        lines.push(['Доходы', csvNum(totals.INCOME)].map(csvCell).join(';'));
+        lines.push(['Расходы', csvNum(totals.EXPENSE)].map(csvCell).join(';'));
+        lines.push(['Возвраты', csvNum(totals.RETURN)].map(csvCell).join(';'));
+        lines.push(['Результат', csvNum(totals.INCOME - totals.EXPENSE + totals.RETURN)].map(csvCell).join(';'));
+
+        var csv = '\uFEFF' + lines.join('\r\n');
+        var blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        var url = URL.createObjectURL(blob);
+        var a = document.createElement('a');
+        a.href = url;
+        a.download = 'Accounting_' + anFileSuffix(r) + '.csv';
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        setTimeout(function () { URL.revokeObjectURL(url); }, 4000);
+
+        qs('anExportMsg').textContent = 'Готово: ' + rows.length + ' ' + (function (n) { var a = n % 10, b = n % 100; return (b >= 11 && b <= 14) ? 'операций' : a === 1 ? 'операция' : (a >= 2 && a <= 4) ? 'операции' : 'операций'; })(rows.length) + '. Файл скачан — открывается в Excel.';
+      } catch (err) {
+        console.error('[ACCOUNTING][ANALYTICS_EXPORT]', err);
+        qs('anExportMsg').textContent = 'Не удалось собрать отчёт: ' + (err && err.message ? err.message : 'неизвестная ошибка');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Выгрузить отчёт за период';
+      }
+    }
+
+    qs('anExportBtn').addEventListener('click', anExportReport);
 
     async function openAnalytics() {
       try { if (!refs.loaded) await loadRefs(); } catch (err) { /* покажем ошибку ниже */ }
