@@ -8757,7 +8757,7 @@
     // «Ещё»: сводка и переходы
     // ---------------------------------------------------------------
     var APP_VERSION = '2.2';
-    var APP_BUILD = '20261003-1303';
+    var APP_BUILD = '20261003-1317';
     var moreReq = 0;
 
     function escHtml(v) {
@@ -9596,7 +9596,7 @@
     var ser = o.series.map(function (s, i) {
       return '<c:ser><c:idx val="' + i + '"/><c:order val="' + i + '"/><c:tx>' + strRef(s.nameF, [s.name]) + '</c:tx><c:spPr><a:solidFill><a:srgbClr val="' + s.color + '"/></a:solidFill></c:spPr><c:invertIfNegative val="0"/>' +
         (o.labels ? '<c:dLbls><c:numFmt formatCode="#,##0" sourceLinked="0"/><c:spPr><a:noFill/></c:spPr>' + txPr(800, C.muted, false) + '<c:dLblPos val="outEnd"/><c:showLegendKey val="0"/><c:showVal val="1"/><c:showCatName val="0"/><c:showSerName val="0"/><c:showPercent val="0"/><c:showBubbleSize val="0"/></c:dLbls>' : '') +
-        '<c:cat>' + strRef(o.cat.f, o.cat.vals) + '</c:cat><c:val>' + numRef(s.f, s.vals) + '</c:val></c:ser>';
+        '<c:cat>' + (o.cat.numeric ? numRef(o.cat.f, o.cat.vals) : strRef(o.cat.f, o.cat.vals)) + '</c:cat><c:val>' + numRef(s.f, s.vals) + '</c:val></c:ser>';
     }).join('');
     var h = !!o.horizontal;
     return CHART_HEAD + title(o.title) + '<c:plotArea><c:layout/><c:barChart><c:barDir val="' + (h ? 'bar' : 'col') + '"/><c:grouping val="clustered"/><c:varyColors val="0"/>' + ser +
@@ -9711,27 +9711,28 @@
 
     /* --- заготовки для секций --- */
     var row = 14, chartNo = 0, drawAnchors = [];
+    var csh = sum, curCh = { xml: charts, anch: drawAnchors }, secEnd = 13;   // лист, с которым сейчас работают помощники
     function section(r, text) {
-      for (var c = 2; c <= 13; c++) sum.set(r, c, '', S({ bb: ['medium', C.blue] }));
-      sum.set(r, 2, text, S({ sz: 13, b: 1, bb: ['medium', C.blue] })); sum.merge(r, 2, r, 13); sum.heights[r] = 28;
+      for (var c = 2; c <= secEnd; c++) csh.set(r, c, '', S({ bb: ['medium', C.blue] }));
+      csh.set(r, 2, text, S({ sz: 13, b: 1, bb: ['medium', C.blue] })); csh.merge(r, 2, r, secEnd); csh.heights[r] = 28;
     }
-    var thS = function (h) { return S({ b: 1, sz: 9, color: C.blue, fill: C.blueSoft, h: h || 'left', indent: h === 'right' ? 0 : 1 }); };
-    function head(r, c0, cols) { // cols: [{label, span, h}]
+    var thS = function (h, w) { return S({ b: 1, sz: 9, color: C.blue, fill: C.blueSoft, h: h || 'left', indent: h === 'right' ? 0 : 1, wrap: w }); };
+    function head(r, c0, cols, tall) { // cols: [{label, span, h}]; tall = двухстрочный заголовок
       var c = c0;
       cols.forEach(function (col) {
-        for (var k = 0; k < col.span; k++) sum.set(r, c + k, k === 0 ? col.label : '', thS(col.h));
-        if (col.span > 1) sum.merge(r, c, r, c + col.span - 1);
+        for (var k = 0; k < col.span; k++) csh.set(r, c + k, k === 0 ? col.label : '', thS(col.h, tall));
+        if (col.span > 1) csh.merge(r, c, r, c + col.span - 1);
         c += col.span;
       });
-      sum.heights[r] = 22;
+      csh.heights[r] = tall ? 34 : 22;
     }
     function cell(r, c, span, v, o, f) {
       o = o || {}; o.bb = o.bb || ['thin', C.line]; if (o.h === 'right') { o.indent = 0; } else if (!o.indent) o.indent = 1;
       var st = S(o);
-      for (var k = 0; k < span; k++) sum.set(r, c + k, k === 0 ? v : '', st, k === 0 ? f : undefined);
-      if (span > 1) sum.merge(r, c, r, c + span - 1);
+      for (var k = 0; k < span; k++) csh.set(r, c + k, k === 0 ? v : '', st, k === 0 ? f : undefined);
+      if (span > 1) csh.merge(r, c, r, c + span - 1);
     }
-    function addChart(xml, c1, r1, c2, r2) { charts.push(xml); drawAnchors.push([c1, r1, c2, r2]); }
+    function addChart(xml, c1, r1, c2, r2) { curCh.xml.push(xml); curCh.anch.push([c1, r1, c2, r2]); }
     var CH_ROWS = 17;
 
     /* ===== 1. Динамика ===== */
@@ -9939,9 +9940,168 @@
     sum.drawing = charts.length > 0;
     sum.landscape = false;
 
+
+    /* ===== Лист «Год к году» (только при периоде «За всё время») ===== */
+    var yoy = null, ycharts = [], yAnch = [], years = [];
+    if (model.yearly && n) { for (var yy = rows[0].date.getFullYear(); yy <= rows[n - 1].date.getFullYear(); yy++) years.push(yy); }
+    if (years.length >= 2) {
+      yoy = new Sheet('Год к году'); yoy.tab = C.amber;
+      csh = yoy; curCh = { xml: ycharts, anch: yAnch };
+      var ny = years.length, YC0 = 4, YT = YC0 + ny, lastCol = YT + 4, lastYearCol = YT - 1;
+      secEnd = lastCol;
+      yoy.cols.push([1, 1, 2]); yoy.cols.push([2, lastCol, 12.7]); yoy.cols.push([lastCol + 1, lastCol + 1, 2]);
+      var toCol = Math.min(lastCol, 12);
+
+      // шапка
+      yoy.heights[1] = 8;
+      for (var yc = 2; yc <= lastCol; yc++) { yoy.set(2, yc, '', heroS()); yoy.set(3, yc, '', heroS()); yoy.set(4, yc, '', S({ fill: C.blue })); }
+      yoy.set(2, 2, 'Год к году', heroS({ sz: 20, b: 1, indent: 1 })); yoy.merge(2, 2, 2, lastCol); yoy.heights[2] = 38;
+      yoy.set(3, 2, 'Сравнение календарных лет   ·   ' + model.accountLabel + '   ·   Данные с ' + ddmmyyyy(model.start) + ' по ' + ddmmyyyy(addDays(model.end, -1)), heroS({ sz: 10, color: 'C7C7CC', indent: 1 })); yoy.merge(3, 2, 3, lastCol); yoy.heights[3] = 24;
+      yoy.merge(4, 2, 4, lastCol); yoy.heights[4] = 4; yoy.heights[5] = 12;
+
+      var yLast = years[ny - 1], yPrev = yLast - 1;
+      var lastPartial = model.end < new Date(yLast + 1, 0, 1);
+      var lastStart = new Date(yLast, 0, 1), lastEnd = lastPartial ? model.end : new Date(yLast + 1, 0, 1);
+      var prevStart = new Date(yPrev, 0, 1), prevEnd = lastPartial ? new Date(yPrev, model.end.getMonth(), model.end.getDate()) : new Date(yLast, 0, 1);
+      var lastDay = addDays(model.end, -1);
+      var winTag = lastPartial ? ' (до ' + ddmm(lastDay) + ')' : '';
+      var firstPartial = model.start > new Date(years[0], 0, 1);
+
+      function yCrit(yCell) { return R('A') + ',">="&DATE(' + yCell + ',1,1),' + R('A') + ',"<"&DATE(' + yCell + '+1,1,1)'; }
+      function wCrit(a, b) { return R('A') + ',">=' + serial(a) + '",' + R('A') + ',"<' + serial(b) + '"'; }
+      function inWin(r, a, b) { return r.date >= a && r.date < b; }
+      function yearOf(r) { return r.date.getFullYear(); }
+      function monthsIn(y) { var a = new Date(Math.max(new Date(y, 0, 1), model.start)), b = new Date(Math.min(new Date(y + 1, 0, 1), model.end)); return Math.max(1, Math.round((b - a) / 864e5 / 30.4375 * 10) / 10); }
+
+      /* --- 1. Итоги по годам --- */
+      var yr = 6;
+      section(yr, 'Итоги по годам');
+      var yh = yr + 1;
+      head(yh, 2, [{ label: 'Год', span: 2 }, { label: 'Доходы', span: 1, h: 'right' }, { label: 'Расходы', span: 1, h: 'right' }, { label: 'Результат', span: 1, h: 'right' }, { label: 'Норма сбережений', span: 1, h: 'right' }, { label: 'Расход в месяц', span: 1, h: 'right' }, { label: 'Операций', span: 1, h: 'right' }], true);
+      var y0r = yh + 1, ylr = y0r + ny - 1, ytr = ylr + 1, incYs = [], expYs = [], totInc = 0, totExp = 0, totOps = 0, totMonths = 0;
+      years.forEach(function (y, i) {
+        var r = y0r + i, ys = new Date(y, 0, 1), ye = new Date(y + 1, 0, 1);
+        var yi = sumIf(function (x) { return x.action === 'Доход' && inWin(x, ys, ye); });
+        var ye2 = sumIf(function (x) { return x.action === 'Расход' && inWin(x, ys, ye); }) - sumIf(function (x) { return x.action === 'Возврат' && inWin(x, ys, ye); });
+        var yo = cntIf(function (x) { return inWin(x, ys, ye); }), mo = monthsIn(y);
+        incYs.push(yi); expYs.push(ye2); totInc += yi; totExp += ye2; totOps += yo; totMonths += mo;
+        var yc2 = yCrit('$B' + r);
+        cell(r, 2, 2, y, { b: 1, h: 'left' });
+        cell(r, 4, 1, yi, { fmt: FMT_NUM, h: 'right', color: C.green }, 'SUMIFS(' + R('C') + ',' + R('B') + ',"Доход",' + yc2 + ')');
+        cell(r, 5, 1, ye2, { fmt: FMT_NUM, h: 'right', color: C.red }, 'SUMIFS(' + R('C') + ',' + R('B') + ',"Расход",' + yc2 + ')-SUMIFS(' + R('C') + ',' + R('B') + ',"Возврат",' + yc2 + ')');
+        cell(r, 6, 1, yi - ye2, { fmt: FMT_NUM, h: 'right', b: 1 }, 'D' + r + '-E' + r);
+        cell(r, 7, 1, yi ? (yi - ye2) / yi : 0, { fmt: FMT_PCT, h: 'right', color: C.muted }, 'IF(D' + r + '=0,0,F' + r + '/D' + r + ')');
+        cell(r, 8, 1, ye2 / mo, { fmt: FMT_NUM, h: 'right', color: C.muted }, 'E' + r + '/' + mo);
+        cell(r, 9, 1, yo, { fmt: FMT_INT, h: 'right', color: C.muted }, 'COUNTIFS(' + yc2 + ')');
+      });
+      cell(ytr, 2, 2, 'Итого', Object.assign({}, tS));
+      cell(ytr, 4, 1, totInc, Object.assign({ fmt: FMT_NUM, h: 'right' }, tS), 'SUM(D' + y0r + ':D' + ylr + ')');
+      cell(ytr, 5, 1, totExp, Object.assign({ fmt: FMT_NUM, h: 'right' }, tS), 'SUM(E' + y0r + ':E' + ylr + ')');
+      cell(ytr, 6, 1, totInc - totExp, Object.assign({ fmt: FMT_NUM, h: 'right' }, tS), 'SUM(F' + y0r + ':F' + ylr + ')');
+      cell(ytr, 7, 1, totInc ? (totInc - totExp) / totInc : 0, Object.assign({ fmt: FMT_PCT, h: 'right' }, tS), 'IF(D' + ytr + '=0,0,F' + ytr + '/D' + ytr + ')');
+      cell(ytr, 8, 1, totExp / totMonths, Object.assign({ fmt: FMT_NUM, h: 'right' }, tS), 'E' + ytr + '/' + (Math.round(totMonths * 10) / 10));
+      cell(ytr, 9, 1, totOps, Object.assign({ fmt: FMT_INT, h: 'right' }, tS), 'SUM(I' + y0r + ':I' + ylr + ')');
+      yoy.cf.push('<conditionalFormatting sqref="F' + y0r + ':F' + ytr + '"><cfRule type="cellIs" dxfId="' + dResNeg + '" priority="' + (pr++) + '" operator="lessThan"><formula>0</formula></cfRule><cfRule type="cellIs" dxfId="' + dResPos + '" priority="' + (pr++) + '" operator="greaterThan"><formula>0</formula></cfRule></conditionalFormatting>');
+      var cTop = ytr + 2;
+      addChart(barChart({
+        title: 'Доходы и расходы по годам', legend: true, gap: 80,
+        cat: { f: '\'Год к году\'!$B$' + y0r + ':$B$' + ylr, vals: years.slice(), numeric: true },
+        series: [{ name: 'Доходы', nameF: '\'Год к году\'!$D$' + yh, f: '\'Год к году\'!$D$' + y0r + ':$D$' + ylr, vals: incYs, color: C.green }, { name: 'Расходы', nameF: '\'Год к году\'!$E$' + yh, f: '\'Год к году\'!$E$' + y0r + ':$E$' + ylr, vals: expYs, color: 'F25C5C' }]
+      }), 1, cTop - 1, toCol, cTop - 1 + 16);
+      var yNext = cTop + 16 + 1;
+
+      /* --- 2 и 3. Матрицы «категория × год» --- */
+      function yoyMatrix(titleText, kind, startRow) {
+        var isExp = kind === 'exp';
+        function sgn(r) { return isExp ? (r.action === 'Расход' ? 1 : r.action === 'Возврат' ? -1 : 0) : (r.action === 'Доход' ? 1 : 0); }
+        var catMap = {};
+        rows.forEach(function (r) { var g = sgn(r); if (!g) return; var k = r.cat || 'Без категории'; catMap[k] = catMap[k] || { tot: 0 }; catMap[k].tot += g * r.amt; });
+        var list = Object.keys(catMap).sort(function (a, b) { return catMap[b].tot - catMap[a].tot; });
+        if (!list.length) return startRow;
+        function net(name, a, b) { var t = 0; rows.forEach(function (r) { var g = sgn(r); if (g && (name === null || (r.cat || 'Без категории') === name) && inWin(r, a, b)) t += g * r.amt; }); return t; }
+        function fx(catRef, crit) {
+          return isExp ? 'SUMIFS(' + R('C') + ',' + R('B') + ',"Расход",' + (catRef ? R('E') + ',' + catRef + ',' : '') + crit + ')-SUMIFS(' + R('C') + ',' + R('B') + ',"Возврат",' + (catRef ? R('E') + ',' + catRef + ',' : '') + crit + ')'
+            : 'SUMIFS(' + R('C') + ',' + R('B') + ',"Доход",' + (catRef ? R('E') + ',' + catRef + ',' : '') + crit + ')';
+        }
+        section(startRow, titleText);
+        var h = startRow + 1;
+        var cols = [{ label: 'Категория', span: 2 }];
+        years.forEach(function (y) { cols.push({ label: y, span: 1, h: 'right' }); });
+        cols.push({ label: 'Итого', span: 1, h: 'right' });
+        cols.push({ label: yPrev + winTag, span: 1, h: 'right' }); cols.push({ label: yLast + winTag, span: 1, h: 'right' });
+        cols.push({ label: 'Изменение, ₴', span: 1, h: 'right' }); cols.push({ label: 'Изменение, %', span: 1, h: 'right' });
+        head(h, 2, cols, true);
+        var m0 = h + 1, ml = m0 + list.length - 1, mt = ml + 1, PC = YT + 1, LC = YT + 2, DC = YT + 3, PCt = YT + 4;
+        var pL = colName(PC), lL = colName(LC), dL = colName(DC);
+        list.forEach(function (name, i) {
+          var r = m0 + i, sumRow = 0;
+          cell(r, 2, 2, name, {});
+          years.forEach(function (y, j) {
+            var v = net(name, new Date(y, 0, 1), new Date(y + 1, 0, 1)); sumRow += v;
+            var L = colName(YC0 + j);
+            cell(r, YC0 + j, 1, v, { fmt: FMT_NUM, h: 'right' }, fx('$B' + r, yCrit(L + '$' + h)));
+          });
+          cell(r, YT, 1, sumRow, { fmt: FMT_NUM, h: 'right', b: 1 }, 'SUM(' + colName(YC0) + r + ':' + colName(lastYearCol) + r + ')');
+          var pv = net(name, prevStart, prevEnd), lv = net(name, lastStart, lastEnd);
+          cell(r, PC, 1, pv, { fmt: FMT_NUM, h: 'right', color: C.muted }, fx('$B' + r, wCrit(prevStart, prevEnd)));
+          cell(r, LC, 1, lv, { fmt: FMT_NUM, h: 'right' }, fx('$B' + r, wCrit(lastStart, lastEnd)));
+          cell(r, DC, 1, lv - pv, { fmt: FMT_NUM, h: 'right', b: 1 }, lL + r + '-' + pL + r);
+          cell(r, PCt, 1, pv === 0 ? (lv === 0 ? '—' : 'новая') : (lv - pv) / pv, { fmt: FMT_PCT, h: 'right', b: 1 }, 'IF(' + pL + r + '=0,IF(' + lL + r + '=0,"—","новая"),' + dL + r + '/' + pL + r + ')');
+        });
+        cell(mt, 2, 2, 'Итого', Object.assign({}, tS));
+        var allTot = 0;
+        years.forEach(function (y, j) {
+          var L = colName(YC0 + j), v = net(null, new Date(y, 0, 1), new Date(y + 1, 0, 1)); allTot += v;
+          cell(mt, YC0 + j, 1, v, Object.assign({ fmt: FMT_NUM, h: 'right' }, tS), 'SUM(' + L + m0 + ':' + L + ml + ')');
+        });
+        cell(mt, YT, 1, allTot, Object.assign({ fmt: FMT_NUM, h: 'right' }, tS), 'SUM(' + colName(YT) + m0 + ':' + colName(YT) + ml + ')');
+        var tp = net(null, prevStart, prevEnd), tl = net(null, lastStart, lastEnd);
+        cell(mt, PC, 1, tp, Object.assign({ fmt: FMT_NUM, h: 'right' }, tS), 'SUM(' + pL + m0 + ':' + pL + ml + ')');
+        cell(mt, LC, 1, tl, Object.assign({ fmt: FMT_NUM, h: 'right' }, tS), 'SUM(' + lL + m0 + ':' + lL + ml + ')');
+        cell(mt, DC, 1, tl - tp, Object.assign({ fmt: FMT_NUM, h: 'right' }, tS), lL + mt + '-' + pL + mt);
+        cell(mt, PCt, 1, tp === 0 ? '—' : (tl - tp) / tp, Object.assign({ fmt: FMT_PCT, h: 'right' }, tS), 'IF(' + pL + mt + '=0,"—",' + dL + mt + '/' + pL + mt + ')');
+        // тепловая карта по годам и цвета изменений (для расходов рост красный, для доходов зелёный)
+        yoy.cf.push('<conditionalFormatting sqref="' + colName(YC0) + m0 + ':' + colName(lastYearCol) + ml + '"><cfRule type="colorScale" priority="' + (pr++) + '"><colorScale><cfvo type="min"/><cfvo type="max"/><color rgb="FFFFFFFF"/><color rgb="FF' + (isExp ? 'BFCBFF' : 'B5E5CA') + '"/></colorScale></cfRule></conditionalFormatting>');
+        var up = isExp ? dResNeg : dResPos, down = isExp ? dResPos : dResNeg;
+        [dL, colName(PCt)].forEach(function (L) {
+          yoy.cf.push('<conditionalFormatting sqref="' + L + m0 + ':' + L + mt + '"><cfRule type="expression" dxfId="' + up + '" priority="' + (pr++) + '"><formula>AND(ISNUMBER(' + L + m0 + '),' + L + m0 + '&gt;0)</formula></cfRule><cfRule type="expression" dxfId="' + down + '" priority="' + (pr++) + '"><formula>AND(ISNUMBER(' + L + m0 + '),' + L + m0 + '&lt;0)</formula></cfRule></conditionalFormatting>');
+        });
+        var next = mt + 2;
+        if (isExp) {
+          var topN = Math.min(8, list.length), topCats = list.slice(0, topN);
+          addChart(barChart({
+            title: 'Топ-' + topN + ' категорий расходов по годам', legend: true, gap: 60,
+            cat: { f: '\'Год к году\'!$B$' + m0 + ':$B$' + (m0 + topN - 1), vals: topCats },
+            series: years.map(function (y, j) {
+              var L = colName(YC0 + j);
+              return { name: String(y), nameF: '\'Год к году\'!$' + L + '$' + h, f: '\'Год к году\'!$' + L + '$' + m0 + ':$' + L + '$' + (m0 + topN - 1), vals: topCats.map(function (nm) { return net(nm, new Date(y, 0, 1), new Date(y + 1, 0, 1)); }), color: PALETTE[j % PALETTE.length] };
+            })
+          }), 1, next - 1, toCol, next - 1 + 17);
+          next = next + 17 + 1;
+        }
+        return next;
+      }
+      var yRow = yoyMatrix('Расходы по категориям: год к году', 'exp', yNext);
+      yRow = yoyMatrix('Доходы по категориям: год к году', 'inc', yRow);
+
+      /* --- примечание --- */
+      var yNotes = ['Как читать лист', 'Сравниваются календарные годы. Расходы считаются за вычетом возвратов, переводы между счетами не учитываются.'];
+      if (lastPartial) yNotes.push(yLast + ' год ещё не закончен, поэтому в блоке справа он сравнивается с тем же периодом ' + yPrev + ' года (с 1 января по ' + ddmm(lastDay) + '), а не с полным годом.');
+      else yNotes.push('В блоке справа сравниваются два последних полных года: ' + yPrev + ' и ' + yLast + '.');
+      if (firstPartial) yNotes.push('Данные начинаются с ' + ddmmyyyy(model.start) + ', поэтому ' + years[0] + ' год неполный: его итоги не стоит сравнивать с полными годами напрямую.');
+      yNotes.push('Всё посчитано формулами по листу «Операции». Год в заголовке столбца можно поменять: суммы пересчитаются.');
+      yoy.set(yRow, 2, yNotes[0], S({ b: 1, sz: 9, color: C.muted, indent: 1 })); yoy.merge(yRow, 2, yRow, lastCol);
+      for (var yq = 1; yq < yNotes.length; yq++) { yoy.set(yRow + yq, 2, '•  ' + yNotes[yq], S({ sz: 9, color: C.muted, indent: 1 })); yoy.merge(yRow + yq, 2, yRow + yq, lastCol); }
+      yoy.maxR = Math.max(yoy.maxR, yRow + yNotes.length);
+      yoy.drawing = ycharts.length > 0;
+      yoy.landscape = true;
+      csh = sum; curCh = { xml: charts, anch: drawAnchors }; secEnd = 13;
+    }
+
     /* ===== Упаковка ===== */
     var noCache = !!opts.noCache;
-    var sheet1 = sum.xml(sst, noCache, true), sheet2 = ops.xml(sst, noCache, false);
+    var sheet1 = sum.xml(sst, noCache, true), sheet2 = ops.xml(sst, noCache, false), sheet3 = yoy ? yoy.xml(sst, noCache, false) : null;
+    var nMain = charts.length;
     var hdrXml = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>';
     var files = [];
     function add(name, str) { files.push({ name: name, data: utf8(str) }); }
@@ -9949,17 +10109,20 @@
       '<Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>' +
       '<Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>' +
       '<Override PartName="/xl/worksheets/sheet2.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>' +
+      (yoy ? '<Override PartName="/xl/worksheets/sheet3.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>' : '') +
       '<Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>' +
       '<Override PartName="/xl/sharedStrings.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sharedStrings+xml"/>' +
       (charts.length ? '<Override PartName="/xl/drawings/drawing1.xml" ContentType="application/vnd.openxmlformats-officedocument.drawing+xml"/>' : '') +
-      charts.map(function (c, i) { return '<Override PartName="/xl/charts/chart' + (i + 1) + '.xml" ContentType="application/vnd.openxmlformats-officedocument.drawingml.chart+xml"/>'; }).join('') + '</Types>';
+      (ycharts.length ? '<Override PartName="/xl/drawings/drawing2.xml" ContentType="application/vnd.openxmlformats-officedocument.drawing+xml"/>' : '') +
+      charts.concat(ycharts).map(function (c, i) { return '<Override PartName="/xl/charts/chart' + (i + 1) + '.xml" ContentType="application/vnd.openxmlformats-officedocument.drawingml.chart+xml"/>'; }).join('') + '</Types>';
     add('[Content_Types].xml', ct);
     add('_rels/.rels', hdrXml + '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>');
-    add('xl/workbook.xml', hdrXml + '<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><bookViews><workbookView xWindow="0" yWindow="0" windowWidth="24000" windowHeight="14000" activeTab="0"/></bookViews><sheets><sheet name="Сводка" sheetId="1" r:id="rId1"/><sheet name="Операции" sheetId="2" r:id="rId2"/></sheets>' +
-      '<definedNames><definedName name="_xlnm._FilterDatabase" localSheetId="1" hidden="1">Операции!$A$1:$L$' + N + '</definedName></definedNames><calcPr calcId="191029" fullCalcOnLoad="1"/></workbook>');
-    add('xl/_rels/workbook.xml.rels', hdrXml + '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet2.xml"/><Relationship Id="rId3" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/><Relationship Id="rId4" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/sharedStrings" Target="sharedStrings.xml"/></Relationships>');
+    add('xl/workbook.xml', hdrXml + '<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><bookViews><workbookView xWindow="0" yWindow="0" windowWidth="24000" windowHeight="14000" activeTab="0"/></bookViews><sheets><sheet name="Сводка" sheetId="1" r:id="rId1"/>' + (yoy ? '<sheet name="Год к году" sheetId="3" r:id="rId5"/>' : '') + '<sheet name="Операции" sheetId="2" r:id="rId2"/></sheets>' +
+      '<definedNames><definedName name="_xlnm._FilterDatabase" localSheetId="' + (yoy ? 2 : 1) + '" hidden="1">Операции!$A$1:$L$' + N + '</definedName></definedNames><calcPr calcId="191029" fullCalcOnLoad="1"/></workbook>');
+    add('xl/_rels/workbook.xml.rels', hdrXml + '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet2.xml"/><Relationship Id="rId3" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/><Relationship Id="rId4" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/sharedStrings" Target="sharedStrings.xml"/>' + (yoy ? '<Relationship Id="rId5" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet3.xml"/>' : '') + '</Relationships>');
     add('xl/worksheets/sheet1.xml', sheet1);
     add('xl/worksheets/sheet2.xml', sheet2);
+    if (sheet3) add('xl/worksheets/sheet3.xml', sheet3);
     add('xl/styles.xml', sb.xml());
     add('xl/sharedStrings.xml', sst.xml());
     if (charts.length) {
@@ -9968,6 +10131,13 @@
         drawAnchors.map(function (a, i) { return anchorXml(i + 1, a[0], a[1], a[2], a[3]); }).join('') + '</xdr:wsDr>');
       add('xl/drawings/_rels/drawing1.xml.rels', hdrXml + '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">' + charts.map(function (c, i) { return '<Relationship Id="rId' + (i + 1) + '" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/chart" Target="../charts/chart' + (i + 1) + '.xml"/>'; }).join('') + '</Relationships>');
       charts.forEach(function (c, i) { add('xl/charts/chart' + (i + 1) + '.xml', c); });
+    }
+    if (ycharts.length) {
+      add('xl/worksheets/_rels/sheet3.xml.rels', hdrXml + '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/drawing" Target="../drawings/drawing2.xml"/></Relationships>');
+      add('xl/drawings/drawing2.xml', hdrXml + '<xdr:wsDr xmlns:xdr="http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">' +
+        yAnch.map(function (a, i) { return anchorXml(i + 1, a[0], a[1], a[2], a[3]); }).join('') + '</xdr:wsDr>');
+      add('xl/drawings/_rels/drawing2.xml.rels', hdrXml + '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">' + ycharts.map(function (c, i) { return '<Relationship Id="rId' + (i + 1) + '" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/chart" Target="../charts/chart' + (nMain + i + 1) + '.xml"/>'; }).join('') + '</Relationships>');
+      ycharts.forEach(function (c, i) { add('xl/charts/chart' + (nMain + i + 1) + '.xml', c); });
     }
     return zip(files);
   }
@@ -10019,7 +10189,8 @@
           start: r.start,
           end: r.end,
           daysForAvg: Math.max(1, Math.ceil((elapsedEnd - r.start) / 864e5)),
-          generatedAt: now
+          generatedAt: now,
+          yearly: an.mode === 'ALL'
         };
 
         var bytes = buildReportXlsx(model);
@@ -10033,7 +10204,9 @@
         a.remove();
         setTimeout(function () { URL.revokeObjectURL(url); }, 4000);
 
-        qs('anExportMsg').textContent = 'Готово: отчёт с итогами и диаграммами скачан (' + rows.length + ' ' + (function (n) { var x = n % 10, y = n % 100; return (y >= 11 && y <= 14) ? 'операций' : x === 1 ? 'операция' : (x >= 2 && x <= 4) ? 'операции' : 'операций'; })(rows.length) + ').';
+        var yrs = {}; rows.forEach(function (x) { yrs[new Date(x.date).getFullYear()] = 1; });
+        var yoyNote = an.mode !== 'ALL' ? '' : (Object.keys(yrs).length >= 2 ? ' Добавлен лист «Год к году».' : ' Лист «Год к году» не добавлен: операции только за один год.');
+        qs('anExportMsg').textContent = 'Готово: отчёт с итогами и диаграммами скачан (' + rows.length + ' ' + (function (n) { var x = n % 10, y = n % 100; return (y >= 11 && y <= 14) ? 'операций' : x === 1 ? 'операция' : (x >= 2 && x <= 4) ? 'операции' : 'операций'; })(rows.length) + ').' + yoyNote;
       } catch (err) {
         console.error('[ACCOUNTING][ANALYTICS_EXPORT]', err);
         qs('anExportMsg').textContent = 'Не удалось собрать отчёт: ' + (err && err.message ? err.message : 'неизвестная ошибка');
