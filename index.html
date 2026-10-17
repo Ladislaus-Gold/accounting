@@ -4864,6 +4864,95 @@
     .budCatBtn{display:block;width:100%;padding:12px 0;background:none;border:0;border-bottom:1px solid rgba(0,0,0,.06);text-align:left;color:inherit;cursor:pointer}
     .budCatBtn:last-child{border-bottom:0}
     .budCatBtn:active{opacity:.6}
+
+    /* ===================== v2.3: ПАСТЕЛЬНО-ГОЛУБАЯ ТЕМА ===================== */
+    :root{
+      --bg:#E4EDFB;--saldo-bg:#E4EDFB;--saldo-line:#CBD9F3;--saldo-blue-soft:#DCE6FF;
+      --t-bg:#E4EDFB;--t-edge:#C6D6F3;--t-card-shadow:0 10px 26px rgba(49,87,246,.13),0 2px 6px rgba(30,50,120,.07);
+      --t-blue:#3157F6;--t-blue2:#5A82FF;--t-blue-dark:#1F3FC4;--t-ctl:#D6E2FA;
+    }
+    html,body,#appView,#appView > main,.page{background:var(--t-bg)!important}
+    @media (min-width:431px){body{background:#D3E0F6!important}}
+    .tabbar{background:rgba(228,237,251,.94)!important;border-top:1px solid var(--t-edge)!important;box-shadow:0 -6px 20px rgba(49,87,246,.10)}
+
+    /* Карточки отделяются от фона тенью и рамкой */
+    .card,.saldoPanel,.saldoAccountCard:not(.mono),.txDayGroup,.saldoAnalyticsCard,.saldoAnalyticsMonthCard,
+    .saldoStatusCard,.appleMoreGroup,.appleSettingsGroup,.saldoInsightsPanel,.saldoAccountHistoryGroup,
+    .txDetailCard,.actionGroup,.actionPanel,.saldoBalanceCard,.saldoAccountsTotalCard,.saldoAccountsMonoCard{
+      border:1px solid var(--t-edge)!important;box-shadow:var(--t-card-shadow)!important}
+    .card,.saldoPanel,.txDayGroup,.saldoAnalyticsCard,.saldoAnalyticsMonthCard,.saldoStatusCard,
+    .appleMoreGroup,.appleSettingsGroup,.saldoInsightsPanel,.txDetailCard,.saldoAccountCard:not(.mono){background:#fff!important}
+
+    /* Кнопки и элементы управления — контрастные */
+    .btn,.btnPrimary{background:linear-gradient(135deg,var(--t-blue2),var(--t-blue))!important;color:#fff!important;
+      box-shadow:0 8px 18px rgba(49,87,246,.38)!important;font-weight:700}
+    .btnGhost,.btnTint{background:var(--t-ctl)!important;color:var(--t-blue-dark)!important;border:1px solid #B5C8F0!important;font-weight:700}
+    .btnTintRed{background:#FFE1DF!important;color:#C0261D!important;border:1px solid #FFB9B4!important;font-weight:700}
+    .xbtn{background:var(--t-ctl)!important;color:var(--t-blue-dark)!important}
+    .seg{background:#D3E0F8!important;border:1px solid #BCCEF1}
+    .seg button{color:#2A3F86!important}
+    .seg button.active,#txSeg.txCrudSeg button.active{background:linear-gradient(135deg,var(--t-blue2),var(--t-blue))!important;color:#fff!important;
+      box-shadow:0 5px 12px rgba(49,87,246,.40)!important}
+    .input,.select,.textarea{background:#F4F8FF!important;border:1.5px solid #BDD0F2!important}
+    .input:focus,.select:focus,.textarea:focus{border-color:var(--t-blue)!important;box-shadow:0 0 0 4px rgba(49,87,246,.16)!important}
+    input[type=checkbox],input[type=radio],input[type=range]{accent-color:var(--t-blue)}
+    .pill{background:#D6E2FA;color:#2A3F86}
+    .pill.ok{background:#CFF3DA;color:#14692C}.pill.bad{background:#FFD9D6;color:#9B1C14}
+    .tab{color:#5C6F9E}
+    .tab.active{color:var(--t-blue)!important}
+
+    /* Полоски прогресса / ползунки */
+    .dashBudgetTrack,.budBar,.saldoProgress,.anBar{background:#C9D8F4!important}
+    .saldoProgressFill,.dashBudgetFill:not(.over),.budFill:not(.over){
+      background:linear-gradient(90deg,var(--t-blue),var(--t-blue2))!important;box-shadow:0 0 8px rgba(49,87,246,.35)}
+    .dashBudgetFill.over,.budFill.over{background:linear-gradient(90deg,#FF6B63,#E5383B)!important}
+
+    /* Светящийся «+» */
+    .fab{background:linear-gradient(135deg,#6B93FF,#2747E0)!important;color:#fff!important;font-weight:300;
+      box-shadow:0 0 0 6px rgba(90,130,255,.20),0 0 26px 8px rgba(90,130,255,.55),0 12px 26px rgba(39,71,224,.45)!important;
+      animation:fabGlow 2.4s ease-in-out infinite}
+    @keyframes fabGlow{
+      0%,100%{box-shadow:0 0 0 5px rgba(90,130,255,.18),0 0 20px 6px rgba(90,130,255,.45),0 12px 26px rgba(39,71,224,.40)}
+      50%{box-shadow:0 0 0 10px rgba(90,130,255,.12),0 0 36px 14px rgba(90,130,255,.70),0 12px 26px rgba(39,71,224,.50)}}
+
+    /* Кнопка «Создать операцию» в истории счёта */
+    .saldoAccountHistoryAdd{display:inline-flex;align-items:center;gap:6px;height:36px;padding:0 13px 0 8px;border:0;border-radius:999px;
+      background:linear-gradient(135deg,#6B93FF,#2747E0);color:#fff;font-weight:700;font-size:14px;cursor:pointer;
+      box-shadow:0 0 0 3px rgba(90,130,255,.20),0 0 16px 3px rgba(90,130,255,.55),0 6px 14px rgba(39,71,224,.35)}
+    .saldoAccountHistoryAdd .plus{display:grid;place-items:center;width:22px;height:22px;border-radius:50%;background:rgba(255,255,255,.28);font-size:17px;line-height:1}
+    .saldoAccountHistoryAdd:active{transform:scale(.96)}
+    .saldoAccountHistoryAdd[hidden]{display:none}
+    .saldoAccountHistoryClose{background:var(--t-ctl)!important;color:var(--t-blue-dark)!important}
+
+    /* Форма операции выше истории счёта */
+    #editOverlay{z-index:1800!important}
+    #editOverlay .sheet{--k1:#6B93FF;--k2:#2747E0;--kt:#EAF0FF;--ke:#B5C8F0;
+      background:linear-gradient(180deg,var(--kt) 0,#fff 150px)!important;border:1px solid var(--ke);box-shadow:0 -14px 40px rgba(30,50,120,.28)!important}
+    #editOverlay[data-kind=EXPENSE] .sheet{--k1:#FF7A6B;--k2:#E5383B;--kt:#FFEDEA;--ke:#FFC5BE}
+    #editOverlay[data-kind=INCOME] .sheet{--k1:#3FD67F;--k2:#14A150;--kt:#E6F9EE;--ke:#AEE7C5}
+    #editOverlay[data-kind=RETURN] .sheet{--k1:#3CC4DB;--k2:#0E8FA8;--kt:#E3F7FB;--ke:#A9E3EE}
+    #editOverlay[data-kind=TRANSFER] .sheet{--k1:#6B93FF;--k2:#2747E0;--kt:#EAF0FF;--ke:#B5C8F0}
+    #editOverlay .sheetHeader{margin:2px 0 8px;padding:12px 12px 12px 16px;border-radius:16px;
+      background:linear-gradient(135deg,var(--k1),var(--k2));box-shadow:0 8px 18px rgba(0,0,0,.18)}
+    #editOverlay .sheetTitle{color:#fff;font-size:18px;font-weight:700}
+    #editOverlay .xbtn{background:rgba(255,255,255,.28)!important;color:#fff!important}
+    #editOverlay .seg{background:rgba(255,255,255,.75)!important;border:1px solid var(--ke)}
+    #editOverlay .seg button.active,#editOverlay #txSeg.txCrudSeg button.active{background:linear-gradient(135deg,var(--k1),var(--k2))!important;color:#fff!important;
+      box-shadow:0 5px 12px rgba(0,0,0,.25)!important}
+    #editOverlay .label{color:var(--k2);font-weight:700;text-transform:uppercase;font-size:11px;letter-spacing:.05em}
+    #editOverlay .input,#editOverlay .select,#editOverlay .textarea{background:#fff!important;border:1.5px solid var(--ke)!important;border-radius:13px;
+      box-shadow:0 2px 6px rgba(30,50,120,.06)}
+    #editOverlay .input:focus,#editOverlay .select:focus,#editOverlay .textarea:focus{border-color:var(--k2)!important;box-shadow:0 0 0 4px rgba(0,0,0,.07)!important}
+    #editOverlay #editSave{background:linear-gradient(135deg,var(--k1),var(--k2))!important;box-shadow:0 8px 18px rgba(0,0,0,.25)!important}
+    #editOverlay .checkRow{background:#fff;border:1px solid var(--ke);border-radius:13px;padding:10px 12px}
+    #editOverlay .editSummary{background:#fff;border:1px solid var(--ke);border-radius:14px;box-shadow:0 4px 12px rgba(30,50,120,.08)}
+
+    /* Сумма: красная, пока пусто/0; зелёная, когда введена */
+    #editOverlay #txAmount{font-size:22px;font-weight:800;letter-spacing:-.01em;transition:background .2s,border-color .2s,color .2s,box-shadow .2s}
+    #editOverlay #txAmount.amtBad{background:#FFECEA!important;border-color:#E5383B!important;color:#B3261E;box-shadow:0 0 0 3px rgba(229,56,59,.16)!important}
+    #editOverlay #txAmount.amtBad::placeholder{color:#E5383B;opacity:.7}
+    #editOverlay #txAmount.amtOk{background:#E4F8EC!important;border-color:#14A150!important;color:#0F7A3B;box-shadow:0 0 0 3px rgba(20,161,80,.18)!important}
+
   </style>
 </head>
 
@@ -5594,7 +5683,7 @@
       <div class="row2" id="fieldAmountDate">
         <div class="field">
           <div class="label">Сумма</div>
-          <input class="input" id="txAmount" type="number" min="0" step="0.01" inputmode="decimal" placeholder="0,00">
+          <input class="input amtInput amtBad" id="txAmount" type="number" min="0" step="0.01" inputmode="decimal" placeholder="0,00">
         </div>
         <div class="field">
           <div class="label">Дата</div>
@@ -5758,6 +5847,7 @@
           </div>
         </div>
         <div style="display:flex;gap:8px;align-items:center;">
+          <button class="saldoAccountHistoryAdd" id="accTxAdd" type="button" aria-label="Создать операцию" title="Создать операцию"><span class="plus">+</span><span>Операция</span></button>
           <button class="saldoAccountHistoryClose" id="accTxEdit" type="button" aria-label="Изменить счёт">✎</button>
           <button class="saldoAccountHistoryClose" id="accTxClose" type="button" aria-label="Закрыть">×</button>
         </div>
@@ -5892,7 +5982,7 @@
       if (scroller) scroller.scrollTop = 0;
       window.scrollTo(0, 0);
       currentPage = name;
-      qs('fab').hidden = !(name === 'dashboard' || name === 'transactions');
+      qs('fab').hidden = !(name === 'dashboard' || name === 'transactions' || name === 'accounts');
       if (name === 'dashboard') { qs('dPeriod').value = 'TODAY'; loadDashboard(); }
       if (name === 'transactions') loadTransactions(false);
       if (name === 'budget') loadBudget();
@@ -5909,9 +5999,20 @@
       lastLoadAt = 0;
       if (currentPage === 'transactions') loadTransactions(false);
       else if (currentPage === 'dashboard') loadDashboard();
-      else if (currentPage === 'accounts') loadAccounts();
+      else if (currentPage === 'accounts') refreshAccountsAndHistory();
       else if (currentPage === 'analytics') anLoad(true);
       else if (currentPage === 'more') loadMoreHub();
+    }
+
+    // Счета + открытая история счёта (после создания/изменения операции внутри счёта)
+    async function refreshAccountsAndHistory() {
+      await loadAccounts();
+      var overlay = qs('accTxOverlay');
+      if (acc.current && overlay && overlay.classList.contains('open')) {
+        var fresh = acc.list.filter(function (a) { return a.id === acc.current.id; })[0];
+        if (fresh) { acc.current = fresh; renderHistoryHeader_(fresh, null, null); }
+        loadAccountHistory();
+      }
     }
 
     // ---------------------------------------------------------------
@@ -6464,6 +6565,12 @@
     function setFormAction(action) {
       form.action = action;
       var isTransfer = action === 'TRANSFER';
+      qs('editOverlay').setAttribute('data-kind', action);
+      // Перевод из карточки счёта: этот счёт — первый («Со счёта»)
+      if (isTransfer && form.preAcc && !qs('txFrom').value) {
+        qs('txFrom').value = String(form.preAcc);
+        if (qs('txFrom').value !== String(form.preAcc)) qs('txFrom').value = '';
+      }
 
       qs('txSeg').querySelectorAll('button').forEach(function (b) {
         b.classList.toggle('active', b.getAttribute('data-action') === action);
@@ -6476,10 +6583,20 @@
       qs('editRuleRow').hidden = isTransfer;
     }
 
-    function openForm(mode, row) {
+    // Сумма: красная, пока не введено число больше нуля; затем зелёная
+    function updateAmountState() {
+      var el = qs('txAmount');
+      var v = Number(String(el.value).replace(',', '.'));
+      var ok = el.value !== '' && isFinite(v) && v > 0;
+      el.classList.toggle('amtOk', ok);
+      el.classList.toggle('amtBad', !ok);
+    }
+
+    function openForm(mode, row, preAcc) {
       form.mode = mode;
       form.row = row || null;
       form.busy = false;
+      form.preAcc = preAcc || null;
 
       var isBank = mode === 'bank';
       var isCreate = mode === 'create';
@@ -6509,7 +6626,7 @@
       qs('fieldCurrency').hidden = isBank;
 
       // Значения полей
-      var defaultAccount = (refs.accounts.filter(function (a) { return !a.is_monobank; })[0] || refs.accounts[0] || {}).id;
+      var defaultAccount = preAcc || (refs.accounts.filter(function (a) { return !a.is_monobank; })[0] || refs.accounts[0] || {}).id;
 
       qs('txAmount').value = row ? String(Math.abs(Number(row.amount || 0))) : '';
       qs('txDate').value = toDateInput(row ? new Date(row.date) : new Date());
@@ -6520,6 +6637,7 @@
       qs('txCurrency').value = row && row.currency ? String(row.currency).toUpperCase() : 'UAH';
       qs('editNote').value = row ? (row.note || '') : '';
       qs('editRule').checked = false;
+      updateAmountState();
 
       setFormAction(action);
 
@@ -6540,14 +6658,15 @@
       qs('editOverlay').classList.add('open');
     }
 
-    async function openCreate() {
+    async function openCreate(accountId) {
+      var pre = (typeof accountId === 'number' || (typeof accountId === 'string' && accountId)) ? Number(accountId) : null;
       try {
         if (!refs.loaded) await loadRefs();
       } catch (err) {
         qs('txError').textContent = 'Не удалось загрузить справочники: ' + (err && err.message ? err.message : '');
         return;
       }
-      openForm('create', null);
+      openForm('create', null, pre);
     }
 
     function openEdit(id) {
@@ -6741,7 +6860,14 @@
       renderTransactions();
     });
 
-    qs('fab').addEventListener('click', openCreate);
+    qs('fab').addEventListener('click', function () {
+      var inHistory = qs('accTxOverlay').classList.contains('open') && acc.current && !acc.current.is_monobank;
+      openCreate(currentPage === 'accounts' && inHistory ? acc.current.id : null);
+    });
+    qs('txAmount').addEventListener('input', updateAmountState);
+    qs('accTxAdd').addEventListener('click', function () {
+      if (acc.current) openCreate(acc.current.id);
+    });
     qs('editSave').addEventListener('click', saveForm);
     qs('editCancel').addEventListener('click', closeEdit);
     qs('editClose').addEventListener('click', closeEdit);
@@ -7515,6 +7641,7 @@
       qs('accTxHeroSource').textContent = monoStatus(a);
       qs('accTxHeroSource').classList.toggle('stale', monoStatus(a) === 'CACHE');
       qs('accTxEdit').hidden = Boolean(a.is_monobank);
+      qs('accTxAdd').hidden = Boolean(a.is_monobank);
       qs('accTxCount').textContent = total === null ? '…' : String(total);
       qs('accTxShown').textContent = shown === null ? '…' : String(shown);
     }
@@ -8756,8 +8883,8 @@
     // ---------------------------------------------------------------
     // «Ещё»: сводка и переходы
     // ---------------------------------------------------------------
-    var APP_VERSION = '2.2';
-    var APP_BUILD = '20261003-1317';
+    var APP_VERSION = '2.3';
+    var APP_BUILD = '20261017-1900';
     var moreReq = 0;
 
     function escHtml(v) {
