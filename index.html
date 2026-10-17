@@ -4932,10 +4932,15 @@
     #editOverlay[data-kind=INCOME] .sheet{--k1:#3FD67F;--k2:#14A150;--kt:#E6F9EE;--ke:#AEE7C5}
     #editOverlay[data-kind=RETURN] .sheet{--k1:#3CC4DB;--k2:#0E8FA8;--kt:#E3F7FB;--ke:#A9E3EE}
     #editOverlay[data-kind=TRANSFER] .sheet{--k1:#6B93FF;--k2:#2747E0;--kt:#EAF0FF;--ke:#B5C8F0}
-    #editOverlay .sheetHeader{margin:2px 0 8px;padding:12px 12px 12px 16px;border-radius:16px;
-      background:linear-gradient(135deg,var(--k1),var(--k2));box-shadow:0 8px 18px rgba(0,0,0,.18)}
-    #editOverlay .sheetTitle{color:#fff;font-size:18px;font-weight:700}
-    #editOverlay .xbtn{background:rgba(255,255,255,.28)!important;color:#fff!important}
+    #editOverlay .sheetHeader{margin:0 0 10px;padding:4px 2px 12px;border-radius:0;background:none;box-shadow:none;
+      border-bottom:2px solid transparent;border-image:linear-gradient(90deg,var(--k2),transparent) 1}
+    #editOverlay .sheetTitle{display:flex;align-items:center;gap:12px;color:#1B2547;font-size:19px;font-weight:800;letter-spacing:-.02em}
+    #editOverlay .sheetTitle::before{content:"\2212";display:grid;place-items:center;flex:0 0 36px;width:36px;height:36px;border-radius:12px;
+      background:linear-gradient(135deg,var(--k1),var(--k2));color:#fff;font-size:22px;font-weight:700;line-height:1;box-shadow:0 5px 12px rgba(0,0,0,.20)}
+    #editOverlay[data-kind=INCOME] .sheetTitle::before{content:"+"}
+    #editOverlay[data-kind=RETURN] .sheetTitle::before{content:"\21A9";font-size:19px}
+    #editOverlay[data-kind=TRANSFER] .sheetTitle::before{content:"\21C4";font-size:19px}
+    #editOverlay .xbtn{background:#fff!important;color:var(--k2)!important;border:1.5px solid var(--ke);box-shadow:0 2px 6px rgba(30,50,120,.10)}
     #editOverlay .seg{background:rgba(255,255,255,.75)!important;border:1px solid var(--ke)}
     #editOverlay .seg button.active,#editOverlay #txSeg.txCrudSeg button.active{background:linear-gradient(135deg,var(--k1),var(--k2))!important;color:#fff!important;
       box-shadow:0 5px 12px rgba(0,0,0,.25)!important}
