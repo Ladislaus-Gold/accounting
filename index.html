@@ -4961,11 +4961,11 @@
 
     /* ===================== v2.4: заголовки, бюджет, белое окно операции ===================== */
     .saldoOverline,.dashEyebrow,.opsEyebrow,.saldoAccountsEyebrow,.saldoAccountHistoryEyebrow,.moreSection,.saldoPanelEyebrow,.saldoAnalyticsEyebrow{
-      color:#2F55E8!important;font-weight:700!important;opacity:1!important}
+      color:#101B45!important;font-weight:700!important;opacity:1!important}
     .saldoSectionTitle,.cardTitle,.anCardTitle,.saldoPanelTitle,.saldoAccountsSectionTitle,.saldoAccountsTitle,.saldoAnalyticsCardTitle,
     .saldoStatusCardTitle,.saldoPageTitle,.saldoDashTitle,.dashTitle,.opsTitle,.pageTitle,.saldoAccountHistoryTitle{color:#101B45!important;font-weight:700!important}
-    .saldoSectionSub,.saldoAccountsSubtitle,.muted,.budHint,.budCatHint,.saldoAnalyticsCardSub,.saldoStatusCardSub,
-    .saldoAccountsTotalMeta{color:#4A5A86!important}
+    .saldoSectionSub,.saldoAccountsSubtitle,.muted,.budHint,.budCatHint,.saldoAnalyticsCardSub,.saldoStatusCardSub{color:#4A5A86!important}
+    .saldoAccountsTotalMeta{color:rgba(255,255,255,.74)!important}
     .saldoAccountCard .saldoAccountName,.saldoAccountCard.mono *{color:inherit}
     .label{color:#4A5A86}
 
@@ -4988,6 +4988,16 @@
     #editOverlay #txAmount.amtBad{background:#FFF6F6!important;border-color:#F4C7C7!important;color:#C77272!important;box-shadow:none!important}
     #editOverlay #txAmount.amtBad::placeholder{color:#E0A3A3!important;opacity:1}
     #editOverlay #txAmount.amtOk{background:#F3FBF6!important;border-color:#B4E1C6!important;color:#2F8A57!important;box-shadow:none!important}
+
+
+    /* Бюджет: операции категории в окне */
+    #budOverlay .sheet{max-height:92vh;overflow-y:auto}
+    .budOpsHead{display:flex;align-items:center;justify-content:space-between;margin:14px 2px 6px;font-size:12px;font-weight:700;
+      letter-spacing:.06em;text-transform:uppercase;color:#101B45}
+    .budOpsCount{min-width:24px;padding:2px 8px;border-radius:999px;background:#DCE6FF;color:#1F3FC4;text-align:center;letter-spacing:0}
+    .budOpsList{max-height:40vh;overflow-y:auto;margin-bottom:12px;-webkit-overflow-scrolling:touch}
+    .budOpsList .txDayHead:first-child{margin-top:2px}
+    .budOpsEmpty{padding:16px;text-align:center;font-size:13px;color:#4A5A86}
 
   </style>
 </head>
@@ -5812,6 +5822,12 @@
       <div class="muted" id="budSheetHint">Меняется только этот месяц. Другие месяцы остаются как были.</div>
       <div class="authError" id="budSheetError" role="alert"></div>
 
+      <div class="budOpsHead">
+        <span>Операции за месяц</span>
+        <span class="budOpsCount" id="budOpsCount"></span>
+      </div>
+      <div class="budOpsList" id="budOpsList"></div>
+
       <div class="btnRow">
         <button class="btnGhost" id="budCancel" type="button">Отмена</button>
         <button class="btnPrimary" id="budSave" type="button">Сохранить</button>
@@ -6036,6 +6052,7 @@
       if (currentPage === 'transactions') loadTransactions(false);
       else if (currentPage === 'dashboard') loadDashboard();
       else if (currentPage === 'accounts') refreshAccountsAndHistory();
+      else if (currentPage === 'budget') { loadBudget(); if (bud.editing) loadBudOps(bud.editing); }
       else if (currentPage === 'analytics') anLoad(true);
       else if (currentPage === 'more') loadMoreHub();
     }
@@ -6708,7 +6725,8 @@
     function openEdit(id) {
       var row = tx.rows.find(function (r) { return r.id === id; }) ||
                 acc.rows.find(function (r) { return r.id === id; }) ||
-                dash.rows.find(function (r) { return r.id === id; });
+                dash.rows.find(function (r) { return r.id === id; }) ||
+                (bud.opsRows || []).find(function (r) { return r.id === id; });
       if (!row) return;
       openForm(row.mono_op_id ? 'bank' : 'manual', row);
     }
@@ -7140,6 +7158,41 @@
       qs('budSave').disabled = false;
       qs('budSave').textContent = 'Сохранить';
       qs('budOverlay').classList.add('open');
+      loadBudOps(cat);
+    }
+
+    // Список операций выбранной категории за выбранный месяц
+    async function loadBudOps(cat) {
+      var list = qs('budOpsList');
+      var count = qs('budOpsCount');
+      var reqId = bud.opsReq = (bud.opsReq || 0) + 1;
+      list.innerHTML = '<div class="budOpsEmpty">Загрузка…</div>';
+      count.textContent = '';
+      try {
+        var from = new Date(bud.year, bud.month, 1).toISOString();
+        var to = new Date(bud.year, bud.month + 1, 1).toISOString();
+        var res = await sb.from('transactions')
+          .select('id,date,action,amount,currency,note,mono_op_id,category_id,account_id,from_account_id,to_account_id')
+          .eq('category_id', cat.id)
+          .gte('date', from).lt('date', to)
+          .order('date', { ascending: false })
+          .limit(300);
+        if (reqId !== bud.opsReq) return;
+        if (res.error) throw res.error;
+        var rows = res.data || [];
+        list.innerHTML = '';
+        if (!rows.length) {
+          list.innerHTML = '<div class="budOpsEmpty">В этом месяце операций нет</div>';
+          return;
+        }
+        count.textContent = String(rows.length);
+        bud.opsRows = rows;
+        renderTxGroups(rows, list, null);
+      } catch (err) {
+        if (reqId !== bud.opsReq) return;
+        console.error('[ACCOUNTING][BUD_OPS]', err);
+        list.innerHTML = '<div class="budOpsEmpty">Не удалось загрузить операции</div>';
+      }
     }
 
     function closeBudEdit() {
@@ -8932,8 +8985,8 @@
     // ---------------------------------------------------------------
     // «Ещё»: сводка и переходы
     // ---------------------------------------------------------------
-    var APP_VERSION = '2.4';
-    var APP_BUILD = '20261018-1720';
+    var APP_VERSION = '2.5';
+    var APP_BUILD = '20261018-1740';
     var moreReq = 0;
 
     function escHtml(v) {
