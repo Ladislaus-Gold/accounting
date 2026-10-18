@@ -4903,9 +4903,9 @@
 
     /* Полоски прогресса / ползунки */
     .dashBudgetTrack,.budBar,.saldoProgress,.anBar{background:#C9D8F4!important}
-    .saldoProgressFill,.dashBudgetFill:not(.over),.budFill:not(.over){
+    .saldoProgressFill:not(.bad):not(.over),.dashBudgetFill:not(.over):not(.bad),.budFill:not(.over):not(.bad){
       background:linear-gradient(90deg,var(--t-blue),var(--t-blue2))!important;box-shadow:0 0 8px rgba(49,87,246,.35)}
-    .dashBudgetFill.over,.budFill.over{background:linear-gradient(90deg,#FF6B63,#E5383B)!important}
+    .dashBudgetFill.over,.dashBudgetFill.bad,.budFill.over,.budFill.bad,.saldoProgressFill.bad{background:linear-gradient(90deg,#FF6B63,#E5383B)!important}
 
     /* Светящийся «+» */
     .fab{background:linear-gradient(135deg,#6B93FF,#2747E0)!important;color:#fff!important;font-weight:300;
@@ -4957,6 +4957,42 @@
     #editOverlay #txAmount.amtBad{background:#FFECEA!important;border-color:#E5383B!important;color:#B3261E;box-shadow:0 0 0 3px rgba(229,56,59,.16)!important}
     #editOverlay #txAmount.amtBad::placeholder{color:#E5383B;opacity:.7}
     #editOverlay #txAmount.amtOk{background:#E4F8EC!important;border-color:#14A150!important;color:#0F7A3B;box-shadow:0 0 0 3px rgba(20,161,80,.18)!important}
+
+
+    /* ===================== v2.4: заголовки, бюджет, белое окно операции ===================== */
+    .saldoOverline,.dashEyebrow,.opsEyebrow,.saldoAccountsEyebrow,.saldoAccountHistoryEyebrow,.moreSection,.saldoPanelEyebrow,.saldoAnalyticsEyebrow{
+      color:#2F55E8!important;font-weight:700!important;opacity:1!important}
+    .saldoSectionTitle,.cardTitle,.anCardTitle,.saldoPanelTitle,.saldoAccountsSectionTitle,.saldoAccountsTitle,.saldoAnalyticsCardTitle,
+    .saldoStatusCardTitle,.saldoPageTitle,.saldoDashTitle,.dashTitle,.opsTitle,.pageTitle,.saldoAccountHistoryTitle{color:#101B45!important;font-weight:700!important}
+    .saldoSectionSub,.saldoAccountsSubtitle,.muted,.budHint,.budCatHint,.saldoAnalyticsCardSub,.saldoStatusCardSub,
+    .saldoAccountsTotalMeta{color:#4A5A86!important}
+    .saldoAccountCard .saldoAccountName,.saldoAccountCard.mono *{color:inherit}
+    .label{color:#4A5A86}
+
+    /* Бюджет: крупнее и контрастнее */
+    #page-budget .budCatName{font-size:16px!important;font-weight:700!important;color:#101B45!important}
+    #page-budget .budCatVal{font-size:14px!important;font-weight:700!important;color:#1B2A5E!important}
+    #page-budget .budCatHint{font-size:13px!important;margin-top:7px!important;color:#4A5A86!important}
+    #page-budget .budBar{height:10px!important}
+    #page-budget .muted{font-size:13.5px!important}
+    #page-budget .budOverVal,.budOverVal{color:#D92D20!important}
+    .budCatHint.budOverHint{color:#D92D20!important;font-weight:700!important}
+    #page-budget .budCatHint.budOverHint{color:#D92D20!important}
+
+    /* Окно операции: всегда белое, цвет только у значка и кнопок */
+    #editOverlay .sheet{background:#fff!important;border:1px solid #E3E9F5!important}
+    #editOverlay .sheetHeader{border-image:none!important;border-bottom:1px solid #E7ECF6!important}
+    #editOverlay .xbtn{border:1px solid #DCE4F3!important;color:#5B6A90!important;box-shadow:none!important}
+    #editOverlay .seg{background:#F3F6FC!important;border:1px solid #E1E8F5!important}
+    #editOverlay .label{color:#5B6A90!important}
+    #editOverlay .input,#editOverlay .select,#editOverlay .textarea{border:1.5px solid #D9E1F1!important;box-shadow:none!important}
+    #editOverlay .input:focus,#editOverlay .select:focus,#editOverlay .textarea:focus{border-color:#9DB0DE!important;box-shadow:0 0 0 3px rgba(60,90,170,.10)!important}
+    #editOverlay .checkRow{border:1px solid #E1E8F5!important;background:#fff!important}
+    #editOverlay .editSummary{border-color:#E1E8F5!important;box-shadow:none!important}
+    #editOverlay #txAmount{font-size:18px!important;font-weight:600!important}
+    #editOverlay #txAmount.amtBad{background:#FFF6F6!important;border-color:#F4C7C7!important;color:#C77272!important;box-shadow:none!important}
+    #editOverlay #txAmount.amtBad::placeholder{color:#E0A3A3!important;opacity:1}
+    #editOverlay #txAmount.amtOk{background:#F3FBF6!important;border-color:#B4E1C6!important;color:#2F8A57!important;box-shadow:none!important}
 
   </style>
 </head>
@@ -7010,10 +7046,12 @@
       fill.style.width = Math.max(0, Math.min(100, pct)) + '%';
       fill.classList.toggle('bad', planExp > 0 && remain < 0);
       qs('budgetExpenseRemain').textContent = money(remain);
+      qs('budgetExpenseRemain').style.color = remain < 0 ? 'var(--red)' : '';
 
       var status = qs('budgetExpenseStatus');
-      if (planExp <= 0) { status.textContent = 'План не задан'; status.style.color = 'var(--muted)'; }
-      else if (remain < 0) { status.textContent = 'Перерасход'; status.style.color = 'var(--red)'; }
+      if (planExp <= 0 && actExp > 0) { status.textContent = 'Вне бюджета ' + money(actExp); status.style.color = 'var(--red)'; }
+      else if (planExp <= 0) { status.textContent = 'План не задан'; status.style.color = 'var(--muted)'; }
+      else if (remain < 0) { status.textContent = 'Перерасход ' + money(-remain); status.style.color = 'var(--red)'; }
       else if (pct >= 90) { status.textContent = 'Почти лимит'; status.style.color = 'var(--orange)'; }
       else { status.textContent = 'В рамках плана'; status.style.color = 'var(--green)'; }
 
@@ -7064,16 +7102,27 @@
         bar.className = 'budBar';
         var fillEl = document.createElement('div');
         var over = !isIncome && plan > 0 && fact > plan;
-        fillEl.className = 'budFill' + (over ? ' bad' : '');
-        var w = plan > 0 ? Math.min(100, (fact / plan) * 100) : 0;
+        var unplanned = !isIncome && !(plan > 0) && fact > 0;
+        fillEl.className = 'budFill' + ((over || unplanned) ? ' bad' : '');
+        var w = plan > 0 ? Math.min(100, (fact / plan) * 100) : (unplanned ? 100 : 0);
+        if (over || unplanned) {
+          var factSpan = document.createElement('span');
+          factSpan.className = 'budOverVal';
+          factSpan.textContent = money(fact);
+          val.textContent = '';
+          val.appendChild(factSpan);
+          if (hasPlan) val.appendChild(document.createTextNode(' / ' + money(plan)));
+        }
         fillEl.style.width = w + '%';
         bar.appendChild(fillEl);
 
         var hint = document.createElement('div');
-        hint.className = 'budCatHint';
+        hint.className = 'budCatHint' + ((over || unplanned) ? ' budOverHint' : '');
         if (plan > 0) {
           if (isIncome) hint.textContent = fact >= plan ? 'План выполнен' : 'Не хватает ' + money(plan - fact);
           else hint.textContent = fact > plan ? 'Перерасход ' + money(fact - plan) : 'Осталось ' + money(plan - fact);
+        } else if (unplanned) {
+          hint.textContent = 'Не предусмотрено бюджетом: потрачено ' + money(fact) + '. Нажми, чтобы задать план';
         } else {
           hint.textContent = 'План не задан. Нажми, чтобы задать';
         }
@@ -8888,8 +8937,8 @@
     // ---------------------------------------------------------------
     // «Ещё»: сводка и переходы
     // ---------------------------------------------------------------
-    var APP_VERSION = '2.3';
-    var APP_BUILD = '20261017-1900';
+    var APP_VERSION = '2.4';
+    var APP_BUILD = '20261018-1720';
     var moreReq = 0;
 
     function escHtml(v) {
