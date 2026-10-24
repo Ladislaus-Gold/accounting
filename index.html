@@ -8278,6 +8278,13 @@
     function distMissing(err) { return /budget_distribution|does not exist|relation|schema cache/i.test(String(err && err.message || '')); }
     var DIST_SQL_MSG = 'В базе нет нужных таблиц. Запусти файл budget_distribution.sql в Supabase (SQL Editor), потом повтори.';
 
+    // Плановая сумма дохода по названию категории (Advance, Salary)
+    function distIncomePlan(re) {
+      var t = 0;
+      categoriesOfType('INCOME').forEach(function (c) { if (re.test(c.name)) t += Number(bud.budgets[c.id] || 0); });
+      return t;
+    }
+
     function distSums() {
       var a = 0, s2 = 0;
       dist.rows.forEach(function (r) { a += r.adv; s2 += r.sal; });
@@ -8325,12 +8332,19 @@
         });
         dist.adv = data.month ? Number(data.month.advance_total || 0) : 0;
         dist.sal = data.month ? Number(data.month.salary_total || 0) : 0;
+        // База: плановые доходы «Advance» (аванс) и «Salary» (зарплата), пока сумма не сохранена вручную
+        var planAdv = distIncomePlan(/^\s*advance/i), planSal = distIncomePlan(/^\s*salary/i);
+        dist.fromPlan = false;
+        if (!(dist.adv > 0) && planAdv > 0) { dist.adv = planAdv; dist.fromPlan = true; }
+        if (!(dist.sal > 0) && planSal > 0) { dist.sal = planSal; dist.fromPlan = true; }
+        dist.planAdv = planAdv; dist.planSal = planSal;
         dist.formed = data.month && data.month.formed_at ? data.month.formed_at : null;
         dist.ids = data.month && data.month.transfer_ids ? data.month.transfer_ids : [];
         dist.dirty = false;
         if (!dist.rows.length) { msg.textContent = 'Сначала задай план расходов на ' + budLabel() + '.'; return; }
         renderDist();
         qs('distOverlay').classList.add('open');
+        if (dist.fromPlan) distScheduleSave();
       } catch (err) {
         console.error('[ACCOUNTING][DIST_OPEN]', err);
         qs('budError').textContent = distMissing(err) ? DIST_SQL_MSG : 'Не удалось открыть: ' + budError(err);
@@ -8343,7 +8357,10 @@
       var locked = Boolean(dist.formed);
       var src = distSrc();
       qs('distMeta').textContent = budLabel() + ' · план расходов ' + money(dist.rows.reduce(function (t, r) { return t + r.plan; }, 0)) +
-        '. Впиши, сколько из аванса и зарплаты кладёшь в каждую категорию. Приложение помнит это до конца месяца.';
+        '. Впиши, сколько из аванса и зарплаты кладёшь в каждую категорию. Приложение помнит это до конца месяца.' +
+        (dist.fromPlan ? ' Суммы аванса и зарплаты взяты из плана доходов (Advance, Salary), их можно поправить.' : '');
+      qs('distAdv').placeholder = dist.planAdv > 0 ? 'по плану ' + dist.planAdv : '0';
+      qs('distSal').placeholder = dist.planSal > 0 ? 'по плану ' + dist.planSal : '0';
       qs('distAdv').value = dist.adv > 0 ? String(dist.adv) : '';
       qs('distSal').value = dist.sal > 0 ? String(dist.sal) : '';
       qs('distAdv').disabled = locked;
