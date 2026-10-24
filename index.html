@@ -5004,9 +5004,17 @@
     .budMandBadge,.budModeBadge{display:inline-block;margin-left:6px;padding:2px 7px;border-radius:8px;font-size:10px;font-weight:700;
       letter-spacing:.02em;vertical-align:middle;color:#1F3FC4;background:#E3EBFF}
     .budModeBadge{color:#7A4B00;background:#FFEFD0}
+    .budSaveBadge{display:inline-block;margin-left:6px;padding:2px 7px;border-radius:8px;font-size:10px;font-weight:700;vertical-align:middle;color:#0F7A3B;background:#DDF5E7}
+    /* Рамки фиксированы по ширине экрана: длинный текст переносится, а не раздвигает карточки */
+    #page-budget .budgetShell{grid-template-columns:minmax(0,1fr)!important;max-width:100%}
+    #page-budget .budgetShell>*{min-width:0;max-width:100%}
+    #page-budget .cardHead{gap:10px}
+    #page-budget .cardHead>div:first-child{min-width:0}
+    #page-budget .saldoBudgetPercent{flex:0 0 auto;white-space:nowrap}
+    .bsHead,.bsItem>div{overflow-wrap:anywhere;word-break:normal}
     .bsHead{margin-top:12px;font-size:16px;font-weight:700;line-height:1.35}
     .bsHead.good{color:var(--green)}.bsHead.warn{color:var(--orange)}.bsHead.bad{color:var(--red)}.bsHead.neutral{color:#101B45}
-    .bsList{display:grid;gap:9px;margin-top:12px}
+    .bsList{display:grid;grid-template-columns:minmax(0,1fr);gap:9px;margin-top:12px}
     .bsItem{display:grid;grid-template-columns:10px minmax(0,1fr);gap:10px;align-items:start;font-size:13.5px;line-height:1.4;color:#27325A}
     .bsItem .bsDot{width:8px;height:8px;border-radius:50%;margin-top:6px;background:#9AA7C7}
     .bsItem.good .bsDot{background:#2FA862}.bsItem.warn .bsDot{background:#F0A020}.bsItem.bad .bsDot{background:#E5483B}
@@ -5025,6 +5033,10 @@
     .bpName{font-size:14px;font-weight:600;color:#101B45}
     .bpAvg{margin-top:2px;font-size:12px;font-weight:400;color:#5B6A90}
     #bpOverlay .bpAmt{text-align:right;padding:10px 12px;font-weight:700}
+    .bpSlider{margin-top:14px;padding:12px 14px;border-radius:16px;background:#F3F6FC}
+    .bpSliderHead{display:flex;justify-content:space-between;gap:10px;font-size:14px;font-weight:700;color:#101B45}
+    .bpSlider input[type=range]{width:100%;margin:12px 0 6px;accent-color:#3157F6}
+    .bpSliderFoot{display:flex;justify-content:space-between;gap:10px;font-size:12px;color:#5B6A90}
     .bpTotals{margin-top:16px;padding:12px 14px;border-radius:16px;background:#F3F6FC;display:grid;gap:8px}
     .bpTotals .bpTRow{display:flex;justify-content:space-between;gap:10px;font-size:14px;color:#27325A}
     .bpTotals .bpTRow.big{font-size:16px;font-weight:700;padding-top:8px;border-top:1px solid #DCE4F3}
@@ -5868,6 +5880,13 @@
           <input type="checkbox" id="budMandatory">
           <span><b>Обязательная трата</b><br>Нужна каждый месяц. При распределении дохода получает деньги первой.</span>
         </label>
+        <label class="checkRow budFlagRow">
+          <input type="checkbox" id="budSaving">
+          <span><b>Необязательная, но копим</b><br>Накопления: сюда уходит часть дохода, которую откладываешь.</span>
+        </label>
+        <div class="label">Минимальный порог, ₴</div>
+        <input class="input" id="budMin" type="number" min="0" step="1" inputmode="decimal" placeholder="Без порога">
+        <div class="muted">Меньше этой суммы в бюджет закладывать нельзя, больше можно. Работает и при ручной правке, и при распределении дохода.</div>
         <div class="label">Как тратится</div>
         <div class="seg" id="budModeSeg" style="grid-template-columns:repeat(3,1fr)">
           <button type="button" data-mode="spread" class="active">Плавно</button>
@@ -5908,6 +5927,12 @@
       <div class="editSummary">
         <div class="editAmount" id="bpIncome">—</div>
         <div class="editMeta" id="bpMeta">—</div>
+      </div>
+
+      <div class="bpSlider" id="bpSliderBox" hidden>
+        <div class="bpSliderHead"><span>Необязательные расходы</span><span id="bpSliderVal">—</span></div>
+        <input type="range" id="bpSlider" min="0" max="0" step="500" value="0">
+        <div class="bpSliderFoot"><span id="bpSliderLeft">—</span><span id="bpSliderRight">—</span></div>
       </div>
 
       <div id="bpBody"></div>
@@ -6347,10 +6372,18 @@
       // Признаки категорий (обязательная, разовая) лежат в колонках is_mandatory и spend_mode.
       // Если колонок ещё нет (не запущен budget_flags.sql), читаем без них, приложение работает как раньше.
       refs.flagsReady = true;
-      var catQuery = await sb.from('categories').select('id,name,type,sort_order,is_mandatory,spend_mode,spend_parts').order('sort_order');
-      if (catQuery.error && /is_mandatory|spend_mode|spend_parts/.test(String(catQuery.error.message || ''))) {
-        refs.flagsReady = false;
-        catQuery = await sb.from('categories').select('id,name,type,sort_order').order('sort_order');
+      refs.savingReady = true;
+      var catCols = [
+        'id,name,type,sort_order,is_mandatory,spend_mode,spend_parts,is_saving,min_amount',
+        'id,name,type,sort_order,is_mandatory,spend_mode,spend_parts',
+        'id,name,type,sort_order'
+      ];
+      var catQuery = null;
+      for (var ci = 0; ci < catCols.length; ci++) {
+        catQuery = await sb.from('categories').select(catCols[ci]).order('sort_order');
+        if (!(catQuery.error && /is_mandatory|spend_mode|spend_parts|is_saving|min_amount/.test(String(catQuery.error.message || '')))) break;
+        if (ci === 0) refs.savingReady = false;
+        else { refs.flagsReady = false; refs.savingReady = false; }
       }
       var res = [catQuery, await sb.from('accounts').select('id,name,currency,is_monobank').order('id')];
       if (res[0].error) throw res[0].error;
@@ -7064,7 +7097,7 @@
 
     function budError(err) {
       var text = err && err.message ? err.message : 'неизвестная ошибка';
-      if (/is_mandatory|spend_mode|spend_parts/.test(text)) {
+      if (/is_mandatory|spend_mode|spend_parts|is_saving|min_amount/.test(text)) {
         return 'В базе нет колонок для отметок категорий. Запусти файл budget_flags.sql в Supabase (SQL Editor).';
       }
       if (/month_category_totals/.test(text)) {
@@ -7133,6 +7166,8 @@
     // ---------------------------------------------------------------
     function catMandatory(c) { return !!(c && c.is_mandatory); }
     function catLump(c) { return !!(c && c.spend_mode === 'lump'); }
+    function catSaving(c) { return !!(c && c.is_saving); }
+    function catMin(c) { var v = Number(c && c.min_amount); return v > 0 ? v : 0; }
     function catChunks(c) { return !!(c && c.spend_mode === 'chunks'); }
     function catParts(c) {
       var n = Math.round(Number(c && c.spend_parts));
@@ -7141,6 +7176,7 @@
     function catMode(c) { return catLump(c) ? 'lump' : (catChunks(c) ? 'chunks' : 'spread'); }
     // Значок режима рядом с названием (HTML, имя не входит)
     function modeBadgeHtml(c) {
+      if (catSaving(c)) return '<span class="budSaveBadge">копим</span>';
       if (catLump(c)) return '<span class="budModeBadge">разово</span>';
       if (catChunks(c)) return '<span class="budModeBadge">порциями ×' + catParts(c) + '</span>';
       return '';
@@ -7168,6 +7204,12 @@
         over: plan > 0 && fact > plan + 0.005, unplanned: !(plan > 0) && fact > 0
       };
       if (!(plan > 0)) return r;
+      if (catSaving(cat)) {
+        r.saving = true;
+        r.paid = fact >= plan - 0.005;
+        r.forecast = tm.state === 'future' ? plan : Math.max(fact, plan);
+        return r;
+      }
       if (lump) {
         r.paid = fact >= plan - 0.005;
         r.forecast = tm.state === 'future' ? plan : Math.max(fact, plan);
@@ -7211,6 +7253,13 @@
       var headText = '';
       function add(cls, html) { lines.push({ cls: cls, html: html }); }
       function nm(it) { return '<b>' + escHtml(it.cat.name) + '</b>'; }
+      function savingLine() {
+        var sv = items.filter(function (i) { return i.saving && i.plan > 0; });
+        if (!sv.length) return;
+        var sp = sv.reduce(function (t, i) { return t + i.plan; }, 0);
+        var sf = sv.reduce(function (t, i) { return t + i.fact; }, 0);
+        add(sf >= sp - 0.005 ? 'good' : 'neutral', 'Накопления: отложено ' + money(sf) + ' из ' + money(sp) + '.');
+      }
 
       var hasPlan = planExp > 0;
       var chip = '';
@@ -7251,12 +7300,13 @@
         unplanned.slice(0, 2).forEach(function (i) {
           add('warn', nm(i) + ': не было в плане, потрачено ' + money(i.fact) + '.');
         });
+        savingLine();
         if (planInc > 0 && actInc < planInc) add('warn', 'Доходов получено меньше плана на ' + money(planInc - actInc) + '.');
       } else {
         chip = 'день ' + tm.day + ' из ' + tm.days;
         sub = pctText(tm.t) + ' месяца позади';
 
-        var spread = items.filter(function (i) { return !i.lump && i.plan > 0; });
+        var spread = items.filter(function (i) { return !i.lump && !i.saving && i.plan > 0; });
         var spreadPlan = spread.reduce(function (s, i) { return s + i.plan; }, 0);
         var spreadFact = spread.reduce(function (s, i) { return s + i.fact; }, 0);
         var spreadExp = spread.reduce(function (s, i) { return s + i.expected; }, 0);
@@ -7297,10 +7347,10 @@
             if (i.portion) {
               add(cls, nm(i) + ': потрачено ' + money(i.fact) + ' (' + pctText(i.fact / i.plan) + ' плана). По графику порциями (' + i.parts +
                 ' раз в месяц по ~' + money(i.portion) + ') к этому дню ожидается около ' + money(i.expected) +
-                '. При таком темпе к концу месяца: ' + money(i.forecast) + ' при плане ' + money(i.plan) + '.');
+                '. К концу месяца при таком темпе: ' + money(i.forecast) + ' (план ' + money(i.plan) + ').');
             } else {
               add(cls, nm(i) + ': потрачено ' + pctText(i.fact / i.plan) + ' плана за ' + pctText(tm.t) + ' месяца (на ' + money(i.diff) +
-                ' больше графика). При таком темпе к концу месяца: ' + money(i.forecast) + ' при плане ' + money(i.plan) + '.');
+                ' больше графика). К концу месяца при таком темпе: ' + money(i.forecast) + ' (план ' + money(i.plan) + ').');
             }
           });
         overItems.slice(0, 3).forEach(function (i) {
@@ -7318,6 +7368,7 @@
         unplanned.slice(0, 2).forEach(function (i) {
           add('warn', nm(i) + ': нет в плане, потрачено ' + money(i.fact) + '.');
         });
+        savingLine();
 
         if (hasPlan && tm.day >= 3) {
           var forecast = items.reduce(function (s, i) { return s + i.forecast; }, 0);
@@ -7336,7 +7387,7 @@
       head.className = 'bsHead ' + tone;
       head.textContent = headText;
       var box = qs('budSumList');
-      box.innerHTML = lines.slice(0, 8).map(function (l) {
+      box.innerHTML = lines.slice(0, 6).map(function (l) {
         return '<div class="bsItem ' + l.cls + '"><span class="bsDot"></span><div>' + l.html + '</div></div>';
       }).join('');
     }
@@ -7419,6 +7470,10 @@
           var mb = document.createElement('span'); mb.className = 'budMandBadge'; mb.textContent = 'обязательная';
           name.appendChild(mb);
         }
+        if (!isIncome && catSaving(cat)) {
+          var sb2 = document.createElement('span'); sb2.className = 'budSaveBadge'; sb2.textContent = 'копим';
+          name.appendChild(sb2);
+        }
         if (!isIncome && (catLump(cat) || catChunks(cat))) {
           var lb = document.createElement('span'); lb.className = 'budModeBadge';
           lb.textContent = catLump(cat) ? 'разово' : 'порциями ×' + catParts(cat);
@@ -7452,6 +7507,7 @@
         if (plan > 0) {
           if (isIncome) hint.textContent = fact >= plan ? 'План выполнен' : 'Не хватает ' + money(plan - fact);
           else if (fact > plan) hint.textContent = 'Перерасход ' + money(fact - plan);
+          else if (catSaving(cat)) hint.textContent = fact >= plan - 0.005 ? 'План накоплений выполнен' : 'Ещё отложить ' + money(plan - fact);
           else if (catLump(cat)) hint.textContent = fact >= plan - 0.005 ? 'Оплачено' : 'Ещё не оплачено ' + money(plan - fact);
           else {
             hint.textContent = 'Осталось ' + money(plan - fact);
@@ -7489,8 +7545,12 @@
       var isExp = cat.type === 'EXPENSE';
       qs('budFlags').hidden = !isExp;
       qs('budFlags').classList.toggle('off', !refs.flagsReady);
-      qs('budFlagsOff').hidden = refs.flagsReady !== false;
+      qs('budFlagsOff').hidden = refs.flagsReady !== false && refs.savingReady !== false;
       qs('budMandatory').checked = catMandatory(cat);
+      qs('budSaving').checked = catSaving(cat);
+      qs('budSaving').disabled = !refs.savingReady;
+      qs('budMin').value = catMin(cat) > 0 ? String(catMin(cat)) : '';
+      qs('budMin').disabled = !refs.savingReady;
       qs('budParts').value = String(catParts(cat));
       setBudMode(catMode(cat));
 
@@ -7526,6 +7586,9 @@
       hint.textContent = 'Примерно по ' + money(plan / n) + ' за раз. Опережением графика считается, когда потрачено заметно больше, чем положено к этому дню.';
     }
     qs('budParts').addEventListener('input', updateBudPortion);
+    // «Обязательная» и «Необязательная, но копим» исключают друг друга
+    qs('budMandatory').addEventListener('change', function () { if (this.checked) qs('budSaving').checked = false; });
+    qs('budSaving').addEventListener('change', function () { if (this.checked) qs('budMandatory').checked = false; });
     qs('budAmount').addEventListener('input', updateBudPortion);
     qs('budModeSeg').addEventListener('click', function (e) {
       var b = e.target.closest('button[data-mode]');
@@ -7585,6 +7648,17 @@
       if (amount > 1000000000) { errorBox.textContent = 'Сумма слишком большая.'; return; }
       amount = Math.round(amount * 100) / 100;
 
+      // Минимальный порог: меньше нельзя
+      var minReq = 0;
+      if (cat.type === 'EXPENSE') {
+        minReq = refs.savingReady ? (Number(String(qs('budMin').value).replace(',', '.')) || 0) : catMin(cat);
+        if (minReq < 0) minReq = 0;
+        if (minReq > 0 && amount < minReq) {
+          errorBox.textContent = 'Меньше минимального порога ' + money(minReq) + ' закладывать нельзя.';
+          return;
+        }
+      }
+
       bud.busy = true;
       qs('budSave').disabled = true;
       qs('budSave').textContent = 'Сохраняем…';
@@ -7603,13 +7677,20 @@
             return;
           }
           var partsChanged = wantMode === 'chunks' && wantParts !== catParts(cat);
-          if (wantMand !== catMandatory(cat) || wantMode !== catMode(cat) || partsChanged) {
+          var wantSaving = refs.savingReady ? qs('budSaving').checked : false;
+          var savingChanged = refs.savingReady && wantSaving !== catSaving(cat);
+          var wantMin = Math.round(minReq * 100) / 100;
+          var minChanged = refs.savingReady && wantMin !== catMin(cat);
+          if (wantMand !== catMandatory(cat) || wantMode !== catMode(cat) || partsChanged || savingChanged || minChanged) {
             var patch = { is_mandatory: wantMand, spend_mode: wantMode };
+            if (refs.savingReady) { patch.is_saving = wantSaving; patch.min_amount = wantMin; }
             if (wantMode === 'chunks') patch.spend_parts = wantParts;
             var fr = await sb.from('categories').update(patch).eq('id', cat.id).select('id');
             if (fr.error) throw fr.error;
             if (!fr.data || !fr.data.length) throw new Error('Не удалось сохранить отметки категории.');
             cat.is_mandatory = wantMand;
+            cat.is_saving = wantSaving;
+            if (refs.savingReady) cat.min_amount = wantMin;
             cat.spend_mode = wantMode;
             if (wantMode === 'chunks') cat.spend_parts = wantParts;
           }
@@ -7680,10 +7761,65 @@
     // Обязательные траты получают деньги первыми (в среднем за прошлые месяцы),
     // остальное делится между прочими категориями пропорционально их средним расходам.
     // ---------------------------------------------------------------
-    var bp = { rows: [], income: 0, months: 0, busy: false };
+    var bp = { rows: [], income: 0, months: 0, busy: false, F: 0, R: 0, D: 0 };
 
-    function ceil10(v) { return Math.ceil(v / 10 - 1e-9) * 10; }
-    function floor10(v) { return Math.floor(v / 10 + 1e-9) * 10; }
+    function ceil500(v) { return Math.ceil(v / 500 - 1e-9) * 500; }
+    function floor500(v) { return Math.floor(v / 500 + 1e-9) * 500; }
+
+    // Делит total между строками пропорционально весам, доли кратны 500 (метод наибольших остатков); пишет в r[key]
+    function splitBy500(list, total, key) {
+      list.forEach(function (r) { r[key] = 0; });
+      if (!list.length) return;
+      var units = Math.floor(total / 500 + 1e-9);
+      if (units <= 0) return;
+      var w = list.map(function (r) { return r.weight > 0 ? r.weight : 0; });
+      var sw = w.reduce(function (t, x) { return t + x; }, 0);
+      if (!(sw > 0)) { w = list.map(function () { return 1; }); sw = list.length; }
+      var base = [], rest = [], used = 0;
+      list.forEach(function (r, i) {
+        var exact = units * w[i] / sw;
+        base[i] = Math.floor(exact);
+        rest[i] = exact - base[i];
+        used += base[i];
+      });
+      var order = list.map(function (r, i) { return i; }).sort(function (x, y) { return rest[y] - rest[x]; });
+      for (var k = 0; k < units - used; k++) base[order[k % order.length]]++;
+      list.forEach(function (r, i) { r[key] = base[i] * 500; });
+    }
+
+    // Приоритет: 1) минимальные пороги (и обязательные без порога по среднему), 2) остаток делится ползунком
+    // между необязательными расходами и накоплениями. Сумма = плановый доход, всё кратно 500.
+    // D: сколько отдать необязательным сверх порогов (кратно 500) или null — по умолчанию половина остатка.
+    function computeBudPlan(D) {
+      var rows = bp.rows;
+      var flex = rows.filter(function (r) { return !r.mandatory && !r.saving; });
+      var sav = rows.filter(function (r) { return r.saving; });
+
+      rows.forEach(function (r) { r.amount = r.floor; r.extra = 0; });
+      var F = rows.reduce(function (t, r) { return t + r.floor; }, 0);
+      var R = bp.income - F;
+      bp.F = F; bp.R = R; bp.D = 0;
+      if (R <= 0) return;
+
+      var Rmax = floor500(R);
+      if (!flex.length) D = 0;
+      else if (!sav.length) D = Rmax;
+      else if (D === null || D === undefined) D = Math.min(Rmax, floor500(R * 0.5));
+      else D = Math.max(0, Math.min(Rmax, floor500(D)));
+      bp.D = D;
+
+      splitBy500(flex, D, 'extra');
+      var S = R - D;                                   // накопления вместе с «хвостом» дохода, не кратным 500
+      if (sav.length) {
+        var Sunits = floor500(S);
+        splitBy500(sav, Sunits, 'extra');
+        sav[0].extra += S - Sunits;
+      } else if (flex.length) {
+        var big = flex.slice().sort(function (x, y) { return (y.floor + y.extra) - (x.floor + x.extra); })[0];
+        big.extra += S;                                // S меньше 500
+      }
+      rows.forEach(function (r) { r.amount = r.floor + r.extra; });
+    }
 
     async function openBudPlan() {
       var msg = qs('budMsg');
@@ -7699,27 +7835,24 @@
           return;
         }
 
-        // Берём три закрытых месяца перед показанным (но не позже текущего реального)
+        // Шесть закрытых месяцев перед показанным (но не позже текущего реального), среднее считаем по трём последним с данными
         var now = new Date();
         var refY = bud.year, refM = bud.month;
         if (refY * 12 + refM > now.getFullYear() * 12 + now.getMonth()) { refY = now.getFullYear(); refM = now.getMonth(); }
         var keys = [];
-        for (var i = 1; i <= 3; i++) {
+        for (var i = 1; i <= 6; i++) {
           var d = new Date(refY, refM - i, 1);
           keys.push(budFirst(d.getFullYear(), d.getMonth()));
         }
         var res = await Promise.all(
           keys.map(function (k) { return sb.rpc('month_category_totals', { p_month: k }); })
-            .concat(keys.map(function (k) { return sb.from('budgets').select('category_id,amount').eq('month', k); }))
+            .concat([sb.from('budgets').select('category_id,amount,month').in('month', keys)])
         );
         res.forEach(function (r) { if (r.error) throw r.error; });
 
-        var expCats = categoriesOfType('EXPENSE');
-        var sums = {};            // сумма фактов по категориям за месяцы с данными
-        var used = 0;             // сколько месяцев реально с расходами
-        for (var m = 0; m < 3; m++) {
+        var monthFacts = [];
+        for (var m = 0; m < keys.length; m++) {
           var per = {};
-          var total = 0;
           (res[m].data || []).forEach(function (r) {
             if (r.category_id === null || r.category_id === undefined) return;
             var o = per[r.category_id] || (per[r.category_id] = { e: 0, r: 0 });
@@ -7727,47 +7860,50 @@
             if (r.action === 'EXPENSE') o.e += amt;
             else if (r.action === 'RETURN') o.r += amt;
           });
-          Object.keys(per).forEach(function (id) { total += Math.max(0, per[id].e - per[id].r); });
-          if (total > 0) {
-            used++;
-            Object.keys(per).forEach(function (id) { sums[id] = (sums[id] || 0) + Math.max(0, per[id].e - per[id].r); });
-          }
+          var facts = {}, total = 0;
+          Object.keys(per).forEach(function (id) { facts[id] = Math.max(0, per[id].e - per[id].r); total += facts[id]; });
+          if (total > 0) monthFacts.push(facts);
         }
-        // Запасной вариант: последний заданный план (самый свежий месяц)
         var lastPlan = {};
-        for (var b = 2; b >= 0; b--) {
-          (res[3 + b].data || []).forEach(function (r) { if (Number(r.amount) > 0) lastPlan[r.category_id] = Number(r.amount); });
-        }
+        (res[keys.length].data || []).slice().sort(function (x, y) { return String(x.month) < String(y.month) ? -1 : 1; })
+          .forEach(function (r) { if (Number(r.amount) > 0) lastPlan[r.category_id] = Number(r.amount); });
 
+        var avgN = Math.min(3, monthFacts.length);
         var rows = [];
-        expCats.forEach(function (c) {
-          var avg = used > 0 ? (sums[c.id] || 0) / used : 0;
-          var base = avg;
-          if (!(base > 0) && lastPlan[c.id] > 0 && (used === 0 || catMandatory(c))) base = lastPlan[c.id];
-          if (!(base > 0)) return;
-          rows.push({ cat: c, base: base, need: ceil10(base), mandatory: catMandatory(c), amount: 0 });
+        categoriesOfType('EXPENSE').forEach(function (c) {
+          var avg = 0;
+          for (var k = 0; k < avgN; k++) avg += monthFacts[k][c.id] || 0;
+          avg = avgN > 0 ? avg / avgN : 0;
+          var min = catMin(c);
+          var mandatory = catMandatory(c), saving = catSaving(c);
+          var row = { cat: c, mandatory: mandatory, saving: saving, min: min, avg: avg, floor: ceil500(min), extra: 0, amount: 0, weight: avg, noMin: false };
+          if (mandatory) {
+            if (!(min > 0)) {                       // порог не задан: берём среднее (или последний план)
+              var guess = avg > 0 ? avg : (lastPlan[c.id] || 0);
+              if (!(guess > 0)) return;
+              row.floor = ceil500(guess);
+              row.noMin = true;
+            }
+          } else if (saving) {
+            /* копилка всегда в списке */
+          } else {
+            var base = avg > 0 ? avg : (avgN === 0 ? (lastPlan[c.id] || 0) : 0);
+            if (!(base > 0) && !(min > 0)) return;
+            row.weight = base;
+            row.avg = base;
+          }
+          rows.push(row);
         });
         if (!rows.length) {
-          msg.textContent = 'Нет данных за прошлые месяцы, по которым можно распределить доход. Задай планы вручную.';
+          msg.textContent = 'Нет данных за прошлые месяцы и не задано ни одного минимального порога. Задай планы вручную.';
           return;
         }
 
-        var mand = rows.filter(function (r) { return r.mandatory; });
-        var rest = rows.filter(function (r) { return !r.mandatory; });
-        var sumM = mand.reduce(function (s, r) { return s + r.need; }, 0);
-        mand.forEach(function (r) { r.amount = r.need; });
-
-        var room = income - sumM;
-        var sumR = rest.reduce(function (s, r) { return s + r.need; }, 0);
-        if (room > 0 && sumR > 0) {
-          if (sumR <= room) rest.forEach(function (r) { r.amount = r.need; });
-          else rest.forEach(function (r) { r.amount = floor10(r.need * room / sumR); });
-        }
-
-        rows.sort(function (a, b) { return (b.mandatory ? 1 : 0) - (a.mandatory ? 1 : 0) || b.amount - a.amount; });
         bp.rows = rows;
         bp.income = income;
-        bp.months = used;
+        bp.months = avgN;
+        computeBudPlan(null);
+        buildBpSlider();
         renderBudPlan();
         qs('bpError').textContent = '';
         qs('bpApply').disabled = false;
@@ -7781,51 +7917,87 @@
       }
     }
 
+    // Ползунок «Необязательные расходы»: от 0 до остатка после минимальных порогов, шаг 500
+    function buildBpSlider() {
+      var hasFlex = bp.rows.some(function (r) { return !r.mandatory && !r.saving; });
+      var hasSav = bp.rows.some(function (r) { return r.saving; });
+      var rmax = Math.max(0, floor500(bp.R));
+      qs('bpSliderBox').hidden = !(hasFlex && hasSav && rmax > 0);
+      var sl = qs('bpSlider');
+      sl.max = String(rmax);
+      sl.value = String(bp.D);
+    }
+    function updateBpSliderLabels() {
+      var flexTotal = 0, savTotal = 0;
+      bp.rows.forEach(function (r) { if (r.saving) savTotal += r.amount; else if (!r.mandatory) flexTotal += r.amount; });
+      qs('bpSliderVal').textContent = money(flexTotal);
+      qs('bpSliderLeft').textContent = 'Копим: ' + money(savTotal);
+      qs('bpSliderRight').textContent = 'Свободно сверх порогов: ' + money(Math.max(0, bp.R));
+    }
+    qs('bpSlider').addEventListener('input', function () {
+      computeBudPlan(Number(this.value));
+      renderBudPlan();
+    });
+
     function renderBudPlan() {
       qs('bpIncome').textContent = money(bp.income);
-      qs('bpMeta').textContent = budLabel() + ' · плановый доход · ' +
-        (bp.months > 0 ? 'расходы в среднем за ' + bp.months + ' ' + (bp.months === 1 ? 'месяц' : 'мес.') : 'по прошлым планам');
+      qs('bpMeta').textContent = budLabel() + ' · плановый доход. Сначала минимальные пороги, остаток делится ползунком.';
 
+      function sub(r) {
+        if (r.mandatory) return r.noMin ? 'порог не задан, взято среднее ' + money(r.avg) : 'порог ' + money(r.min);
+        var parts = [];
+        if (r.min > 0) parts.push('порог ' + money(r.min));
+        if (r.saving) parts.push(r.avg > 0 ? 'раньше в среднем ' + money(r.avg) : 'накопления');
+        else parts.push('в среднем ' + money(r.avg));
+        return parts.join(' · ');
+      }
       function section(title, key, list) {
         if (!list.length) return '';
         return '<div class="bpSecHead"><span>' + title + '</span><span data-sum="' + key + '"></span></div>' +
           list.map(function (r) {
             var idx = bp.rows.indexOf(r);
-            return '<div class="bpRow"><div class="bpName">' + escHtml(r.cat.name) +
-              modeBadgeHtml(r.cat) +
-              '<div class="bpAvg">в среднем ' + money(r.base) + '</div></div>' +
-              '<input class="input bpAmt" type="number" min="0" step="10" inputmode="decimal" data-i="' + idx + '" value="' + r.amount + '"></div>';
+            return '<div class="bpRow"><div class="bpName">' + escHtml(r.cat.name) + modeBadgeHtml(r.cat) +
+              '<div class="bpAvg">' + sub(r) + '</div></div>' +
+              '<input class="input bpAmt" type="number" min="0" step="500" inputmode="decimal" data-i="' + idx + '" value="' + r.amount + '"></div>';
           }).join('');
       }
       var mand = bp.rows.filter(function (r) { return r.mandatory; });
-      var rest = bp.rows.filter(function (r) { return !r.mandatory; });
-      qs('bpBody').innerHTML = section('Обязательные', 'mand', mand) + section('Остальные', 'rest', rest);
+      var flex = bp.rows.filter(function (r) { return !r.mandatory && !r.saving; });
+      var sav = bp.rows.filter(function (r) { return r.saving; });
+      qs('bpBody').innerHTML = section('Обязательные', 'mand', mand) + section('Необязательные', 'flex', flex) + section('Копим', 'sav', sav);
+      updateBpSliderLabels();
       recalcBudPlan();
 
-      var hasMand = mand.length > 0;
       var existing = bp.rows.filter(function (r) { return Number(bud.budgets[r.cat.id] || 0) > 0; }).length;
       var notes = [];
-      if (!hasMand) notes.push('Ни одна категория не отмечена как обязательная. Отметь их в карточке категории, чтобы они получали деньги в первую очередь.');
+      if (bp.R <= 0) notes.push('Минимальные пороги (' + money(bp.F) + ') не меньше планового дохода: сверх них денег не остаётся.');
+      if (mand.some(function (r) { return r.noMin; })) notes.push('Где у обязательной траты нет порога, взято среднее за прошлые месяцы. Задай порог в карточке категории.');
+      if (!mand.length) notes.push('Ни одна категория не отмечена как обязательная.');
+      if (!sav.length) notes.push('Нет категорий накоплений: отметь в карточке категории «Необязательная, но копим», и появится ползунок.');
       if (existing) notes.push('В этом месяце уже есть план по ' + existing + ' из этих категорий: суммы будут заменены.');
       qs('bpNote').textContent = notes.join(' ');
     }
 
     function recalcBudPlan() {
-      var sumM = 0, sumR = 0;
-      bp.rows.forEach(function (r) { if (r.mandatory) sumM += r.amount; else sumR += r.amount; });
-      var total = sumM + sumR;
-      var left = bp.income - total;
+      var sums = { mand: 0, flex: 0, sav: 0 };
+      bp.rows.forEach(function (r) { sums[r.mandatory ? 'mand' : (r.saving ? 'sav' : 'flex')] += r.amount; });
+      var total = sums.mand + sums.flex + sums.sav;
+      var diff = Math.round((bp.income - total) * 100) / 100;
 
-      var elM = qs('bpBody').querySelector('[data-sum="mand"]');
-      var elR = qs('bpBody').querySelector('[data-sum="rest"]');
-      if (elM) elM.textContent = money(sumM);
-      if (elR) elR.textContent = money(sumR);
+      ['mand', 'flex', 'sav'].forEach(function (k) {
+        var el = qs('bpBody').querySelector('[data-sum="' + k + '"]');
+        if (el) el.textContent = money(sums[k]);
+      });
 
+      var status = diff === 0 ? '<span class="good">Распределено полностью</span>'
+        : (diff > 0 ? '<span>Не распределено ' + money(diff) + '</span>' : '<span class="bad">Больше дохода на ' + money(-diff) + '</span>');
       qs('bpTotals').innerHTML =
         '<div class="bpTRow"><span>Доход по плану</span><span>' + money(bp.income) + '</span></div>' +
-        '<div class="bpTRow"><span>Расходы по плану</span><span>' + money(total) + '</span></div>' +
-        '<div class="bpTRow big"><span>' + (left >= 0 ? 'Свободный остаток' : 'Не хватает') + '</span>' +
-        '<span class="' + (left >= 0 ? 'good' : 'bad') + '">' + money(Math.abs(left)) + '</span></div>';
+        '<div class="bpTRow"><span>Обязательные</span><span>' + money(sums.mand) + '</span></div>' +
+        '<div class="bpTRow"><span>Необязательные</span><span>' + money(sums.flex) + '</span></div>' +
+        '<div class="bpTRow"><span>Копим</span><span>' + money(sums.sav) + '</span></div>' +
+        '<div class="bpTRow big"><span>Всего</span><span>' + money(total) + '</span></div>' +
+        '<div class="bpTRow">' + status + '<span></span></div>';
     }
 
     qs('bpBody').addEventListener('input', function (e) {
@@ -7835,11 +8007,27 @@
       bp.rows[Number(inp.getAttribute('data-i'))].amount = isFinite(v) && v > 0 ? v : 0;
       recalcBudPlan();
     });
+    // Ниже минимального порога нельзя: возвращаем порог, когда поле отпущено
+    qs('bpBody').addEventListener('change', function (e) {
+      var inp = e.target.closest('.bpAmt');
+      if (!inp) return;
+      var r = bp.rows[Number(inp.getAttribute('data-i'))];
+      if (r.min > 0 && r.amount < r.min) {
+        r.amount = r.min;
+        inp.value = String(r.min);
+        qs('bpError').textContent = r.cat.name + ': меньше минимального порога ' + money(r.min) + ' нельзя.';
+        recalcBudPlan();
+      } else {
+        qs('bpError').textContent = '';
+      }
+    });
 
     function closeBudPlan() { qs('bpOverlay').classList.remove('open'); bp.busy = false; }
 
     async function applyBudPlan() {
       if (bp.busy) return;
+      var low = bp.rows.filter(function (r) { return r.min > 0 && r.amount < r.min; })[0];
+      if (low) { qs('bpError').textContent = low.cat.name + ': меньше минимального порога ' + money(low.min) + ' нельзя.'; return; }
       bp.busy = true;
       qs('bpApply').disabled = true;
       qs('bpApply').textContent = 'Применяем…';
@@ -9588,7 +9776,7 @@
     // «Ещё»: сводка и переходы
     // ---------------------------------------------------------------
     var APP_VERSION = '2.6';
-    var APP_BUILD = '20261024-2100';
+    var APP_BUILD = '20261024-2200';
     var moreReq = 0;
 
     function escHtml(v) {
