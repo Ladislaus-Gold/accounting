@@ -5053,6 +5053,73 @@
     .bpExplain p{margin:0 0 6px}
     .bpExplain p:last-child{margin-bottom:0}
     .bpExplain b{color:#101B45}
+
+    /* Плитки действий в шапке бюджета */
+    .budTiles{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+    .budTile{display:flex;flex-direction:column;align-items:flex-start;gap:3px;min-width:0;padding:12px;border-radius:16px;border:0;text-align:left;cursor:pointer;background:#F3F6FC;color:#101B45;box-shadow:inset 0 0 0 1px #DDE4F3;font-family:inherit}
+    .budTile b{font-size:14px;font-weight:800;line-height:1.2}
+    .budTile small{font-size:11.5px;font-weight:700;color:#8A5A00}
+    .budTileIco{width:34px;height:34px;border-radius:11px;background:#fff;box-shadow:inset 0 0 0 1px #DDE4F3;display:grid;place-items:center;font-size:18px;line-height:1;margin-bottom:4px}
+    .budTile.primary{background:linear-gradient(135deg,#5B7DFF,#2747E0);color:#fff;box-shadow:0 8px 18px rgba(49,87,246,.28)}
+    .budTile.primary small{color:rgba(255,255,255,.88);font-weight:500}
+    .budTile:disabled{opacity:.6}
+    /* Галочка «Счёт для распределения бюджета» */
+    .accBudgetSrc{display:flex;gap:12px;align-items:flex-start;margin-top:14px;padding:12px 14px;border-radius:16px;background:#F3F6FC;box-shadow:inset 0 0 0 1px #C6D2F0;cursor:pointer}
+    .accBudgetSrc input{position:absolute;opacity:0;pointer-events:none}
+    .accBudgetSrc .accChk{flex:none;width:24px;height:24px;border-radius:8px;background:#fff;box-shadow:inset 0 0 0 2px #B5C8F0;display:grid;place-items:center;color:transparent;font-weight:800;font-size:15px;margin-top:1px}
+    .accBudgetSrc input:checked + .accChk{background:#3157F6;box-shadow:none;color:#fff}
+    .accBudgetText{font-size:13px;line-height:1.4;color:#27325A}
+    .accBudgetText b{display:block;font-size:14px;color:#101B45}
+    /* Аванс и зарплата */
+    #distOverlay{z-index:1500 !important}#distFormOverlay{z-index:1510 !important}#distPickOverlay{z-index:1520 !important}
+    #distOverlay .sheet{max-height:94vh;overflow-y:auto}
+    .distSrcs{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+    .distSrc{border-radius:16px;background:#F3F6FC;padding:11px 12px;min-width:0}
+    .distSrc b{display:block;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:#5B6A90}
+    .distSrcIn{width:100%;margin:4px 0 8px;padding:6px 8px;border-radius:10px;border:1px solid #C6D2F0;background:#fff;font-size:18px;font-weight:800;color:#101B45;font-family:inherit}
+    .distBar{height:6px;border-radius:9px;background:#DDE4F3;overflow:hidden}
+    .distBar i{display:block;height:100%;width:0;background:#F2B544;transition:width .25s ease}
+    .distBar i.ok{background:#3CB878}
+    .distSrc small{display:block;margin-top:5px;font-size:11.5px;color:#27325A;min-height:15px}
+    .distSrc .ok{color:#1B7A4B;font-weight:700}.distSrc .warn{color:#8A5A00;font-weight:700}.distSrc .bad{color:#C0261D;font-weight:700}
+    .distTbl{margin-top:14px;border:1px solid #DDE4F3;border-radius:16px;overflow:hidden}
+    .dTh,.dRow,.dTt{display:grid;grid-template-columns:minmax(0,1fr) 54px 64px 64px 56px;gap:4px;align-items:center;padding:7px 8px}
+    .dTh{background:#E6EDFA;font-size:10px;font-weight:800;color:#1F3A68;text-align:right;text-transform:uppercase;letter-spacing:.02em}
+    .dTh span:first-child{text-align:left}
+    .dRow{border-top:1px solid #EEF1F8;font-size:12.5px}
+    .dNm{min-width:0}.dNm b{display:block;font-size:13px;font-weight:700;color:#8A2B1E;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .dChip{display:inline-block;margin-top:3px;font-size:10.5px;font-weight:700;border-radius:8px;padding:2px 7px;background:#EAF0FF;color:#2747E0;white-space:nowrap;border:0;cursor:pointer;max-width:100%;overflow:hidden;text-overflow:ellipsis;font-family:inherit}
+    .dChip.cash{background:#FFF2D6;color:#8A5A00}
+    .dChip:disabled{cursor:default;opacity:.8}
+    .dPl{text-align:right;color:#27325A;font-weight:600}
+    .dIn{width:100%;height:34px;border-radius:10px;border:1px solid #C6D2F0;background:#F6F9FF;text-align:right;padding:0 6px;font-size:13px;font-weight:700;color:#101B45;font-family:inherit;min-width:0}
+    .dIn:disabled{background:#EEF1F8;color:#5B6A90;border-color:#DDE4F3}
+    .dDf{text-align:right;font-weight:800;font-size:12.5px;border-radius:8px;padding:5px 4px}
+    .dDf.z{color:#9AA7C7;text-decoration:line-through;font-weight:700}
+    .dDf.y{background:#FFF6C2;color:#101B45}
+    .dDf.n{background:#FFE1DF;color:#C0261D}
+    .dTt{background:#E6EDFA;font-weight:800;font-size:12.5px;border-top:2px solid #1F3A68;text-align:right}
+    .dTt span:first-child{text-align:left;color:#1F3A68}
+    .distLegend{margin-top:10px;font-size:11.5px;color:#5B6A90;line-height:1.45}
+    .distBottom{position:sticky;bottom:0;background:#fff;padding:10px 0 4px;margin-top:12px}
+    .distNote{font-size:12px;color:#5B6A90;text-align:center;margin-bottom:8px}
+    .distBottom .btnRow #distForm{flex:1.7 1 0;white-space:nowrap}
+    #distFormOverlay .btnRow #distFormGo{flex:1.7 1 0;white-space:nowrap}
+    #distFormOverlay .btnRow{position:sticky;bottom:0;background:#fff;padding:10px 0 4px;margin-top:12px}
+    .distBottom .btnRow button:disabled{background:#D7DEF0;color:#8B97B8;box-shadow:none}
+    .distCard{border-radius:16px;background:#F3F6FC;padding:4px 14px;margin-top:12px}
+    .distCard.stay{background:#FFF8E6}
+    .distCard.plain{background:#fff;box-shadow:inset 0 0 0 1px #DDE4F3;padding:12px 14px}
+    .dfRow{display:flex;align-items:center;gap:10px;padding:11px 0;border-top:1px solid #DDE4F3}
+    .dfRow:first-child{border-top:0}
+    .dfIco{flex:none;width:38px;height:38px;border-radius:12px;background:#EAF0FF;display:grid;place-items:center;font-size:19px}
+    .distCard.stay .dfIco{background:#FFEBC2}
+    .dfTxt{flex:1;min-width:0}.dfTxt b{display:block;font-size:14px}.dfTxt span{font-size:12px;color:#5B6A90}
+    .dfSum{font-weight:800;font-size:15px;white-space:nowrap}
+    .dfLine{display:flex;justify-content:space-between;font-size:14px;margin-bottom:6px}.dfLine:last-child{margin-bottom:0}
+    .distPickItem{display:flex;align-items:center;gap:12px;width:100%;padding:12px 8px;border:0;border-top:1px solid #EEF1F8;background:transparent;font-size:15px;font-weight:600;color:#101B45;text-align:left;cursor:pointer;font-family:inherit}
+    .distPickItem:first-child{border-top:0}
+    .distPickItem.cur{color:#2747E0}.distPickItem .tick{margin-left:auto;font-weight:800;color:#2747E0}
     .bpTotals{margin-top:16px;padding:12px 14px;border-radius:16px;background:#F3F6FC;display:grid;gap:8px}
     .bpTotals .bpTRow{display:flex;justify-content:space-between;gap:10px;font-size:14px;color:#27325A}
     .bpTotals .bpTRow.big{font-size:16px;font-weight:700;padding-top:8px;border-top:1px solid #DCE4F3}
@@ -5320,9 +5387,9 @@
               </div>
               <button class="repNav" id="budgetNext" type="button" aria-label="Следующий месяц">›</button>
             </div>
-            <div class="btnRowTop" style="margin-top:12px">
-              <button class="btnTint btnSmall" id="budCopy" type="button">Скопировать с прошлого месяца</button>
-              <button class="btnPrimary btnSmall" id="budPlanBtn" type="button">Распределить доход</button>
+            <div class="budTiles">
+              <button class="budTile primary" id="budPlanBtn" type="button"><span class="budTileIco">⚖️</span><b>Распределить доход</b><small>Обязательные и копилки</small></button>
+              <button class="budTile" id="budDistBtn" type="button"><span class="budTileIco">💵</span><b>Аванс и зарплата</b><small id="budDistSub">—</small></button>
             </div>
             <div class="muted budMsgLine" id="budMsg"></div>
           </section>
@@ -5932,6 +5999,74 @@
     </div>
   </div>
 
+  <!-- ===================== АВАНС И ЗАРПЛАТА ===================== -->
+  <div class="sheetOverlay" id="distOverlay">
+    <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="distTitle">
+      <div class="sheetHeader">
+        <div class="sheetTitle" id="distTitle">Аванс и зарплата</div>
+        <div class="xbtn" id="distClose" role="button" tabindex="0" aria-label="Закрыть">×</div>
+      </div>
+      <div class="muted" id="distMeta">—</div>
+
+      <div class="distSrcs">
+        <div class="distSrc"><b>Аванс</b>
+          <input class="distSrcIn" id="distAdv" type="number" min="0" step="100" inputmode="decimal" placeholder="0">
+          <div class="distBar"><i id="distAdvBar"></i></div><small id="distAdvSub"></small></div>
+        <div class="distSrc"><b>Зарплата</b>
+          <input class="distSrcIn" id="distSal" type="number" min="0" step="100" inputmode="decimal" placeholder="0">
+          <div class="distBar"><i id="distSalBar"></i></div><small id="distSalSub"></small></div>
+      </div>
+
+      <div class="distTbl">
+        <div class="dTh"><span>Категория</span><span>План</span><span>Аванс</span><span>Зарплата</span><span>Разница</span></div>
+        <div id="distBody"></div>
+        <div class="dTt" id="distTotal"></div>
+      </div>
+      <div class="distLegend">Метка под названием: «→ счёт» значит, что деньги переведутся туда; «остаётся в кэше» значит, что останутся на счёте для распределения бюджета. Нажми на метку, чтобы сменить счёт.</div>
+      <div class="authError" id="distError" role="alert"></div>
+
+      <div class="distBottom">
+        <div class="distNote" id="distNote"></div>
+        <div class="btnRow" id="distButtons">
+          <button class="btnGhost" id="distSave" type="button">Сохранить</button>
+          <button class="btnPrimary" id="distForm" type="button">Сформировать</button>
+        </div>
+        <div class="field" id="distUndoWrap" hidden>
+          <button class="btnTintRed btnFull" id="distUndo" type="button">Отменить формирование</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sheetOverlay" id="distFormOverlay">
+    <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="distFormTitle">
+      <div class="sheetHeader">
+        <div class="sheetTitle" id="distFormTitle">Сформировать переводы</div>
+        <div class="xbtn" id="distFormClose" role="button" tabindex="0" aria-label="Закрыть">×</div>
+      </div>
+      <div class="muted" id="distFormMeta">—</div>
+      <div class="distCard" id="distFormList"></div>
+      <div class="distCard stay" id="distFormStay"></div>
+      <div class="distCard plain" id="distFormSum"></div>
+      <div class="muted" style="margin-top:12px">После нажатия месяц помечается «сформирован», суммы в таблице блокируются. Если ошиблись, нажми «Отменить формирование»: переводы удалятся, и месяц снова откроется для правки.</div>
+      <div class="authError" id="distFormError" role="alert"></div>
+      <div class="btnRow bpButtons">
+        <button class="btnGhost" id="distFormBack" type="button">Назад</button>
+        <button class="btnPrimary" id="distFormGo" type="button">Создать переводы</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="sheetOverlay" id="distPickOverlay">
+    <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="distPickTitle">
+      <div class="sheetHeader">
+        <div class="sheetTitle" id="distPickTitle">Куда переводить</div>
+        <div class="xbtn" id="distPickClose" role="button" tabindex="0" aria-label="Закрыть">×</div>
+      </div>
+      <div id="distPickList"></div>
+    </div>
+  </div>
+
   <!-- ===================== РАСПРЕДЕЛЕНИЕ БЮДЖЕТА ===================== -->
   <div class="sheetOverlay" id="bpOverlay">
     <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="bpTitle">
@@ -6091,6 +6226,11 @@
       </div>
 
       <div class="muted" id="accHint">Эмодзи в конце названия станет значком счёта.</div>
+      <label class="accBudgetSrc" id="accBudgetSrcWrap" hidden>
+        <input type="checkbox" id="accBudgetSrc">
+        <span class="accChk">✓</span>
+        <span class="accBudgetText"><b>Счёт для распределения бюджета</b>Отсюда создаются переводы на другие счета, когда в «Бюджете» нажимаешь «Сформировать». Деньги, помеченные «остаётся в кэше», здесь и лежат. Такой счёт может быть только один.</span>
+      </label>
       <div class="authError" id="accSheetError" role="alert"></div>
 
       <div class="btnRow">
@@ -6394,7 +6534,9 @@
       // Если колонок ещё нет (не запущен budget_flags.sql), читаем без них, приложение работает как раньше.
       refs.flagsReady = true;
       refs.savingReady = true;
+      refs.distReady = true;
       var catCols = [
+        'id,name,type,sort_order,is_mandatory,spend_mode,spend_parts,is_saving,min_amount,target_account_id',
         'id,name,type,sort_order,is_mandatory,spend_mode,spend_parts,is_saving,min_amount',
         'id,name,type,sort_order,is_mandatory,spend_mode,spend_parts',
         'id,name,type,sort_order'
@@ -6402,11 +6544,18 @@
       var catQuery = null;
       for (var ci = 0; ci < catCols.length; ci++) {
         catQuery = await sb.from('categories').select(catCols[ci]).order('sort_order');
-        if (!(catQuery.error && /is_mandatory|spend_mode|spend_parts|is_saving|min_amount/.test(String(catQuery.error.message || '')))) break;
-        if (ci === 0) refs.savingReady = false;
+        if (!(catQuery.error && /is_mandatory|spend_mode|spend_parts|is_saving|min_amount|target_account_id/.test(String(catQuery.error.message || '')))) break;
+        if (ci === 0) refs.distReady = false;
+        else if (ci === 1) refs.savingReady = false;
         else { refs.flagsReady = false; refs.savingReady = false; }
       }
-      var res = [catQuery, await sb.from('accounts').select('id,name,currency,is_monobank').order('id')];
+      refs.srcReady = true;
+      var accQuery = await sb.from('accounts').select('id,name,currency,is_monobank,is_budget_source').order('id');
+      if (accQuery.error && /is_budget_source/.test(String(accQuery.error.message || ''))) {
+        refs.srcReady = false;
+        accQuery = await sb.from('accounts').select('id,name,currency,is_monobank').order('id');
+      }
+      var res = [catQuery, accQuery];
       if (res[0].error) throw res[0].error;
       if (res[1].error) throw res[1].error;
 
@@ -7419,6 +7568,7 @@
     }
 
     function renderBudget() {
+      setTimeout(refreshDistTile, 0);
       var expCats = categoriesOfType('EXPENSE');
       var incCats = categoriesOfType('INCOME');
 
@@ -8115,6 +8265,421 @@
       }
     }
 
+
+    // ---------------------------------------------------------------
+    // Аванс и зарплата: распределение плана по категориям и переводы из кэша
+    // ---------------------------------------------------------------
+    var dist = { rows: [], adv: 0, sal: 0, formed: null, ids: [], busy: false, dirty: false, saveTimer: null, armTimer: null, armed: false, pick: null };
+
+    function fmt0(v) { return new Intl.NumberFormat('ru-RU', { maximumFractionDigits: 2 }).format(Number(v || 0)); }
+    function r2(x) { return Math.round(Number(x || 0) * 100) / 100; }
+    function distNum(v) { var n = Number(String(v).replace(',', '.')); return isFinite(n) && n > 0 ? r2(n) : 0; }
+    function distSrc() { return refs.accounts.filter(function (a) { return a.is_budget_source; })[0] || null; }
+    function distMissing(err) { return /budget_distribution|does not exist|relation|schema cache/i.test(String(err && err.message || '')); }
+    var DIST_SQL_MSG = 'В базе нет нужных таблиц. Запусти файл budget_distribution.sql в Supabase (SQL Editor), потом повтори.';
+
+    function distSums() {
+      var a = 0, s2 = 0;
+      dist.rows.forEach(function (r) { a += r.adv; s2 += r.sal; });
+      return { a: r2(a), s: r2(s2) };
+    }
+
+    function distChipHtml(cat) {
+      var src = distSrc();
+      var t = cat.target_account_id;
+      var acc2 = t && src && t !== src.id ? refs.accById[t] : null;
+      return acc2
+        ? '<button type="button" class="dChip" data-c="' + cat.id + '">→ ' + escHtml(acc2.name) + '</button>'
+        : '<button type="button" class="dChip cash" data-c="' + cat.id + '">остаётся в кэше</button>';
+    }
+
+    async function distLoad() {
+      var month = budMonthKey();
+      var res = await Promise.all([
+        sb.from('budget_distribution').select('category_id,advance,salary').eq('month', month),
+        sb.from('budget_distribution_month').select('month,advance_total,salary_total,formed_at,transfer_ids').eq('month', month)
+      ]);
+      if (res[0].error) throw res[0].error;
+      if (res[1].error) throw res[1].error;
+      return { rows: res[0].data || [], month: (res[1].data || [])[0] || null };
+    }
+
+    async function openDist() {
+      var msg = qs('budMsg');
+      msg.textContent = '';
+      qs('budError').textContent = '';
+      var btn = qs('budDistBtn');
+      btn.disabled = true;
+      try {
+        if (!refs.loaded) await loadRefs();
+        if (!refs.distReady || !refs.srcReady) { qs('budError').textContent = DIST_SQL_MSG; return; }
+        var data = await distLoad();
+        var saved = {};
+        data.rows.forEach(function (r) { saved[r.category_id] = r; });
+        dist.rows = [];
+        categoriesOfType('EXPENSE').forEach(function (c) {
+          var plan = Number(bud.budgets[c.id] || 0);
+          var sv = saved[c.id];
+          if (!(plan > 0) && !sv) return;
+          dist.rows.push({ cat: c, plan: plan, adv: sv ? Number(sv.advance || 0) : 0, sal: sv ? Number(sv.salary || 0) : 0 });
+        });
+        dist.adv = data.month ? Number(data.month.advance_total || 0) : 0;
+        dist.sal = data.month ? Number(data.month.salary_total || 0) : 0;
+        dist.formed = data.month && data.month.formed_at ? data.month.formed_at : null;
+        dist.ids = data.month && data.month.transfer_ids ? data.month.transfer_ids : [];
+        dist.dirty = false;
+        if (!dist.rows.length) { msg.textContent = 'Сначала задай план расходов на ' + budLabel() + '.'; return; }
+        renderDist();
+        qs('distOverlay').classList.add('open');
+      } catch (err) {
+        console.error('[ACCOUNTING][DIST_OPEN]', err);
+        qs('budError').textContent = distMissing(err) ? DIST_SQL_MSG : 'Не удалось открыть: ' + budError(err);
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
+    function renderDist() {
+      var locked = Boolean(dist.formed);
+      var src = distSrc();
+      qs('distMeta').textContent = budLabel() + ' · план расходов ' + money(dist.rows.reduce(function (t, r) { return t + r.plan; }, 0)) +
+        '. Впиши, сколько из аванса и зарплаты кладёшь в каждую категорию. Приложение помнит это до конца месяца.';
+      qs('distAdv').value = dist.adv > 0 ? String(dist.adv) : '';
+      qs('distSal').value = dist.sal > 0 ? String(dist.sal) : '';
+      qs('distAdv').disabled = locked;
+      qs('distSal').disabled = locked;
+      qs('distBody').innerHTML = dist.rows.map(function (r) {
+        var id = r.cat.id;
+        return '<div class="dRow"><div class="dNm"><b>' + escHtml(r.cat.name) + '</b>' + distChipHtml(r.cat) + '</div>' +
+          '<div class="dPl">' + fmt0(r.plan) + '</div>' +
+          '<input class="dIn" type="number" min="0" step="100" inputmode="decimal" placeholder="0" data-c="' + id + '" data-k="adv" value="' + (r.adv > 0 ? r.adv : '') + '"' + (locked ? ' disabled' : '') + '>' +
+          '<input class="dIn" type="number" min="0" step="100" inputmode="decimal" placeholder="0" data-c="' + id + '" data-k="sal" value="' + (r.sal > 0 ? r.sal : '') + '"' + (locked ? ' disabled' : '') + '>' +
+          '<div class="dDf" data-df="' + id + '"></div></div>';
+      }).join('');
+      qs('distBody').querySelectorAll('.dChip').forEach(function (b) { b.disabled = locked; });
+      qs('distButtons').hidden = locked;
+      qs('distUndoWrap').hidden = !locked;
+      qs('distError').textContent = '';
+      if (!src) qs('distError').textContent = 'Не выбран счёт для распределения бюджета. Открой «Счета», нажми на Cash, карандаш и поставь галочку «Счёт для распределения бюджета».';
+      distRecalc();
+    }
+
+    function distRecalc() {
+      var t = distSums();
+      var remA = r2(dist.adv - t.a), remS = r2(dist.sal - t.s);
+      function sub(tot, rem, got, elSub, elBar) {
+        var html;
+        if (!(tot > 0)) html = 'Впиши сумму';
+        else if (rem === 0) html = '<span class="ok">Распределено полностью</span>';
+        else if (rem > 0) html = 'Распределено ' + fmt0(got) + ', <span class="warn">осталось ' + fmt0(rem) + ' ₴</span>';
+        else html = '<span class="bad">Больше на ' + fmt0(-rem) + ' ₴</span>';
+        qs(elSub).innerHTML = html;
+        var bar = qs(elBar);
+        bar.style.width = (tot > 0 ? Math.min(100, got / tot * 100) : 0) + '%';
+        bar.className = rem === 0 && tot > 0 ? 'ok' : '';
+      }
+      sub(dist.adv, remA, t.a, 'distAdvSub', 'distAdvBar');
+      sub(dist.sal, remS, t.s, 'distSalSub', 'distSalBar');
+
+      var planTotal = 0, dfTotal = 0;
+      dist.rows.forEach(function (r) {
+        var df = r2(r.plan - r.adv - r.sal);
+        planTotal += r.plan; dfTotal += df;
+        var el = qs('distBody').querySelector('[data-df="' + r.cat.id + '"]');
+        if (el) {
+          el.textContent = df < 0 ? '−' + fmt0(-df) : fmt0(df);
+          el.className = 'dDf ' + (df === 0 ? 'z' : (df > 0 ? 'y' : 'n'));
+        }
+      });
+      qs('distTotal').innerHTML = '<span>Итого</span><span>' + fmt0(planTotal) + '</span><span>' + fmt0(t.a) + '</span><span>' + fmt0(t.s) + '</span><span>' + fmt0(r2(dfTotal)) + '</span>';
+
+      var anyAmt = t.a > 0 || t.s > 0;
+      var ok = !dist.formed && anyAmt && remA === 0 && remS === 0 && Boolean(distSrc());
+      qs('distForm').disabled = !ok;
+      var note;
+      if (dist.formed) note = 'Сформировано ' + new Date(dist.formed).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' }) + '. Создано переводов: ' + dist.ids.length + '.';
+      else if (!anyAmt) note = 'Впиши суммы аванса и зарплаты, затем распредели их по категориям.';
+      else if (remA < 0 || remS < 0) note = 'Распределено больше, чем есть. Поправь суммы.';
+      else if (remA > 0 || remS > 0) note = 'Осталось распределить: ' + [remA > 0 ? 'аванс ' + fmt0(remA) + ' ₴' : '', remS > 0 ? 'зарплату ' + fmt0(remS) + ' ₴' : ''].filter(Boolean).join(' и ') + '. Пока не ноль, «Сформировать» недоступно.';
+      else note = 'Всё распределено. Можно формировать переводы.';
+      qs('distNote').textContent = note;
+    }
+
+    function distScheduleSave() {
+      dist.dirty = true;
+      qs('distSave').textContent = 'Сохранить';
+      if (dist.saveTimer) clearTimeout(dist.saveTimer);
+      dist.saveTimer = setTimeout(function () { distSave(true); }, 1200);
+    }
+
+    async function distSave(silent) {
+      if (dist.saveTimer) { clearTimeout(dist.saveTimer); dist.saveTimer = null; }
+      if (dist.formed) return true;
+      var month = budMonthKey();
+      var btn = qs('distSave');
+      try {
+        var up = [], del = [];
+        dist.rows.forEach(function (r) {
+          if (r.adv > 0 || r.sal > 0) up.push({ category_id: r.cat.id, month: month, advance: r.adv, salary: r.sal });
+          else del.push(r.cat.id);
+        });
+        if (up.length) {
+          var u = await sb.from('budget_distribution').upsert(up, { onConflict: 'category_id,month' });
+          if (u.error) throw u.error;
+        }
+        if (del.length) {
+          var d = await sb.from('budget_distribution').delete().eq('month', month).in('category_id', del);
+          if (d.error) throw d.error;
+        }
+        var m = await sb.from('budget_distribution_month').upsert({ month: month, advance_total: dist.adv, salary_total: dist.sal }, { onConflict: 'month' });
+        if (m.error) throw m.error;
+        dist.dirty = false;
+        btn.textContent = 'Сохранено ✓';
+        refreshDistTile();
+        return true;
+      } catch (err) {
+        console.error('[ACCOUNTING][DIST_SAVE]', err);
+        qs('distError').textContent = distMissing(err) ? DIST_SQL_MSG : 'Не удалось сохранить: ' + budError(err);
+        return false;
+      }
+    }
+
+    qs('distAdv').addEventListener('input', function () { dist.adv = distNum(this.value); distRecalc(); distScheduleSave(); });
+    qs('distSal').addEventListener('input', function () { dist.sal = distNum(this.value); distRecalc(); distScheduleSave(); });
+    qs('distBody').addEventListener('input', function (e) {
+      var inp = e.target.closest('.dIn');
+      if (!inp) return;
+      var row = dist.rows.filter(function (r) { return String(r.cat.id) === inp.getAttribute('data-c'); })[0];
+      if (!row) return;
+      row[inp.getAttribute('data-k')] = distNum(inp.value);
+      distRecalc();
+      distScheduleSave();
+    });
+    qs('distBody').addEventListener('click', function (e) {
+      var chip = e.target.closest('.dChip');
+      if (!chip || dist.formed) return;
+      openDistPick(Number(chip.getAttribute('data-c')));
+    });
+
+    // Выбор счёта для категории
+    function openDistPick(catId) {
+      var cat = refs.catById[catId];
+      var src = distSrc();
+      if (!cat) return;
+      dist.pick = catId;
+      qs('distPickTitle').textContent = 'Куда переводить: ' + cat.name;
+      var cur = cat.target_account_id && src && cat.target_account_id !== src.id ? cat.target_account_id : null;
+      var items = [{ id: null, name: 'Остаётся в кэше', icon: '💵' }].concat(
+        refs.accounts.filter(function (a) { return !src || a.id !== src.id; }).map(function (a) { return { id: a.id, name: a.name, icon: accountIcon(a.name) }; })
+      );
+      qs('distPickList').innerHTML = items.map(function (it) {
+        return '<button type="button" class="distPickItem' + (it.id === cur ? ' cur' : '') + '" data-a="' + (it.id === null ? '' : it.id) + '"><span>' + it.icon + '</span><span>' + escHtml(it.name) + '</span>' + (it.id === cur ? '<span class="tick">✓</span>' : '') + '</button>';
+      }).join('');
+      qs('distPickOverlay').classList.add('open');
+    }
+    qs('distPickList').addEventListener('click', async function (e) {
+      var b2 = e.target.closest('.distPickItem');
+      if (!b2 || dist.pick === null) return;
+      var catId = dist.pick;
+      var val = b2.getAttribute('data-a') === '' ? null : Number(b2.getAttribute('data-a'));
+      try {
+        var r = await sb.from('categories').update({ target_account_id: val }).eq('id', catId).select('id');
+        if (r.error) throw r.error;
+        refs.catById[catId].target_account_id = val;
+        var row = dist.rows.filter(function (x) { return x.cat.id === catId; })[0];
+        if (row) {
+          var holder = qs('distBody').querySelector('.dChip[data-c="' + catId + '"]');
+          if (holder) { holder.outerHTML = distChipHtml(row.cat); }
+        }
+        qs('distPickOverlay').classList.remove('open');
+        dist.pick = null;
+      } catch (err) {
+        console.error('[ACCOUNTING][DIST_PICK]', err);
+        qs('distError').textContent = 'Не удалось сохранить счёт: ' + budError(err);
+        qs('distPickOverlay').classList.remove('open');
+      }
+    });
+    qs('distPickClose').addEventListener('click', function () { qs('distPickOverlay').classList.remove('open'); });
+    qs('distPickOverlay').addEventListener('click', function (e) { if (e.target === qs('distPickOverlay')) qs('distPickOverlay').classList.remove('open'); });
+
+    async function closeDist() {
+      if (dist.dirty && !dist.formed) await distSave(true);
+      qs('distOverlay').classList.remove('open');
+      refreshDistTile();
+    }
+    qs('distClose').addEventListener('click', closeDist);
+    qs('distOverlay').addEventListener('click', function (e) { if (e.target === qs('distOverlay')) closeDist(); });
+    qs('distSave').addEventListener('click', function () { distSave(false); });
+
+    // ----- окно «Сформировать»
+    function distGroups() {
+      var src = distSrc();
+      var by = {}, stay = [], stayTotal = 0, total = 0;
+      dist.rows.forEach(function (r) {
+        var amt = r2(r.adv + r.sal);
+        if (!(amt > 0)) return;
+        total += amt;
+        var t = r.cat.target_account_id;
+        if (t && src && t !== src.id && refs.accById[t]) {
+          var g = by[t] || (by[t] = { acc: refs.accById[t], sum: 0, names: [] });
+          g.sum = r2(g.sum + amt);
+          g.names.push(r.cat.name.replace(/\s*[^\w\sЀ-ӿ()]+\s*$/u, '').trim() || r.cat.name);
+        } else {
+          stay.push({ name: r.cat.name, amt: amt });
+          stayTotal += amt;
+        }
+      });
+      return { by: Object.keys(by).map(function (k) { return by[k]; }), stay: stay, stayTotal: r2(stayTotal), total: r2(total) };
+    }
+
+    async function openDistForm() {
+      if (dist.busy || qs('distForm').disabled) return;
+      var ok = await distSave(true);
+      if (!ok) return;
+      var src = distSrc();
+      var g = distGroups();
+      qs('distFormMeta').textContent = 'Всё распределено: аванс ' + money(dist.adv) + ' и зарплата ' + money(dist.sal) + '. Из счёта «' + src.name + '» будут созданы переводы:';
+      qs('distFormList').innerHTML = g.by.length ? g.by.map(function (x) {
+        return '<div class="dfRow"><div class="dfIco">' + accountIcon(x.acc.name) + '</div><div class="dfTxt"><b>' + escHtml(src.name) + ' → ' + escHtml(x.acc.name) + '</b><span>' + escHtml(x.names.join(', ')) + '</span></div><div class="dfSum">' + fmt0(x.sum) + ' ₴</div></div>';
+      }).join('') : '<div class="dfRow"><div class="dfTxt"><span>Все категории остаются в кэше, переводов не будет.</span></div></div>';
+      qs('distFormStay').hidden = !g.stay.length;
+      qs('distFormStay').innerHTML = '<div class="dfRow"><div class="dfIco">💵</div><div class="dfTxt"><b>Остаётся в кэше</b><span>' + escHtml(g.stay.map(function (x) { return x.name + ' ' + fmt0(x.amt); }).join(', ')) + '</span></div><div class="dfSum">' + fmt0(g.stayTotal) + ' ₴</div></div>';
+      qs('distFormSum').innerHTML =
+        '<div class="dfLine"><span>Всего распределено</span><b>' + fmt0(g.total) + ' ₴</b></div>' +
+        '<div class="dfLine"><span>Переводов будет создано</span><b>' + g.by.length + '</b></div>' +
+        '<div class="dfLine"><span>Дата операций</span><b>' + new Date().toLocaleDateString('ru-RU', { day: 'numeric', month: 'short', year: 'numeric' }) + '</b></div>';
+      qs('distFormGo').textContent = g.by.length ? 'Создать ' + g.by.length + ' ' + (g.by.length === 1 ? 'перевод' : (g.by.length < 5 ? 'перевода' : 'переводов')) : 'Сформировать месяц';
+      qs('distFormGo').disabled = false;
+      qs('distFormError').textContent = '';
+      qs('distFormOverlay').classList.add('open');
+    }
+
+    async function doDistForm() {
+      if (dist.busy) return;
+      var src = distSrc();
+      if (!src) return;
+      dist.busy = true;
+      qs('distFormGo').disabled = true;
+      qs('distFormGo').textContent = 'Создаём…';
+      qs('distFormError').textContent = '';
+      var month = budMonthKey();
+      var ids = [];
+      try {
+        var g = distGroups();
+        var now = new Date().toISOString();
+        if (g.by.length) {
+          var rows = g.by.map(function (x) {
+            return {
+              action: 'TRANSFER', amount: x.sum, currency: 'UAH', date: now,
+              from_account_id: src.id, to_account_id: x.acc.id, account_id: null, category_id: null,
+              note: ('Бюджет ' + budLabel() + ': ' + x.names.join(', ')).slice(0, 200)
+            };
+          });
+          var ins = await sb.from('transactions').insert(rows).select('id');
+          if (ins.error) throw ins.error;
+          ids = (ins.data || []).map(function (r) { return r.id; });
+          if (ids.length !== rows.length) throw new Error('Переводы созданы не полностью.');
+        }
+        var mu = await sb.from('budget_distribution_month').upsert(
+          { month: month, advance_total: dist.adv, salary_total: dist.sal, formed_at: now, transfer_ids: ids }, { onConflict: 'month' });
+        if (mu.error) {
+          if (ids.length) await sb.from('transactions').delete().in('id', ids);   // не оставляем переводы без отметки
+          throw mu.error;
+        }
+        dist.formed = now;
+        dist.ids = ids;
+        qs('distFormOverlay').classList.remove('open');
+        renderDist();
+        refreshAfterChange();
+        refreshDistTile();
+        qs('budMsg').textContent = 'Месяц сформирован: создано переводов ' + ids.length + '.';
+      } catch (err) {
+        console.error('[ACCOUNTING][DIST_FORM]', err);
+        qs('distFormError').textContent = 'Не удалось сформировать: ' + budError(err);
+        qs('distFormGo').disabled = false;
+        qs('distFormGo').textContent = 'Повторить';
+      } finally {
+        dist.busy = false;
+      }
+    }
+
+    function disarmDistUndo() {
+      dist.armed = false;
+      if (dist.armTimer) { clearTimeout(dist.armTimer); dist.armTimer = null; }
+      qs('distUndo').textContent = 'Отменить формирование';
+      qs('distUndo').classList.remove('dangerSolid');
+    }
+
+    async function doDistUndo() {
+      if (dist.busy || !dist.formed) return;
+      if (!dist.armed) {
+        dist.armed = true;
+        qs('distUndo').textContent = 'Нажми ещё раз: переводы удалятся';
+        qs('distUndo').classList.add('dangerSolid');
+        dist.armTimer = setTimeout(disarmDistUndo, 4000);
+        return;
+      }
+      dist.busy = true;
+      qs('distUndo').disabled = true;
+      try {
+        if (dist.ids.length) {
+          var del = await sb.from('transactions').delete().in('id', dist.ids);
+          if (del.error) throw del.error;
+        }
+        var mu = await sb.from('budget_distribution_month').upsert(
+          { month: budMonthKey(), advance_total: dist.adv, salary_total: dist.sal, formed_at: null, transfer_ids: [] }, { onConflict: 'month' });
+        if (mu.error) throw mu.error;
+        dist.formed = null;
+        dist.ids = [];
+        disarmDistUndo();
+        renderDist();
+        refreshAfterChange();
+        refreshDistTile();
+        qs('budMsg').textContent = 'Формирование отменено: переводы удалены, месяц открыт для правки.';
+      } catch (err) {
+        console.error('[ACCOUNTING][DIST_UNDO]', err);
+        disarmDistUndo();
+        qs('distError').textContent = 'Не удалось отменить: ' + budError(err);
+      } finally {
+        dist.busy = false;
+        qs('distUndo').disabled = false;
+      }
+    }
+
+    qs('distForm').addEventListener('click', openDistForm);
+    qs('distFormGo').addEventListener('click', doDistForm);
+    qs('distFormBack').addEventListener('click', function () { qs('distFormOverlay').classList.remove('open'); });
+    qs('distFormClose').addEventListener('click', function () { qs('distFormOverlay').classList.remove('open'); });
+    qs('distUndo').addEventListener('click', doDistUndo);
+
+    // Статус на плитке «Аванс и зарплата»
+    var distTileReq = 0;
+    async function refreshDistTile() {
+      var el = qs('budDistSub');
+      var req = ++distTileReq;
+      if (!refs.loaded || !refs.distReady || !refs.srcReady) { el.textContent = refs.loaded ? 'Нужна настройка' : '—'; return; }
+      try {
+        var d = await distLoad();
+        if (req !== distTileReq) return;
+        var m = d.month;
+        if (m && m.formed_at) { el.textContent = 'Сформировано'; return; }
+        var tot = m ? Number(m.advance_total || 0) + Number(m.salary_total || 0) : 0;
+        if (!(tot > 0)) { el.textContent = 'Не начато'; return; }
+        var got = d.rows.reduce(function (t, r) { return t + Number(r.advance || 0) + Number(r.salary || 0); }, 0);
+        var rem = r2(tot - got);
+        el.textContent = rem === 0 ? 'Всё распределено' : (rem > 0 ? 'Осталось ' + fmt0(rem) + ' ₴' : 'Больше на ' + fmt0(-rem) + ' ₴');
+      } catch (err) {
+        if (req !== distTileReq) return;
+        el.textContent = distMissing(err) ? 'Нужна настройка' : '—';
+      }
+    }
+    document.addEventListener('keydown', function (event) {
+      if (event.key !== 'Escape') return;
+      if (qs('distPickOverlay').classList.contains('open')) qs('distPickOverlay').classList.remove('open');
+      else if (qs('distFormOverlay').classList.contains('open')) qs('distFormOverlay').classList.remove('open');
+      else if (qs('distOverlay').classList.contains('open')) closeDist();
+    });
+
     qs('budPlanBtn').addEventListener('click', openBudPlan);
     qs('bpApply').addEventListener('click', applyBudPlan);
     qs('bpCancel').addEventListener('click', closeBudPlan);
@@ -8138,7 +8703,7 @@
     qs('budgetNext').addEventListener('click', function () {
       budShift(1); qs('budMsg').textContent = ''; loadBudget();
     });
-    qs('budCopy').addEventListener('click', copyBudget);
+    qs('budDistBtn').addEventListener('click', openDist);
     qs('budSave').addEventListener('click', saveBud);
     qs('budCancel').addEventListener('click', closeBudEdit);
     qs('budClose').addEventListener('click', closeBudEdit);
@@ -8456,6 +9021,7 @@
       var reqId = ++acc.req;
       qs('accError').textContent = '';
       try {
+        if (!refs.loaded) { try { await loadRefs(); } catch (e) { /* подпись источника не покажем */ } }
         var res = await fetchBalances();
         if (reqId !== acc.req) return;
         if (res.error) throw res.error;
@@ -8553,7 +9119,8 @@
         name.textContent = a.name;
         var source = document.createElement('small');
         source.className = 'saldoAccountsItemSource';
-        source.textContent = 'По операциям';
+        var refAcc = refs.accById[a.id];
+        source.textContent = 'По операциям' + (refAcc && refAcc.is_budget_source ? ' · для переводов бюджета' : '');
         center.append(name, source);
 
         var values = document.createElement('span');
@@ -8767,6 +9334,9 @@
         ? 'Валюту существующего счёта менять нельзя. Удалить можно только счёт без операций.'
         : 'Эмодзи в конце названия станет значком счёта.';
       qs('accDeleteWrap').hidden = !account;
+      qs('accBudgetSrcWrap').hidden = !refs.srcReady;
+      var refAcc = account ? refs.accById[account.id] : null;
+      qs('accBudgetSrc').checked = Boolean(refAcc && refAcc.is_budget_source);
       qs('accSheetError').textContent = '';
       qs('accSave').disabled = false;
       qs('accSave').textContent = 'Сохранить';
@@ -8801,6 +9371,7 @@
 
       try {
         var res;
+        var wantSrc = refs.srcReady ? qs('accBudgetSrc').checked : false;
         if (acc.editing) {
           res = await sb.from('accounts').update({ name: name }).eq('id', acc.editing.id).select('id');
         } else {
@@ -8810,6 +9381,11 @@
         }
         if (res.error) throw res.error;
         if (!res.data || !res.data.length) throw new Error('Не удалось сохранить счёт.');
+        if (refs.srcReady) {
+          var accId = acc.editing ? acc.editing.id : res.data[0].id;
+          var was = Boolean((refs.accById[accId] || {}).is_budget_source);
+          if (wantSrc !== was) await setBudgetSource(accId, wantSrc);
+        }
 
         closeAccForm();
         closeAccountHistory();
@@ -8822,6 +9398,16 @@
         qs('accSave').disabled = false;
         qs('accSave').textContent = 'Сохранить';
       }
+    }
+
+    // Счёт для распределения бюджета может быть только один: сначала снимаем признак с остальных
+    async function setBudgetSource(id, on) {
+      if (on) {
+        var off = await sb.from('accounts').update({ is_budget_source: false }).eq('is_budget_source', true).neq('id', id);
+        if (off.error) throw off.error;
+      }
+      var r = await sb.from('accounts').update({ is_budget_source: on }).eq('id', id).select('id');
+      if (r.error) throw r.error;
     }
 
     async function deleteAccount() {
@@ -9839,7 +10425,7 @@
     // «Ещё»: сводка и переходы
     // ---------------------------------------------------------------
     var APP_VERSION = '2.6';
-    var APP_BUILD = '20261024-2405';
+    var APP_BUILD = '20261025-0010';
     var moreReq = 0;
 
     function escHtml(v) {
