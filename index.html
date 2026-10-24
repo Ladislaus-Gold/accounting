@@ -4586,11 +4586,7 @@
     .authCard{width:min(100%,380px)}
     .authCard .h1{font-size:24px;margin-bottom:4px}
     .authError{min-height:20px;margin-top:10px;font-size:13px;color:var(--red)}
-    .authCard .btnGoogle{display:block;width:100%;margin-top:16px;padding:16px 18px;border:0;border-radius:16px;
-      background:linear-gradient(135deg,var(--t-blue2),var(--t-blue));color:#fff;font:inherit;font-size:16px;font-weight:700;cursor:pointer;
-      box-shadow:0 8px 18px rgba(49,87,246,.38);transition:transform .12s,filter .12s}
-    .authCard .btnGoogle:active{transform:scale(.985);filter:brightness(.94)}
-    .authCard .btnGoogle:disabled{opacity:.5;cursor:not-allowed}
+    .authCard .btnGoogle{margin-top:16px}
     .stubCard{margin-top:16px}
     .stubCard .h1{font-size:18px}
     [hidden]{display:none !important}
@@ -5021,7 +5017,7 @@
       <h1 class="h1">Accounting</h1>
       <p class="p">Войди, чтобы открыть свои финансы</p>
 
-      <button class="btnGoogle" id="authGoogle" type="button">Войти через Google</button>
+      <button class="btnPrimary btnFull btnGoogle" id="authGoogle" type="button">Войти через Google</button>
       <div class="authError" id="authError" role="alert"></div>
     </div>
   </div>
@@ -8987,7 +8983,7 @@
     // «Ещё»: сводка и переходы
     // ---------------------------------------------------------------
     var APP_VERSION = '2.5';
-    var APP_BUILD = '20261024-1840';
+    var APP_BUILD = '20261024-1910';
     var moreReq = 0;
 
     function escHtml(v) {
