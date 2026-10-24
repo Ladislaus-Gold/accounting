@@ -5120,6 +5120,19 @@
     .distPickItem{display:flex;align-items:center;gap:12px;width:100%;padding:12px 8px;border:0;border-top:1px solid #EEF1F8;background:transparent;font-size:15px;font-weight:600;color:#101B45;text-align:left;cursor:pointer;font-family:inherit}
     .distPickItem:first-child{border-top:0}
     .distPickItem.cur{color:#2747E0}.distPickItem .tick{margin-left:auto;font-weight:800;color:#2747E0}
+    /* Уведомление о новой версии на главном экране */
+    .updBanner{display:flex;align-items:center;gap:12px;margin-bottom:12px;padding:12px 14px;border-radius:20px;background:linear-gradient(135deg,#EAF0FF,#DCE6FF);box-shadow:inset 0 0 0 1px #C6D2F0;animation:updIn .35s ease}
+    .updBanner[hidden]{display:none}
+    .updText{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+    .updText b{font-size:14.5px;font-weight:800;color:#101B45}
+    .updText span{font-size:12.5px;color:#3A4A78;line-height:1.35}
+    .updBtn{flex:none;width:46px;height:46px;border-radius:50%;border:0;background:linear-gradient(135deg,#5B7DFF,#2747E0);box-shadow:0 6px 16px rgba(49,87,246,.35);display:grid;place-items:center;cursor:pointer;padding:0}
+    .updBtn svg{width:24px;height:24px;display:block}
+    .updBtn.spinning svg{animation:updSpin .85s cubic-bezier(.45,.05,.25,1) 1 forwards}
+    .updBtn:disabled{cursor:default}
+    body.updClosing{opacity:0;transition:opacity .28s ease}
+    @keyframes updSpin{to{transform:rotate(360deg)}}
+    @keyframes updIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}
     .bpTotals{margin-top:16px;padding:12px 14px;border-radius:16px;background:#F3F6FC;display:grid;gap:8px}
     .bpTotals .bpTRow{display:flex;justify-content:space-between;gap:10px;font-size:14px;color:#27325A}
     .bpTotals .bpTRow.big{font-size:16px;font-weight:700;padding-top:8px;border-top:1px solid #DCE4F3}
@@ -5156,6 +5169,13 @@
       <!-- Главная -->
       <section class="page active" id="page-dashboard">
         <div class="saldoDashShell">
+
+          <div class="updBanner" id="updBanner" role="status" hidden>
+            <div class="updText"><b>Доступно обновление</b><span id="updSub">Новая версия</span></div>
+            <button class="updBtn" id="updBtn" type="button" aria-label="Обновить приложение">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.6-5.9"/><path d="M20 4v5h-5"/></svg>
+            </button>
+          </div>
 
           <div class="saldoDashTop">
             <div>
@@ -10441,8 +10461,43 @@
     // ---------------------------------------------------------------
     // «Ещё»: сводка и переходы
     // ---------------------------------------------------------------
-    var APP_VERSION = '2.6';
-    var APP_BUILD = '20261025-0010';
+    var APP_VERSION = '2.7';
+    var APP_BUILD = '20261025-0030';
+
+    // Проверка новой версии: читаем свежий index.html с сервера и сравниваем номер сборки.
+    // Если сборка новее, на главном экране появляется уведомление с кнопкой «обновить».
+    var updInfo = null, updBusy = false;
+    async function checkUpdate() {
+      if (updBusy) return;
+      try {
+        var r = await fetch(location.pathname + '?chk=' + Date.now(), { cache: 'no-store' });
+        if (!r.ok) return;
+        var text = await r.text();
+        var b = /APP_BUILD\s*=\s*'([^']+)'/.exec(text);
+        var v = /APP_VERSION\s*=\s*'([^']+)'/.exec(text);
+        if (!b || !(b[1] > APP_BUILD)) return;
+        updInfo = { build: b[1], version: v ? v[1] : '' };
+        qs('updSub').textContent = 'Новая версия' + (updInfo.version ? ' ' + updInfo.version : '') + ' (сборка ' + updInfo.build + '). Сейчас у тебя ' + APP_VERSION + '. Нажми на кружок, чтобы обновить.';
+        qs('updBanner').hidden = false;
+      } catch (e) { /* нет сети: проверим позже */ }
+    }
+    async function applyUpdate() {
+      if (updBusy) return;
+      updBusy = true;
+      qs('updBtn').classList.add('spinning');
+      qs('updBtn').disabled = true;
+      await new Promise(function (res) { setTimeout(res, 850); });
+      document.body.classList.add('updClosing');          // «закрываем» приложение
+      try {
+        if (window.caches) { var ks = await caches.keys(); await Promise.all(ks.map(function (k) { return caches.delete(k); })); }
+      } catch (e) { /* кеша может не быть */ }
+      await new Promise(function (res) { setTimeout(res, 300); });
+      location.replace(location.pathname + '?v=' + (updInfo ? updInfo.build : Date.now()));   // «открываем» заново
+    }
+    qs('updBtn').addEventListener('click', applyUpdate);
+    setTimeout(checkUpdate, 2500);
+    setInterval(checkUpdate, 10 * 60 * 1000);
+    document.addEventListener('visibilitychange', function () { if (!document.hidden) checkUpdate(); });
     var moreReq = 0;
 
     function escHtml(v) {
