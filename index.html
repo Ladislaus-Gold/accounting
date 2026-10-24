@@ -5109,9 +5109,11 @@
     .dTt{background:#E6EDFA;font-weight:800;font-size:12.5px;border-top:2px solid #1F3A68;text-align:right}
     .dTt span:first-child{text-align:left;color:#1F3A68}
     .distLegend{margin-top:10px;font-size:11.5px;color:#5B6A90;line-height:1.45}
-    .distBottom{position:sticky;bottom:0;background:#fff;padding:10px 0 4px;margin-top:12px}
+    .distBottom{position:sticky;bottom:calc(-12px - env(safe-area-inset-bottom));background:#fff;padding:10px 0 calc(14px + env(safe-area-inset-bottom));margin-top:12px}
     .distNote{font-size:12px;color:#5B6A90;text-align:center;margin-bottom:8px}
     .distBottom .btnRow #distForm{flex:1 1 0;white-space:nowrap}
+    #distUndoWrap{margin-bottom:8px}
+    #distUndoWrap #distUndo{height:44px;border-radius:14px;font-size:15px;font-weight:800;box-shadow:0 4px 12px rgba(192,38,29,.16)}
     #distFormOverlay .btnRow #distFormGo{flex:1.7 1 0;white-space:nowrap}
     #distFormOverlay .btnRow{position:sticky;bottom:0;background:#fff;padding:10px 0 4px;margin-top:12px}
     .distBottom .btnRow button:disabled{background:#D7DEF0;color:#8B97B8;box-shadow:none}
@@ -6051,14 +6053,13 @@
         <div class="dTt" id="distTotal"></div>
       </div>
       <div class="distLegend">Метка под названием: «→ счёт» значит, что деньги переведутся туда; «остаётся в кэше» значит, что останутся на счёте для распределения бюджета. Нажми на метку, чтобы сменить счёт.</div>
-        <div class="field" id="distUndoWrap" hidden style="margin-top:12px">
-          <button class="btnTintRed btnFull" id="distUndo" type="button">Отменить формирование</button>
-          <div class="muted" style="text-align:center;margin-top:6px">Кнопка исчезнет через минуту после формирования.</div>
-        </div>
       <div class="authError" id="distError" role="alert"></div>
 
       <div class="distBottom">
         <div class="distNote" id="distNote"></div>
+        <div id="distUndoWrap" hidden>
+          <button class="btnTintRed btnFull" id="distUndo" type="button">Отменить формирование</button>
+        </div>
         <div class="btnRow" id="distButtons">
           <button class="btnPrimary" id="distForm" type="button">Сформировать</button>
         </div>
@@ -10510,7 +10511,7 @@
     // «Ещё»: сводка и переходы
     // ---------------------------------------------------------------
     var APP_VERSION = '2.7';
-    var APP_BUILD = '20261025-0150';
+    var APP_BUILD = '20261025-0210';
 
     // Проверка новой версии: читаем свежий index.html с сервера и сравниваем номер сборки.
     // Если сборка новее, на главном экране появляется уведомление с кнопкой «обновить».
