@@ -4999,6 +4999,38 @@
 
     /* Бюджет: операции категории в окне */
     #budOverlay .sheet{max-height:92vh;overflow-y:auto}
+
+    /* v2.6: признаки категорий, итоги месяца, распределение дохода */
+    .budMandBadge,.budModeBadge{display:inline-block;margin-left:6px;padding:2px 7px;border-radius:8px;font-size:10px;font-weight:700;
+      letter-spacing:.02em;vertical-align:middle;color:#1F3FC4;background:#E3EBFF}
+    .budModeBadge{color:#7A4B00;background:#FFEFD0}
+    .bsHead{margin-top:12px;font-size:16px;font-weight:700;line-height:1.35}
+    .bsHead.good{color:var(--green)}.bsHead.warn{color:var(--orange)}.bsHead.bad{color:var(--red)}.bsHead.neutral{color:#101B45}
+    .bsList{display:grid;gap:9px;margin-top:12px}
+    .bsItem{display:grid;grid-template-columns:10px minmax(0,1fr);gap:10px;align-items:start;font-size:13.5px;line-height:1.4;color:#27325A}
+    .bsItem .bsDot{width:8px;height:8px;border-radius:50%;margin-top:6px;background:#9AA7C7}
+    .bsItem.good .bsDot{background:#2FA862}.bsItem.warn .bsDot{background:#F0A020}.bsItem.bad .bsDot{background:#E5483B}
+    .budFlagRow{background:#fff;border:1px solid #E1E8F5;border-radius:13px;padding:10px 12px;margin:12px 0 0}
+    .budFlagRow span{font-size:13px;color:#4A5A86}.budFlagRow b{color:#101B45;font-size:14px}
+    #budFlags .label{margin-top:14px}
+    #budFlags.off{opacity:.5;pointer-events:none}
+    .btnRowTop{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+    #bpOverlay{z-index:1500 !important}
+    #bpOverlay .sheet{max-height:92vh;overflow-y:auto}
+    .bpSecHead{display:flex;justify-content:space-between;align-items:baseline;margin:16px 0 2px;font-size:11px;font-weight:700;
+      letter-spacing:.06em;text-transform:uppercase;color:#101B45}
+    .bpSecHead span:last-child{font-size:13px;letter-spacing:0;text-transform:none;color:#27325A}
+    .bpRow{display:grid;grid-template-columns:minmax(0,1fr) 118px;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid #EEF1F8}
+    .bpRow:last-child{border-bottom:0}
+    .bpName{font-size:14px;font-weight:600;color:#101B45}
+    .bpAvg{margin-top:2px;font-size:12px;font-weight:400;color:#5B6A90}
+    #bpOverlay .bpAmt{text-align:right;padding:10px 12px;font-weight:700}
+    .bpTotals{margin-top:16px;padding:12px 14px;border-radius:16px;background:#F3F6FC;display:grid;gap:8px}
+    .bpTotals .bpTRow{display:flex;justify-content:space-between;gap:10px;font-size:14px;color:#27325A}
+    .bpTotals .bpTRow.big{font-size:16px;font-weight:700;padding-top:8px;border-top:1px solid #DCE4F3}
+    .bpTotals .good{color:var(--green)}.bpTotals .bad{color:var(--red)}
+    #bpOverlay .bpButtons{position:sticky;bottom:0;background:#fff;padding:10px 0 4px;margin-top:12px}
+    #bpOverlay .bpButtons #bpApply{flex:1.7 1 0;white-space:nowrap}
     .budOpsHead{display:flex;align-items:center;justify-content:space-between;margin:14px 2px 6px;font-size:12px;font-weight:700;
       letter-spacing:.06em;text-transform:uppercase;color:#101B45}
     .budOpsCount{min-width:24px;padding:2px 8px;border-radius:999px;background:#DCE6FF;color:#1F3FC4;text-align:center;letter-spacing:0}
@@ -5260,10 +5292,23 @@
               </div>
               <button class="repNav" id="budgetNext" type="button" aria-label="Следующий месяц">›</button>
             </div>
-            <div style="margin-top:12px;text-align:center">
+            <div class="btnRowTop" style="margin-top:12px">
               <button class="btnTint btnSmall" id="budCopy" type="button">Скопировать с прошлого месяца</button>
+              <button class="btnPrimary btnSmall" id="budPlanBtn" type="button">Распределить доход</button>
             </div>
             <div class="muted budMsgLine" id="budMsg"></div>
+          </section>
+
+          <section class="card" id="budSummary">
+            <div class="cardHead">
+              <div>
+                <div class="cardTitle">Итоги месяца</div>
+                <div class="muted" style="margin-top:3px;" id="budSumSub">—</div>
+              </div>
+              <div class="saldoBudgetPercent" id="budSumChip">—</div>
+            </div>
+            <div class="bsHead neutral" id="budSumHead"></div>
+            <div class="bsList" id="budSumList"></div>
           </section>
 
           <section class="card">
@@ -5817,6 +5862,20 @@
       </div>
 
       <div class="muted" id="budSheetHint">Меняется только этот месяц. Другие месяцы остаются как были.</div>
+
+      <div id="budFlags" hidden>
+        <label class="checkRow budFlagRow">
+          <input type="checkbox" id="budMandatory">
+          <span><b>Обязательная трата</b><br>Нужна каждый месяц. При распределении дохода получает деньги первой.</span>
+        </label>
+        <div class="label">Как тратится</div>
+        <div class="seg" id="budModeSeg" style="grid-template-columns:repeat(2,1fr)">
+          <button type="button" data-mode="spread" class="active">Плавно</button>
+          <button type="button" data-mode="lump">Разово</button>
+        </div>
+        <div class="muted" id="budModeHint"></div>
+        <div class="muted" id="budFlagsOff" hidden>В базе нет колонок для этих отметок. Запусти файл budget_flags.sql в Supabase (SQL Editor) и обнови приложение.</div>
+      </div>
       <div class="authError" id="budSheetError" role="alert"></div>
 
       <div class="budOpsHead">
@@ -5828,6 +5887,31 @@
       <div class="btnRow">
         <button class="btnGhost" id="budCancel" type="button">Отмена</button>
         <button class="btnPrimary" id="budSave" type="button">Сохранить</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== РАСПРЕДЕЛЕНИЕ БЮДЖЕТА ===================== -->
+  <div class="sheetOverlay" id="bpOverlay">
+    <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="bpTitle">
+      <div class="sheetHeader">
+        <div class="sheetTitle" id="bpTitle">Распределение бюджета</div>
+        <div class="xbtn" id="bpClose" role="button" tabindex="0" aria-label="Закрыть">×</div>
+      </div>
+
+      <div class="editSummary">
+        <div class="editAmount" id="bpIncome">—</div>
+        <div class="editMeta" id="bpMeta">—</div>
+      </div>
+
+      <div id="bpBody"></div>
+      <div class="bpTotals" id="bpTotals"></div>
+      <div class="muted" id="bpNote" style="margin-top:10px"></div>
+      <div class="authError" id="bpError" role="alert"></div>
+
+      <div class="btnRow bpButtons">
+        <button class="btnGhost" id="bpCancel" type="button">Отмена</button>
+        <button class="btnPrimary" id="bpApply" type="button">Применить бюджет</button>
       </div>
     </div>
   </div>
@@ -6254,10 +6338,15 @@
     var refs = { categories: [], accounts: [], catById: {}, accById: {}, loaded: false };
 
     async function loadRefs() {
-      var res = await Promise.all([
-        sb.from('categories').select('id,name,type,sort_order').order('sort_order'),
-        sb.from('accounts').select('id,name,currency,is_monobank').order('id')
-      ]);
+      // Признаки категорий (обязательная, разовая) лежат в колонках is_mandatory и spend_mode.
+      // Если колонок ещё нет (не запущен budget_flags.sql), читаем без них, приложение работает как раньше.
+      refs.flagsReady = true;
+      var catQuery = await sb.from('categories').select('id,name,type,sort_order,is_mandatory,spend_mode').order('sort_order');
+      if (catQuery.error && /is_mandatory|spend_mode/.test(String(catQuery.error.message || ''))) {
+        refs.flagsReady = false;
+        catQuery = await sb.from('categories').select('id,name,type,sort_order').order('sort_order');
+      }
+      var res = [catQuery, await sb.from('accounts').select('id,name,currency,is_monobank').order('id')];
       if (res[0].error) throw res[0].error;
       if (res[1].error) throw res[1].error;
 
@@ -6969,6 +7058,9 @@
 
     function budError(err) {
       var text = err && err.message ? err.message : 'неизвестная ошибка';
+      if (/is_mandatory|spend_mode/.test(text)) {
+        return 'В базе нет колонок для отметок категорий. Запусти файл budget_flags.sql в Supabase (SQL Editor).';
+      }
       if (/month_category_totals/.test(text)) {
         return 'В базе нет функции для бюджета. Запусти файл stage4.sql в Supabase (SQL Editor).';
       }
@@ -7030,6 +7122,187 @@
       }
     }
 
+    // ---------------------------------------------------------------
+    // Признаки категорий и темп расходов
+    // ---------------------------------------------------------------
+    function catMandatory(c) { return !!(c && c.is_mandatory); }
+    function catLump(c) { return !!(c && c.spend_mode === 'lump'); }
+
+    // Где мы во времени относительно показанного месяца
+    function budTiming() {
+      var now = new Date();
+      var nowKey = now.getFullYear() * 12 + now.getMonth();
+      var shownKey = bud.year * 12 + bud.month;
+      var days = new Date(bud.year, bud.month + 1, 0).getDate();
+      var state = shownKey < nowKey ? 'past' : (shownKey > nowKey ? 'future' : 'current');
+      var day = state === 'current' ? now.getDate() : (state === 'past' ? days : 0);
+      return { state: state, day: day, days: days, t: day / days };
+    }
+
+    // Разбор одной категории расходов: план, факт, опережение графика, прогноз
+    function budCatPace(cat, tm) {
+      var plan = Number(bud.budgets[cat.id] || 0);
+      var fact = factFor(cat);
+      var lump = catLump(cat);
+      var r = {
+        cat: cat, plan: plan, fact: fact, lump: lump, mandatory: catMandatory(cat),
+        expected: 0, diff: 0, ahead: false, forecast: fact, paid: false,
+        over: plan > 0 && fact > plan + 0.005, unplanned: !(plan > 0) && fact > 0
+      };
+      if (!(plan > 0)) return r;
+      if (lump) {
+        r.paid = fact >= plan - 0.005;
+        r.forecast = tm.state === 'future' ? plan : Math.max(fact, plan);
+        return r;
+      }
+      if (tm.state === 'past') return r;
+      if (tm.state === 'future') { r.forecast = plan; return r; }
+      r.expected = plan * tm.t;
+      r.diff = fact - r.expected;
+      if (tm.day >= 3) {
+        r.forecast = fact / tm.t;
+        r.ahead = !r.over && fact > r.expected * 1.2 && r.diff >= Math.max(100, plan * 0.03);
+      } else {
+        r.forecast = Math.max(fact, plan);
+      }
+      return r;
+    }
+
+    function pctText(v) { return Math.round(v * 100) + '%'; }
+
+    // Итоги месяца: что с бюджетом и кто опережает график
+    function renderBudgetSummary(expCats, planExp, actExp, planInc, actInc) {
+      var tm = budTiming();
+      var items = expCats.map(function (c) { return budCatPace(c, tm); });
+      var lines = [];
+      var tone = 'neutral';
+      var headText = '';
+      function add(cls, html) { lines.push({ cls: cls, html: html }); }
+      function nm(it) { return '<b>' + escHtml(it.cat.name) + '</b>'; }
+
+      var hasPlan = planExp > 0;
+      var chip = '';
+      var sub = '';
+
+      var overItems = items.filter(function (i) { return i.over; })
+        .sort(function (a, b) { return (b.fact - b.plan) - (a.fact - a.plan); });
+      var unplanned = items.filter(function (i) { return i.unplanned; })
+        .sort(function (a, b) { return b.fact - a.fact; });
+
+      if (tm.state === 'future') {
+        chip = 'скоро';
+        sub = 'Месяц ещё не начался';
+        headText = hasPlan
+          ? 'Месяц ещё не начался. План расходов ' + money(planExp) + (planInc > 0 ? ', плановый доход ' + money(planInc) + '.' : '.')
+          : 'План на этот месяц не задан. Задай суммы по категориям или нажми «Распределить доход».';
+        if (hasPlan && planInc > 0) {
+          if (planExp > planInc) { tone = 'bad'; add('bad', 'Плановые расходы больше планового дохода на ' + money(planExp - planInc) + '.'); }
+          else { tone = 'good'; add('good', 'После плановых расходов останется ' + money(planInc - planExp) + '.'); }
+        }
+      } else if (tm.state === 'past') {
+        chip = 'итог';
+        sub = budLabel() + ': месяц закрыт';
+        if (!hasPlan) {
+          headText = 'План расходов за этот месяц не был задан. Потрачено ' + money(actExp) + '.';
+        } else if (actExp <= planExp) {
+          tone = 'good';
+          headText = 'Месяц закрыт в рамках бюджета: потрачено ' + money(actExp) + ' из ' + money(planExp) + ', осталось ' + money(planExp - actExp) + '.';
+        } else {
+          tone = 'bad';
+          headText = 'Месяц закрыт с перерасходом ' + money(actExp - planExp) + ': потрачено ' + money(actExp) + ' из ' + money(planExp) + '.';
+        }
+        var profit = actInc - actExp;
+        add(profit >= 0 ? 'good' : 'bad', 'Итог по деньгам: ' + signedMoney(profit) + ' (доходы ' + money(actInc) + (planInc > 0 ? ' из ' + money(planInc) : '') + ').');
+        overItems.slice(0, 3).forEach(function (i) {
+          add('bad', nm(i) + ': перерасход ' + money(i.fact - i.plan) + ' (потрачено ' + money(i.fact) + ' из ' + money(i.plan) + ').');
+        });
+        unplanned.slice(0, 2).forEach(function (i) {
+          add('warn', nm(i) + ': не было в плане, потрачено ' + money(i.fact) + '.');
+        });
+        if (planInc > 0 && actInc < planInc) add('warn', 'Доходов получено меньше плана на ' + money(planInc - actInc) + '.');
+      } else {
+        chip = 'день ' + tm.day + ' из ' + tm.days;
+        sub = pctText(tm.t) + ' месяца позади';
+
+        var spread = items.filter(function (i) { return !i.lump && i.plan > 0; });
+        var spreadPlan = spread.reduce(function (s, i) { return s + i.plan; }, 0);
+        var spreadFact = spread.reduce(function (s, i) { return s + i.fact; }, 0);
+        var spreadExp = spreadPlan * tm.t;
+        var diff = spreadFact - spreadExp;
+        var aheadItems = items.filter(function (i) { return i.ahead; }).sort(function (a, b) { return b.diff - a.diff; });
+
+        if (!hasPlan) {
+          headText = 'План расходов на этот месяц не задан. Потрачено ' + money(actExp) + '. Задай суммы или нажми «Распределить доход».';
+        } else if (actExp > planExp) {
+          tone = 'bad';
+          headText = 'Бюджет месяца уже превышен на ' + money(actExp - planExp) + ': потрачено ' + money(actExp) + ' из ' + money(planExp) + '.';
+        } else if (tm.day < 3) {
+          tone = 'good';
+          headText = 'Месяц только начался (день ' + tm.day + ' из ' + tm.days + '). Пока всё спокойно.';
+        } else if (spreadExp > 0 && spreadFact > spreadExp * 1.2 && diff >= 100) {
+          tone = 'bad';
+          headText = 'Вы слишком торопитесь: за ' + pctText(tm.t) + ' месяца потрачено ' + pctText(spreadFact / spreadPlan) + ' плана плавных расходов.';
+        } else if (aheadItems.length) {
+          var fastNames = aheadItems.slice(0, 3).map(function (i) { return i.cat.name; }).join(', ');
+          var willOver = aheadItems.some(function (i) { return i.forecast > i.plan; });
+          tone = willOver ? 'bad' : 'warn';
+          headText = (willOver ? 'Вы слишком торопитесь: ' : 'Есть опережение графика: ') + 'быстрее плана тратятся ' + fastNames + '.';
+        } else if (spreadExp > 0 && spreadFact > spreadExp * 1.05 && diff >= 100) {
+          tone = 'warn';
+          headText = 'Чуть опережаете график: к этому дню по плану ' + money(spreadExp) + ', потрачено ' + money(spreadFact) + '.';
+        } else if (spreadExp > 0 && spreadFact < spreadExp * 0.8) {
+          tone = 'good';
+          headText = 'Идёте с запасом: к этому дню по плану ' + money(spreadExp) + ', потрачено ' + money(spreadFact) + '.';
+        } else {
+          tone = 'good';
+          headText = 'Расходы идут по графику.';
+        }
+
+        items.filter(function (i) { return i.ahead; })
+          .sort(function (a, b) { return b.diff - a.diff; }).slice(0, 3)
+          .forEach(function (i) {
+            add(i.forecast > i.plan ? 'bad' : 'warn',
+              nm(i) + ': потрачено ' + pctText(i.fact / i.plan) + ' плана за ' + pctText(tm.t) + ' месяца (на ' + money(i.diff) +
+              ' больше графика). При таком темпе к концу месяца: ' + money(i.forecast) + ' при плане ' + money(i.plan) + '.');
+          });
+        overItems.slice(0, 3).forEach(function (i) {
+          add('bad', nm(i) + ': план превышен на ' + money(i.fact - i.plan) + '.');
+        });
+
+        var unpaid = items.filter(function (i) { return i.lump && i.plan > 0 && !i.paid; });
+        var paid = items.filter(function (i) { return i.lump && i.plan > 0 && i.paid; });
+        if (unpaid.length) {
+          add('warn', 'Разовые платежи, которых ещё не было: ' + unpaid.map(function (i) { return nm(i) + ' ' + money(i.plan - i.fact); }).join(', ') + '.');
+        }
+        if (paid.length) {
+          add('good', 'Разовые платежи внесены: ' + paid.map(nm).join(', ') + '.');
+        }
+        unplanned.slice(0, 2).forEach(function (i) {
+          add('warn', nm(i) + ': нет в плане, потрачено ' + money(i.fact) + '.');
+        });
+
+        if (hasPlan && tm.day >= 3) {
+          var forecast = items.reduce(function (s, i) { return s + i.forecast; }, 0);
+          add(forecast > planExp ? 'warn' : 'good',
+            'Прогноз расходов на конец месяца: ' + money(forecast) + ' при плане ' + money(planExp) + '.');
+        }
+        if (planInc > 0) {
+          if (actInc >= planInc) add('good', 'План доходов уже выполнен: получено ' + money(actInc) + '.');
+          else add('neutral', 'Доходов получено ' + money(actInc) + ' из ' + money(planInc) + '.');
+        }
+      }
+
+      qs('budSumChip').textContent = chip;
+      qs('budSumSub').textContent = sub;
+      var head = qs('budSumHead');
+      head.className = 'bsHead ' + tone;
+      head.textContent = headText;
+      var box = qs('budSumList');
+      box.innerHTML = lines.slice(0, 8).map(function (l) {
+        return '<div class="bsItem ' + l.cls + '"><span class="bsDot"></span><div>' + l.html + '</div></div>';
+      }).join('');
+    }
+
     function sumPlan(cats) {
       return cats.reduce(function (sum, c) { return sum + Number(bud.budgets[c.id] || 0); }, 0);
     }
@@ -7075,6 +7348,7 @@
       profitEl.style.color = profit >= 0 ? 'var(--green)' : 'var(--red)';
       qs('budgetProfitPlan').textContent = signedMoney(planInc - planExp);
 
+      renderBudgetSummary(expCats, planExp, actExp, planInc, actInc);
       renderBudgetList('budgetCats', expCats);
       renderBudgetList('budgetIncomeCats', incCats);
     }
@@ -7103,6 +7377,14 @@
         var name = document.createElement('div');
         name.className = 'budCatName';
         name.textContent = cat.name;
+        if (!isIncome && catMandatory(cat)) {
+          var mb = document.createElement('span'); mb.className = 'budMandBadge'; mb.textContent = 'обязательная';
+          name.appendChild(mb);
+        }
+        if (!isIncome && catLump(cat)) {
+          var lb = document.createElement('span'); lb.className = 'budModeBadge'; lb.textContent = 'разово';
+          name.appendChild(lb);
+        }
         var val = document.createElement('div');
         val.className = 'budCatVal';
         val.textContent = hasPlan ? (money(fact) + ' / ' + money(plan)) : money(fact);
@@ -7130,7 +7412,16 @@
         hint.className = 'budCatHint' + ((over || unplanned) ? ' budOverHint' : '');
         if (plan > 0) {
           if (isIncome) hint.textContent = fact >= plan ? 'План выполнен' : 'Не хватает ' + money(plan - fact);
-          else hint.textContent = fact > plan ? 'Перерасход ' + money(fact - plan) : 'Осталось ' + money(plan - fact);
+          else if (fact > plan) hint.textContent = 'Перерасход ' + money(fact - plan);
+          else if (catLump(cat)) hint.textContent = fact >= plan - 0.005 ? 'Оплачено' : 'Ещё не оплачено ' + money(plan - fact);
+          else {
+            hint.textContent = 'Осталось ' + money(plan - fact);
+            var pace = budCatPace(cat, budTiming());
+            if (pace.ahead) {
+              hint.textContent += ' · опережает график на ' + money(pace.diff);
+              hint.classList.add('budOverHint');
+            }
+          }
         } else if (unplanned) {
           hint.textContent = 'Не предусмотрено бюджетом: потрачено ' + money(fact) + '. Нажми, чтобы задать план';
         } else {
@@ -7154,9 +7445,32 @@
       qs('budSheetError').textContent = '';
       qs('budSave').disabled = false;
       qs('budSave').textContent = 'Сохранить';
+
+      // Признаки категории расходов
+      var isExp = cat.type === 'EXPENSE';
+      qs('budFlags').hidden = !isExp;
+      qs('budFlags').classList.toggle('off', !refs.flagsReady);
+      qs('budFlagsOff').hidden = refs.flagsReady !== false;
+      qs('budMandatory').checked = catMandatory(cat);
+      setBudMode(catLump(cat) ? 'lump' : 'spread');
+
       qs('budOverlay').classList.add('open');
       loadBudOps(cat);
     }
+
+    function setBudMode(mode) {
+      bud.editMode = mode;
+      qs('budModeSeg').querySelectorAll('button').forEach(function (b) {
+        b.classList.toggle('active', b.getAttribute('data-mode') === mode);
+      });
+      qs('budModeHint').textContent = mode === 'lump'
+        ? 'Платится одним платежом (аренда, подписка). В итогах месяца показывается как «оплачено» или «ещё не оплачено», без проверки темпа.'
+        : 'Тратится понемногу в течение месяца (продукты, транспорт). Приложение сравнивает расход с графиком по дням.';
+    }
+    qs('budModeSeg').addEventListener('click', function (e) {
+      var b = e.target.closest('button[data-mode]');
+      if (b) setBudMode(b.getAttribute('data-mode'));
+    });
 
     // Список операций выбранной категории за выбранный месяц
     async function loadBudOps(cat) {
@@ -7216,6 +7530,20 @@
       qs('budSave').textContent = 'Сохраняем…';
 
       try {
+        // Отметки категории (обязательная, разово): сохраняем, только если изменились
+        if (cat.type === 'EXPENSE' && refs.flagsReady) {
+          var wantMand = qs('budMandatory').checked;
+          var wantMode = bud.editMode === 'lump' ? 'lump' : 'spread';
+          if (wantMand !== catMandatory(cat) || wantMode !== (catLump(cat) ? 'lump' : 'spread')) {
+            var fr = await sb.from('categories')
+              .update({ is_mandatory: wantMand, spend_mode: wantMode }).eq('id', cat.id).select('id');
+            if (fr.error) throw fr.error;
+            if (!fr.data || !fr.data.length) throw new Error('Не удалось сохранить отметки категории.');
+            cat.is_mandatory = wantMand;
+            cat.spend_mode = wantMode;
+          }
+        }
+
         var res = await sb.from('budgets').upsert(
           { category_id: cat.id, month: budMonthKey(), amount: amount },
           { onConflict: 'category_id,month' }
@@ -7275,6 +7603,212 @@
         button.disabled = false;
       }
     }
+
+    // ---------------------------------------------------------------
+    // Распределение планового дохода по расходам
+    // Обязательные траты получают деньги первыми (в среднем за прошлые месяцы),
+    // остальное делится между прочими категориями пропорционально их средним расходам.
+    // ---------------------------------------------------------------
+    var bp = { rows: [], income: 0, months: 0, busy: false };
+
+    function ceil10(v) { return Math.ceil(v / 10 - 1e-9) * 10; }
+    function floor10(v) { return Math.floor(v / 10 + 1e-9) * 10; }
+
+    async function openBudPlan() {
+      var msg = qs('budMsg');
+      var button = qs('budPlanBtn');
+      msg.textContent = '';
+      qs('budError').textContent = '';
+      button.disabled = true;
+      try {
+        if (!refs.loaded) await loadRefs();
+        var income = sumPlan(categoriesOfType('INCOME'));
+        if (!(income > 0)) {
+          msg.textContent = 'Сначала задай план дохода на ' + budLabel() + ' (в категориях доходов внизу).';
+          return;
+        }
+
+        // Берём три закрытых месяца перед показанным (но не позже текущего реального)
+        var now = new Date();
+        var refY = bud.year, refM = bud.month;
+        if (refY * 12 + refM > now.getFullYear() * 12 + now.getMonth()) { refY = now.getFullYear(); refM = now.getMonth(); }
+        var keys = [];
+        for (var i = 1; i <= 3; i++) {
+          var d = new Date(refY, refM - i, 1);
+          keys.push(budFirst(d.getFullYear(), d.getMonth()));
+        }
+        var res = await Promise.all(
+          keys.map(function (k) { return sb.rpc('month_category_totals', { p_month: k }); })
+            .concat(keys.map(function (k) { return sb.from('budgets').select('category_id,amount').eq('month', k); }))
+        );
+        res.forEach(function (r) { if (r.error) throw r.error; });
+
+        var expCats = categoriesOfType('EXPENSE');
+        var sums = {};            // сумма фактов по категориям за месяцы с данными
+        var used = 0;             // сколько месяцев реально с расходами
+        for (var m = 0; m < 3; m++) {
+          var per = {};
+          var total = 0;
+          (res[m].data || []).forEach(function (r) {
+            if (r.category_id === null || r.category_id === undefined) return;
+            var o = per[r.category_id] || (per[r.category_id] = { e: 0, r: 0 });
+            var amt = Number(r.total || 0);
+            if (r.action === 'EXPENSE') o.e += amt;
+            else if (r.action === 'RETURN') o.r += amt;
+          });
+          Object.keys(per).forEach(function (id) { total += Math.max(0, per[id].e - per[id].r); });
+          if (total > 0) {
+            used++;
+            Object.keys(per).forEach(function (id) { sums[id] = (sums[id] || 0) + Math.max(0, per[id].e - per[id].r); });
+          }
+        }
+        // Запасной вариант: последний заданный план (самый свежий месяц)
+        var lastPlan = {};
+        for (var b = 2; b >= 0; b--) {
+          (res[3 + b].data || []).forEach(function (r) { if (Number(r.amount) > 0) lastPlan[r.category_id] = Number(r.amount); });
+        }
+
+        var rows = [];
+        expCats.forEach(function (c) {
+          var avg = used > 0 ? (sums[c.id] || 0) / used : 0;
+          var base = avg;
+          if (!(base > 0) && lastPlan[c.id] > 0 && (used === 0 || catMandatory(c))) base = lastPlan[c.id];
+          if (!(base > 0)) return;
+          rows.push({ cat: c, base: base, need: ceil10(base), mandatory: catMandatory(c), amount: 0 });
+        });
+        if (!rows.length) {
+          msg.textContent = 'Нет данных за прошлые месяцы, по которым можно распределить доход. Задай планы вручную.';
+          return;
+        }
+
+        var mand = rows.filter(function (r) { return r.mandatory; });
+        var rest = rows.filter(function (r) { return !r.mandatory; });
+        var sumM = mand.reduce(function (s, r) { return s + r.need; }, 0);
+        mand.forEach(function (r) { r.amount = r.need; });
+
+        var room = income - sumM;
+        var sumR = rest.reduce(function (s, r) { return s + r.need; }, 0);
+        if (room > 0 && sumR > 0) {
+          if (sumR <= room) rest.forEach(function (r) { r.amount = r.need; });
+          else rest.forEach(function (r) { r.amount = floor10(r.need * room / sumR); });
+        }
+
+        rows.sort(function (a, b) { return (b.mandatory ? 1 : 0) - (a.mandatory ? 1 : 0) || b.amount - a.amount; });
+        bp.rows = rows;
+        bp.income = income;
+        bp.months = used;
+        renderBudPlan();
+        qs('bpError').textContent = '';
+        qs('bpApply').disabled = false;
+        qs('bpApply').textContent = 'Применить бюджет';
+        qs('bpOverlay').classList.add('open');
+      } catch (err) {
+        console.error('[ACCOUNTING][BUDGET_PLAN]', err);
+        qs('budError').textContent = 'Не удалось рассчитать распределение: ' + budError(err);
+      } finally {
+        button.disabled = false;
+      }
+    }
+
+    function renderBudPlan() {
+      qs('bpIncome').textContent = money(bp.income);
+      qs('bpMeta').textContent = budLabel() + ' · плановый доход · ' +
+        (bp.months > 0 ? 'расходы в среднем за ' + bp.months + ' ' + (bp.months === 1 ? 'месяц' : 'мес.') : 'по прошлым планам');
+
+      function section(title, key, list) {
+        if (!list.length) return '';
+        return '<div class="bpSecHead"><span>' + title + '</span><span data-sum="' + key + '"></span></div>' +
+          list.map(function (r) {
+            var idx = bp.rows.indexOf(r);
+            return '<div class="bpRow"><div class="bpName">' + escHtml(r.cat.name) +
+              (catLump(r.cat) ? '<span class="budModeBadge">разово</span>' : '') +
+              '<div class="bpAvg">в среднем ' + money(r.base) + '</div></div>' +
+              '<input class="input bpAmt" type="number" min="0" step="10" inputmode="decimal" data-i="' + idx + '" value="' + r.amount + '"></div>';
+          }).join('');
+      }
+      var mand = bp.rows.filter(function (r) { return r.mandatory; });
+      var rest = bp.rows.filter(function (r) { return !r.mandatory; });
+      qs('bpBody').innerHTML = section('Обязательные', 'mand', mand) + section('Остальные', 'rest', rest);
+      recalcBudPlan();
+
+      var hasMand = mand.length > 0;
+      var existing = bp.rows.filter(function (r) { return Number(bud.budgets[r.cat.id] || 0) > 0; }).length;
+      var notes = [];
+      if (!hasMand) notes.push('Ни одна категория не отмечена как обязательная. Отметь их в карточке категории, чтобы они получали деньги в первую очередь.');
+      if (existing) notes.push('В этом месяце уже есть план по ' + existing + ' из этих категорий: суммы будут заменены.');
+      qs('bpNote').textContent = notes.join(' ');
+    }
+
+    function recalcBudPlan() {
+      var sumM = 0, sumR = 0;
+      bp.rows.forEach(function (r) { if (r.mandatory) sumM += r.amount; else sumR += r.amount; });
+      var total = sumM + sumR;
+      var left = bp.income - total;
+
+      var elM = qs('bpBody').querySelector('[data-sum="mand"]');
+      var elR = qs('bpBody').querySelector('[data-sum="rest"]');
+      if (elM) elM.textContent = money(sumM);
+      if (elR) elR.textContent = money(sumR);
+
+      qs('bpTotals').innerHTML =
+        '<div class="bpTRow"><span>Доход по плану</span><span>' + money(bp.income) + '</span></div>' +
+        '<div class="bpTRow"><span>Расходы по плану</span><span>' + money(total) + '</span></div>' +
+        '<div class="bpTRow big"><span>' + (left >= 0 ? 'Свободный остаток' : 'Не хватает') + '</span>' +
+        '<span class="' + (left >= 0 ? 'good' : 'bad') + '">' + money(Math.abs(left)) + '</span></div>';
+    }
+
+    qs('bpBody').addEventListener('input', function (e) {
+      var inp = e.target.closest('.bpAmt');
+      if (!inp) return;
+      var v = Number(String(inp.value).replace(',', '.'));
+      bp.rows[Number(inp.getAttribute('data-i'))].amount = isFinite(v) && v > 0 ? v : 0;
+      recalcBudPlan();
+    });
+
+    function closeBudPlan() { qs('bpOverlay').classList.remove('open'); bp.busy = false; }
+
+    async function applyBudPlan() {
+      if (bp.busy) return;
+      bp.busy = true;
+      qs('bpApply').disabled = true;
+      qs('bpApply').textContent = 'Применяем…';
+      qs('bpError').textContent = '';
+      try {
+        var month = budMonthKey();
+        var rows = bp.rows.map(function (r) {
+          return { category_id: r.cat.id, month: month, amount: Math.round(r.amount * 100) / 100 };
+        });
+        var res = await sb.from('budgets').upsert(rows, { onConflict: 'category_id,month' }).select('id');
+        if (res.error) throw res.error;
+        rows.forEach(function (r) { bud.budgets[r.category_id] = r.amount; });
+        closeBudPlan();
+        renderBudget();
+        qs('budMsg').textContent = 'Бюджет применён: обновлено категорий ' + rows.length + '. Любую сумму можно поправить, нажав на категорию.';
+      } catch (err) {
+        console.error('[ACCOUNTING][BUDGET_PLAN_APPLY]', err);
+        qs('bpError').textContent = 'Не удалось применить: ' + budError(err);
+        bp.busy = false;
+        qs('bpApply').disabled = false;
+        qs('bpApply').textContent = 'Применить бюджет';
+      }
+    }
+
+    qs('budPlanBtn').addEventListener('click', openBudPlan);
+    qs('bpApply').addEventListener('click', applyBudPlan);
+    qs('bpCancel').addEventListener('click', closeBudPlan);
+    qs('bpClose').addEventListener('click', closeBudPlan);
+    qs('bpOverlay').addEventListener('click', function (event) {
+      if (event.target === qs('bpOverlay')) closeBudPlan();
+    });
+    document.addEventListener('keydown', function (event) {
+      if (event.key === 'Escape' && qs('bpOverlay').classList.contains('open')) closeBudPlan();
+    });
+    // Итоги зависят от сегодняшней даты: при возвращении в приложение пересчитываем
+    document.addEventListener('visibilitychange', function () {
+      if (!document.hidden && currentPage === 'budget' && !qs('appView').hidden && !qs('bpOverlay').classList.contains('open') && !qs('budOverlay').classList.contains('open')) {
+        loadBudget();
+      }
+    });
 
     qs('budgetPrev').addEventListener('click', function () {
       budShift(-1); qs('budMsg').textContent = ''; loadBudget();
@@ -8982,8 +9516,8 @@
     // ---------------------------------------------------------------
     // «Ещё»: сводка и переходы
     // ---------------------------------------------------------------
-    var APP_VERSION = '2.5';
-    var APP_BUILD = '20261024-1910';
+    var APP_VERSION = '2.6';
+    var APP_BUILD = '20261024-2030';
     var moreReq = 0;
 
     function escHtml(v) {
