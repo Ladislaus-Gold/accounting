@@ -4586,6 +4586,11 @@
     .authCard{width:min(100%,380px)}
     .authCard .h1{font-size:24px;margin-bottom:4px}
     .authError{min-height:20px;margin-top:10px;font-size:13px;color:var(--red)}
+    .authCard .btnGoogle{display:block;width:100%;margin-top:16px;padding:16px 18px;border:0;border-radius:16px;
+      background:#000;color:#fff;font:inherit;font-size:16px;font-weight:700;cursor:pointer;
+      box-shadow:0 10px 24px rgba(0,0,0,.28);transition:transform .12s,filter .12s}
+    .authCard .btnGoogle:active{transform:scale(.985);filter:brightness(1.25)}
+    .authCard .btnGoogle:disabled{opacity:.5;cursor:not-allowed}
     .stubCard{margin-top:16px}
     .stubCard .h1{font-size:18px}
     [hidden]{display:none !important}
@@ -5010,18 +5015,8 @@
       <h1 class="h1">Accounting</h1>
       <p class="p">Войди, чтобы открыть свои финансы</p>
 
-      <form id="authForm" novalidate>
-        <div class="field">
-          <input class="input" id="authEmail" type="email" inputmode="email"
-                 autocomplete="email" placeholder="Email" required>
-        </div>
-        <div class="field">
-          <input class="input" id="authPassword" type="password"
-                 autocomplete="current-password" placeholder="Пароль" required>
-        </div>
-        <button class="btnPrimary btnFull" id="authSubmit" type="submit">Войти</button>
-        <div class="authError" id="authError" role="alert"></div>
-      </form>
+      <button class="btnGoogle" id="authGoogle" type="button">Войти через Google</button>
+      <div class="authError" id="authError" role="alert"></div>
     </div>
   </div>
 
@@ -8986,7 +8981,7 @@
     // «Ещё»: сводка и переходы
     // ---------------------------------------------------------------
     var APP_VERSION = '2.5';
-    var APP_BUILD = '20261018-1740';
+    var APP_BUILD = '20261024-1825';
     var moreReq = 0;
 
     function escHtml(v) {
@@ -10505,37 +10500,32 @@
     // ---------------------------------------------------------------
     // Вход / выход
     // ---------------------------------------------------------------
-    qs('authForm').addEventListener('submit', async function (event) {
-      event.preventDefault();
-
-      var email = qs('authEmail').value.trim();
-      var password = qs('authPassword').value;
+    qs('authGoogle').addEventListener('click', async function () {
       var errorBox = qs('authError');
-      var button = qs('authSubmit');
+      var button = qs('authGoogle');
 
       errorBox.textContent = '';
-
-      if (!email || !password) {
-        errorBox.textContent = 'Введи email и пароль.';
-        return;
-      }
-
       button.disabled = true;
-      button.textContent = 'Входим…';
+      button.textContent = 'Открываем Google…';
 
       try {
-        var result = await sb.auth.signInWithPassword({ email: email, password: password });
+        var result = await sb.auth.signInWithOAuth({
+          provider: 'google',
+          options: {
+            redirectTo: window.location.origin + window.location.pathname,
+            queryParams: { prompt: 'select_account' }
+          }
+        });
         if (result.error) {
-          errorBox.textContent = 'Неверный email или пароль.';
-          return;
+          errorBox.textContent = 'Не удалось войти через Google. Попробуй ещё раз.';
+          button.disabled = false;
+          button.textContent = 'Войти через Google';
         }
-        qs('authPassword').value = '';
-        showApp(result.data.session);
+        // при успехе браузер уходит на страницу Google, кнопку возвращать не нужно
       } catch (err) {
         errorBox.textContent = 'Нет связи с сервером. Проверь интернет и попробуй ещё раз.';
-      } finally {
         button.disabled = false;
-        button.textContent = 'Войти';
+        button.textContent = 'Войти через Google';
       }
     });
 
@@ -10618,8 +10608,10 @@
         showAuth();
       }
 
-      sb.auth.onAuthStateChange(function (event) {
+      sb.auth.onAuthStateChange(function (event, session) {
         if (event === 'SIGNED_OUT') showAuth();
+        // возврат со страницы Google: сессия приходит уже после старта
+        if (event === 'SIGNED_IN' && session && qs('appView').hidden) showApp(session);
       });
     })();
   })();
