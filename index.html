@@ -5946,13 +5946,13 @@
       </div>
 
       <div class="bpSlider" id="bpSliderBox">
-        <div class="bpSliderTitle">Куда пойдёт остаток дохода</div>
+        <div class="bpSliderTitle">Как разделить доход</div>
         <div class="bpSliderSub" id="bpSliderSub">—</div>
         <div class="bpSliderEnds">
-          <span class="l">В обязательные<small id="bpSliderLeft">—</small></span>
-          <span class="r">В копилки<small id="bpSliderRight">—</small></span>
+          <span class="l">Обязательные<small id="bpSliderLeft">—</small></span>
+          <span class="r">Копилки<small id="bpSliderRight">—</small></span>
         </div>
-        <input type="range" id="bpSlider" min="0" max="1000" step="1" value="0" aria-label="Куда пойдёт остаток дохода">
+        <input type="range" id="bpSlider" min="0" max="1000" step="1" value="0" aria-label="Как разделить доход">
         <div class="bpExplain" id="bpExplain"></div>
       </div>
 
@@ -7812,40 +7812,51 @@
       list.forEach(function (r, i) { r[key] = base[i] * 500; });
     }
 
-    // Приоритет: 1) минимальные пороги обязательных (и копилок, где порог задан), 2) остаток дохода уходит
-    // либо в обязательные траты (ползунок слева), либо в копилки (справа). Необязательные расходы не участвуют.
-    // Всё кратно 500, сумма равна плановому доходу. P: положение ползунка 0..1000.
+    // Весь плановый доход делится ползунком между двумя группами: обязательные траты и копилки.
+    // Ограничение одно: обязательным нельзя меньше их минимальных порогов, поэтому копилкам можно отдать не больше,
+    // чем доход минус эти пороги. Слева весь доход идёт в обязательные (пороги плюс добавка по 500 пропорционально
+    // обычным тратам), справа в копилки уходит максимум, по 500 по кругу. Всё кратно 500, сумма равна доходу.
+    // P: положение ползунка 0..1000.
     function computeBudPlan(P) {
       var rows = bp.rows;
       var mand = rows.filter(function (r) { return r.mandatory; });
       var sav = rows.filter(function (r) { return r.saving; }).sort(function (x, y) { return x.order - y.order; });
 
       rows.forEach(function (r) { r.amount = r.floor; r.extra = 0; });
-      var F = rows.reduce(function (t, r) { return t + r.floor; }, 0);
-      var R = bp.income - F;
+      var F = mand.reduce(function (t, r) { return t + r.floor; }, 0);   // пороги обязательных
+      var R = bp.income - F;                                              // сколько можно распределить сверх них
       bp.F = F; bp.R = R; bp.S = 0; bp.M = 0;
       if (P !== null && P !== undefined) bp.P = Math.max(0, Math.min(1000, P));
-      if (R <= 0) return;
+      if (R <= 0) { bp.M = F; return; }
 
-      var U = Math.floor(R / 500);                     // сколько «пятисоток» свободно
-      var tail = R - U * 500;                          // хвост меньше 500
+      var U = Math.floor(R / 500);
       var su;
       if (!sav.length) su = 0;
       else if (!mand.length) su = U;
       else su = Math.round(U * bp.P / 1000);
-      var mu = U - su;
-      bp.S = su * 500; bp.M = mu * 500;
+      var rest = R - su * 500;                         // остаётся обязательным сверх порогов (с хвостом меньше 500)
+      var mextra = Math.floor(rest / 500) * 500;
+      var tail = rest - mextra;
 
-      splitBy500(mand, mu * 500, 'extra');             // в обязательные: пропорционально обычным тратам
-      for (var k = 0; k < su; k++) sav[k % sav.length].extra += 500;   // в копилки: по 500, по очереди
-      if (tail > 0) {
-        if (mand.length && (mu > 0 || !sav.length)) {
-          var big = mand.slice().sort(function (x, y) { return (y.floor + y.extra) - (x.floor + x.extra); })[0];
-          big.extra += tail;
-        } else if (sav.length) sav[0].extra += tail;
-        else if (mand.length) mand[0].extra += tail;
+      splitBy500(mand, mextra, 'extra');
+      if (tail > 0 && mand.length) {
+        var big = mand.slice().sort(function (x, y) { return (y.floor + y.extra) - (x.floor + x.extra); })[0];
+        big.extra += tail;
       }
+      // Копилки: по кругу, в порядке очереди. Первый заход: не меньше порога копилки (если хватает), дальше по 500.
+      var budget = su * 500;
+      for (var i = 0; i < sav.length && budget > 0; i++) {
+        var first = Math.min(budget, Math.max(500, ceil500(sav[i].min)));
+        sav[i].extra += first; budget -= first;
+      }
+      for (var k = 0; budget > 0 && sav.length; k++) {
+        sav[k % sav.length].extra += 500; budget -= 500;
+      }
+      if (tail > 0 && !mand.length && sav.length) sav[0].extra += tail;
+
       rows.forEach(function (r) { r.amount = r.floor + r.extra; });
+      mand.forEach(function (r) { bp.M += r.amount; });
+      sav.forEach(function (r) { bp.S += r.amount; });
     }
 
     async function openBudPlan() {
@@ -7930,7 +7941,7 @@
         // Очередь копилок: деньги месяца получает та, в которую откладывали давнее всего (или ни разу)
         var savRows = rows.filter(function (r) { return r.saving; })
           .sort(function (x, y) { return x.lastKey < y.lastKey ? -1 : (x.lastKey > y.lastKey ? 1 : x.cat.sort_order - y.cat.sort_order); });
-        savRows.forEach(function (r, idx) { r.order = idx; r.turn = idx === 0; r.floor = ceil500(r.min); });
+        savRows.forEach(function (r, idx) { r.order = idx; r.turn = idx === 0; r.floor = 0; });
 
         bp.rows = rows;
         bp.income = income;
@@ -7962,30 +7973,28 @@
       sl.style.setProperty('--p', (bp.P / 10) + '%');
     }
     function updateBpSliderLabels() {
-      qs('bpSliderSub').textContent = bp.R > 0
-        ? 'Свободно сверх минимальных порогов: ' + money(bp.R) + '. Двигай ползунок.'
-        : 'Свободных денег сверх порогов нет.';
-      qs('bpSliderLeft').textContent = '+' + money(bp.M);
-      qs('bpSliderRight').textContent = '+' + money(bp.S);
+      qs('bpSliderSub').textContent = bp.R >= 500
+        ? 'Весь плановый доход ' + money(bp.income) + ' делится между двумя группами. Двигай ползунок.'
+        : (bp.R > 0 ? 'Сверх порогов обязательных остаётся меньше 500: делить нечего.' : 'Порогов обязательных (' + money(bp.F) + ') уже не меньше дохода: копилкам отдать нечего.');
+      qs('bpSliderLeft').textContent = money(bp.M);
+      qs('bpSliderRight').textContent = money(bp.S);
       qs('bpSlider').style.setProperty('--p', (bp.P / 10) + '%');
 
       var mand = bp.rows.filter(function (r) { return r.mandatory; });
       var sav = bp.rows.filter(function (r) { return r.saving; }).sort(function (x, y) { return x.order - y.order; });
-      var h = '<p><b>Сейчас:</b> @NOW@</p><details><summary style="cursor:pointer;font-weight:700;color:#3157F6">Как это считается</summary><p style="margin-top:6px">1) Каждой обязательной категории (и копилке, если у неё есть порог) закладывается минимальный порог: вместе ' + money(bp.F) +
-        '. 2) Остаток дохода ' + money(Math.max(0, bp.R)) + ' делится на пятисотки. 3) Ползунок решает, куда они пойдут. Необязательные расходы в этот расчёт не входят.</p>';
-      var now = '';
-      if (bp.R >= 500) {
-        if (!sav.length) h += '<p>Копилок нет, поэтому весь остаток уходит в обязательные траты. Чтобы копить, отметь категорию «Необязательная, но копим».</p>';
-        else if (!mand.length) h += '<p>Обязательных трат нет, поэтому весь остаток уходит в копилки.</p>';
-        else {
-          h += '<p><b>Слева:</b> остаток добавляется обязательным тратам по 500, больше туда, где обычно тратишь больше. Это запас: что не потратишь за месяц, останется тебе.</p>';
-          h += '<p><b>Справа:</b> остаток откладывается по 500 в каждую копилку по очереди: сначала в ту, куда откладывали давнее всего, потом в следующую, и так по кругу.</p>';
-          var parts = sav.filter(function (r) { return r.extra > 0; }).map(function (r) { return escHtml(r.cat.name) + ' +' + money(r.extra); });
-          now = 'в обязательные ' + money(bp.M) + (bp.S > 0 ? ', в копилки ' + money(bp.S) + (parts.length ? ' (' + parts.join(', ') + ')' : '') : ', копилкам ничего сверх порогов') + '.';
-        }
-      } else now = 'сверх порогов ничего не остаётся.';
-      if (!now) now = !sav.length ? 'весь остаток в обязательные.' : 'весь остаток в копилки.';
-      qs('bpExplain').innerHTML = h.replace('@NOW@', now) + '</details>';
+      var h = '<p><b>Как это считается.</b> 1) Плановый доход ' + money(bp.income) + ' делится между обязательными и копилками, остальные расходы не участвуют. ' +
+        '2) Обязательным нельзя меньше их минимальных порогов (вместе ' + money(bp.F) + '), поэтому копилкам можно отдать не больше ' + money(Math.max(0, bp.R)) + '. ' +
+        '3) Слева весь доход идёт в обязательные: порог плюс добавка по 500, больше туда, где обычно тратишь больше (это запас, что не потратишь, останется тебе). ' +
+        'Справа в копилки уходит максимум: по 500 по кругу, начиная с той, куда откладывали давнее всего (если у копилки есть порог, она получает не меньше него).</p>';
+      var now;
+      if (bp.R <= 0) now = 'доход не больше порогов обязательных, всё идёт в них.';
+      else if (!sav.length) now = 'копилок нет, весь доход идёт в обязательные.';
+      else if (!mand.length) now = 'обязательных нет, весь доход идёт в копилки.';
+      else {
+        var parts = sav.filter(function (r) { return r.amount > 0; }).map(function (r) { return escHtml(r.cat.name) + ' ' + money(r.amount); });
+        now = 'обязательные ' + money(bp.M) + ', копилки ' + money(bp.S) + (parts.length ? ' (' + parts.join(', ') + ')' : '') + '.';
+      }
+      qs('bpExplain').innerHTML = '<p><b>Сейчас:</b> ' + now + '</p><details><summary style="cursor:pointer;font-weight:700;color:#3157F6">Как это считается</summary><div style="margin-top:6px">' + h + '</div></details>';
     }
     qs('bpSlider').addEventListener('input', function () {
       computeBudPlan(Number(this.value));
@@ -8000,12 +8009,12 @@
 
     function renderBudPlan() {
       qs('bpIncome').textContent = money(bp.income);
-      qs('bpMeta').textContent = budLabel() + ' · плановый доход. Сначала минимальные пороги, остаток уходит в обязательные или в копилки.';
+      qs('bpMeta').textContent = budLabel() + ' · плановый доход. Ползунок делит его между обязательными и копилками.';
 
       function sub(r) {
         if (r.mandatory) return r.noMin ? 'порог не задан, взято среднее ' + money(r.avg) : 'порог ' + money(r.min);
         var lastTxt = r.lastKey ? 'откладывал(а) в ' + MONTHS[Number(r.lastKey.slice(5, 7)) - 1] + ' ' + r.lastKey.slice(0, 4) : 'ещё не откладывал(а)';
-        return (r.order + 1) + '-я в очереди · ' + lastTxt + (r.min > 0 ? ' · порог ' + money(r.min) : '');
+        return (r.order + 1) + '-я в очереди · ' + lastTxt + (r.min > 0 ? ' · не меньше ' + money(ceil500(r.min)) + ', если получает' : '');
       }
       function section(title, key, list) {
         if (!list.length) return '';
@@ -9830,7 +9839,7 @@
     // «Ещё»: сводка и переходы
     // ---------------------------------------------------------------
     var APP_VERSION = '2.6';
-    var APP_BUILD = '20261024-2320';
+    var APP_BUILD = '20261024-2350';
     var moreReq = 0;
 
     function escHtml(v) {
