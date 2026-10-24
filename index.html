@@ -5869,11 +5869,17 @@
           <span><b>Обязательная трата</b><br>Нужна каждый месяц. При распределении дохода получает деньги первой.</span>
         </label>
         <div class="label">Как тратится</div>
-        <div class="seg" id="budModeSeg" style="grid-template-columns:repeat(2,1fr)">
+        <div class="seg" id="budModeSeg" style="grid-template-columns:repeat(3,1fr)">
           <button type="button" data-mode="spread" class="active">Плавно</button>
+          <button type="button" data-mode="chunks">Порциями</button>
           <button type="button" data-mode="lump">Разово</button>
         </div>
         <div class="muted" id="budModeHint"></div>
+        <div id="budPartsRow" hidden>
+          <div class="label">Сколько раз за месяц</div>
+          <input class="input" id="budParts" type="number" min="2" max="31" step="1" inputmode="numeric" value="4">
+          <div class="muted" id="budPartsHint"></div>
+        </div>
         <div class="muted" id="budFlagsOff" hidden>В базе нет колонок для этих отметок. Запусти файл budget_flags.sql в Supabase (SQL Editor) и обнови приложение.</div>
       </div>
       <div class="authError" id="budSheetError" role="alert"></div>
@@ -6341,8 +6347,8 @@
       // Признаки категорий (обязательная, разовая) лежат в колонках is_mandatory и spend_mode.
       // Если колонок ещё нет (не запущен budget_flags.sql), читаем без них, приложение работает как раньше.
       refs.flagsReady = true;
-      var catQuery = await sb.from('categories').select('id,name,type,sort_order,is_mandatory,spend_mode').order('sort_order');
-      if (catQuery.error && /is_mandatory|spend_mode/.test(String(catQuery.error.message || ''))) {
+      var catQuery = await sb.from('categories').select('id,name,type,sort_order,is_mandatory,spend_mode,spend_parts').order('sort_order');
+      if (catQuery.error && /is_mandatory|spend_mode|spend_parts/.test(String(catQuery.error.message || ''))) {
         refs.flagsReady = false;
         catQuery = await sb.from('categories').select('id,name,type,sort_order').order('sort_order');
       }
@@ -7058,7 +7064,7 @@
 
     function budError(err) {
       var text = err && err.message ? err.message : 'неизвестная ошибка';
-      if (/is_mandatory|spend_mode/.test(text)) {
+      if (/is_mandatory|spend_mode|spend_parts/.test(text)) {
         return 'В базе нет колонок для отметок категорий. Запусти файл budget_flags.sql в Supabase (SQL Editor).';
       }
       if (/month_category_totals/.test(text)) {
@@ -7127,6 +7133,18 @@
     // ---------------------------------------------------------------
     function catMandatory(c) { return !!(c && c.is_mandatory); }
     function catLump(c) { return !!(c && c.spend_mode === 'lump'); }
+    function catChunks(c) { return !!(c && c.spend_mode === 'chunks'); }
+    function catParts(c) {
+      var n = Math.round(Number(c && c.spend_parts));
+      return n >= 2 && n <= 31 ? n : 4;
+    }
+    function catMode(c) { return catLump(c) ? 'lump' : (catChunks(c) ? 'chunks' : 'spread'); }
+    // Значок режима рядом с названием (HTML, имя не входит)
+    function modeBadgeHtml(c) {
+      if (catLump(c)) return '<span class="budModeBadge">разово</span>';
+      if (catChunks(c)) return '<span class="budModeBadge">порциями ×' + catParts(c) + '</span>';
+      return '';
+    }
 
     // Где мы во времени относительно показанного месяца
     function budTiming() {
@@ -7157,6 +7175,20 @@
       }
       if (tm.state === 'past') return r;
       if (tm.state === 'future') { r.forecast = plan; return r; }
+      if (catChunks(cat)) {
+        // Порциями: план делится на N платежей за месяц. К концу каждого периода «положена» ещё одна порция,
+        // а запас в полпорции позволяет заплатить чуть раньше срока.
+        var parts = catParts(cat);
+        var portion = plan / parts;
+        var due = Math.min(parts, Math.max(1, Math.ceil(tm.t * parts - 1e-9)));
+        r.portion = portion;
+        r.parts = parts;
+        r.expected = Math.min(plan, portion * due);
+        r.diff = fact - r.expected;
+        r.forecast = fact > 0 ? Math.max(fact, fact / Math.max(tm.t, 1 / parts)) : plan;
+        r.ahead = !r.over && fact > r.expected + portion * 0.5 && r.diff >= Math.max(100, plan * 0.03);
+        return r;
+      }
       r.expected = plan * tm.t;
       r.diff = fact - r.expected;
       if (tm.day >= 3) {
@@ -7227,7 +7259,7 @@
         var spread = items.filter(function (i) { return !i.lump && i.plan > 0; });
         var spreadPlan = spread.reduce(function (s, i) { return s + i.plan; }, 0);
         var spreadFact = spread.reduce(function (s, i) { return s + i.fact; }, 0);
-        var spreadExp = spreadPlan * tm.t;
+        var spreadExp = spread.reduce(function (s, i) { return s + i.expected; }, 0);
         var diff = spreadFact - spreadExp;
         var aheadItems = items.filter(function (i) { return i.ahead; }).sort(function (a, b) { return b.diff - a.diff; });
 
@@ -7261,9 +7293,15 @@
         items.filter(function (i) { return i.ahead; })
           .sort(function (a, b) { return b.diff - a.diff; }).slice(0, 3)
           .forEach(function (i) {
-            add(i.forecast > i.plan ? 'bad' : 'warn',
-              nm(i) + ': потрачено ' + pctText(i.fact / i.plan) + ' плана за ' + pctText(tm.t) + ' месяца (на ' + money(i.diff) +
-              ' больше графика). При таком темпе к концу месяца: ' + money(i.forecast) + ' при плане ' + money(i.plan) + '.');
+            var cls = i.forecast > i.plan ? 'bad' : 'warn';
+            if (i.portion) {
+              add(cls, nm(i) + ': потрачено ' + money(i.fact) + ' (' + pctText(i.fact / i.plan) + ' плана). По графику порциями (' + i.parts +
+                ' раз в месяц по ~' + money(i.portion) + ') к этому дню ожидается около ' + money(i.expected) +
+                '. При таком темпе к концу месяца: ' + money(i.forecast) + ' при плане ' + money(i.plan) + '.');
+            } else {
+              add(cls, nm(i) + ': потрачено ' + pctText(i.fact / i.plan) + ' плана за ' + pctText(tm.t) + ' месяца (на ' + money(i.diff) +
+                ' больше графика). При таком темпе к концу месяца: ' + money(i.forecast) + ' при плане ' + money(i.plan) + '.');
+            }
           });
         overItems.slice(0, 3).forEach(function (i) {
           add('bad', nm(i) + ': план превышен на ' + money(i.fact - i.plan) + '.');
@@ -7381,8 +7419,9 @@
           var mb = document.createElement('span'); mb.className = 'budMandBadge'; mb.textContent = 'обязательная';
           name.appendChild(mb);
         }
-        if (!isIncome && catLump(cat)) {
-          var lb = document.createElement('span'); lb.className = 'budModeBadge'; lb.textContent = 'разово';
+        if (!isIncome && (catLump(cat) || catChunks(cat))) {
+          var lb = document.createElement('span'); lb.className = 'budModeBadge';
+          lb.textContent = catLump(cat) ? 'разово' : 'порциями ×' + catParts(cat);
           name.appendChild(lb);
         }
         var val = document.createElement('div');
@@ -7452,7 +7491,8 @@
       qs('budFlags').classList.toggle('off', !refs.flagsReady);
       qs('budFlagsOff').hidden = refs.flagsReady !== false;
       qs('budMandatory').checked = catMandatory(cat);
-      setBudMode(catLump(cat) ? 'lump' : 'spread');
+      qs('budParts').value = String(catParts(cat));
+      setBudMode(catMode(cat));
 
       qs('budOverlay').classList.add('open');
       loadBudOps(cat);
@@ -7463,10 +7503,30 @@
       qs('budModeSeg').querySelectorAll('button').forEach(function (b) {
         b.classList.toggle('active', b.getAttribute('data-mode') === mode);
       });
-      qs('budModeHint').textContent = mode === 'lump'
-        ? 'Платится одним платежом (аренда, подписка). В итогах месяца показывается как «оплачено» или «ещё не оплачено», без проверки темпа.'
-        : 'Тратится понемногу в течение месяца (продукты, транспорт). Приложение сравнивает расход с графиком по дням.';
+      var hints = {
+        spread: 'Тратится понемногу в течение месяца (продукты, транспорт). Приложение сравнивает расход с графиком по дням.',
+        chunks: 'Тратится крупными платежами несколько раз за месяц (бензин, закупки). График считается по ступенькам: платёж по расписанию не считается спешкой.',
+        lump: 'Платится одним платежом (аренда, подписка). В итогах месяца показывается как «оплачено» или «ещё не оплачено», без проверки темпа.'
+      };
+      qs('budModeHint').textContent = hints[mode] || '';
+      qs('budPartsRow').hidden = mode !== 'chunks';
+      updateBudPortion();
     }
+
+    // «Примерно по X за раз» для режима «Порциями»
+    function updateBudPortion() {
+      var hint = qs('budPartsHint');
+      if (bud.editMode !== 'chunks') { hint.textContent = ''; return; }
+      var plan = Number(String(qs('budAmount').value).replace(',', '.'));
+      var n = Math.round(Number(qs('budParts').value));
+      if (!(plan > 0) || !(n >= 2 && n <= 31)) {
+        hint.textContent = n >= 2 && n <= 31 ? 'Задай план на месяц, и я покажу размер порции.' : 'Укажи число от 2 до 31.';
+        return;
+      }
+      hint.textContent = 'Примерно по ' + money(plan / n) + ' за раз. Опережением графика считается, когда потрачено заметно больше, чем положено к этому дню.';
+    }
+    qs('budParts').addEventListener('input', updateBudPortion);
+    qs('budAmount').addEventListener('input', updateBudPortion);
     qs('budModeSeg').addEventListener('click', function (e) {
       var b = e.target.closest('button[data-mode]');
       if (b) setBudMode(b.getAttribute('data-mode'));
@@ -7533,14 +7593,25 @@
         // Отметки категории (обязательная, разово): сохраняем, только если изменились
         if (cat.type === 'EXPENSE' && refs.flagsReady) {
           var wantMand = qs('budMandatory').checked;
-          var wantMode = bud.editMode === 'lump' ? 'lump' : 'spread';
-          if (wantMand !== catMandatory(cat) || wantMode !== (catLump(cat) ? 'lump' : 'spread')) {
-            var fr = await sb.from('categories')
-              .update({ is_mandatory: wantMand, spend_mode: wantMode }).eq('id', cat.id).select('id');
+          var wantMode = bud.editMode === 'lump' ? 'lump' : (bud.editMode === 'chunks' ? 'chunks' : 'spread');
+          var wantParts = Math.round(Number(qs('budParts').value));
+          if (wantMode === 'chunks' && !(wantParts >= 2 && wantParts <= 31)) {
+            errorBox.textContent = 'Сколько раз за месяц: число от 2 до 31.';
+            bud.busy = false;
+            qs('budSave').disabled = false;
+            qs('budSave').textContent = 'Сохранить';
+            return;
+          }
+          var partsChanged = wantMode === 'chunks' && wantParts !== catParts(cat);
+          if (wantMand !== catMandatory(cat) || wantMode !== catMode(cat) || partsChanged) {
+            var patch = { is_mandatory: wantMand, spend_mode: wantMode };
+            if (wantMode === 'chunks') patch.spend_parts = wantParts;
+            var fr = await sb.from('categories').update(patch).eq('id', cat.id).select('id');
             if (fr.error) throw fr.error;
             if (!fr.data || !fr.data.length) throw new Error('Не удалось сохранить отметки категории.');
             cat.is_mandatory = wantMand;
             cat.spend_mode = wantMode;
+            if (wantMode === 'chunks') cat.spend_parts = wantParts;
           }
         }
 
@@ -7721,7 +7792,7 @@
           list.map(function (r) {
             var idx = bp.rows.indexOf(r);
             return '<div class="bpRow"><div class="bpName">' + escHtml(r.cat.name) +
-              (catLump(r.cat) ? '<span class="budModeBadge">разово</span>' : '') +
+              modeBadgeHtml(r.cat) +
               '<div class="bpAvg">в среднем ' + money(r.base) + '</div></div>' +
               '<input class="input bpAmt" type="number" min="0" step="10" inputmode="decimal" data-i="' + idx + '" value="' + r.amount + '"></div>';
           }).join('');
@@ -9517,7 +9588,7 @@
     // «Ещё»: сводка и переходы
     // ---------------------------------------------------------------
     var APP_VERSION = '2.6';
-    var APP_BUILD = '20261024-2030';
+    var APP_BUILD = '20261024-2100';
     var moreReq = 0;
 
     function escHtml(v) {
