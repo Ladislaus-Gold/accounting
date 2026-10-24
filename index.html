@@ -5090,6 +5090,9 @@
     .dRow{border-top:1px solid #EEF1F8;font-size:12.5px}
     .dNm{min-width:0}.dNm b{display:block;font-size:13px;font-weight:700;color:#8A2B1E;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
     .dChip{display:inline-block;margin-top:3px;font-size:10.5px;font-weight:700;border-radius:8px;padding:2px 7px;background:#EAF0FF;color:#2747E0;white-space:nowrap;border:0;cursor:pointer;max-width:100%;overflow:hidden;text-overflow:ellipsis;font-family:inherit}
+    .dDone{display:block;margin-top:3px;font-size:10.5px;font-weight:700;color:#1B7A4B;line-height:1.25}
+    .dDone:empty{display:none}
+    .dDone.bad{color:#C0261D}
     .dChip.cash{background:#FFF2D6;color:#8A5A00}
     .dChip:disabled{cursor:default;opacity:.8}
     .dPl{text-align:right;color:#27325A;font-weight:600}
@@ -6044,6 +6047,9 @@
         <div class="dTt" id="distTotal"></div>
       </div>
       <div class="distLegend">Метка под названием: «→ счёт» значит, что деньги переведутся туда; «остаётся в кэше» значит, что останутся на счёте для распределения бюджета. Нажми на метку, чтобы сменить счёт.</div>
+        <div class="field" id="distUndoWrap" hidden style="margin-top:12px">
+          <button class="btnTintRed btnFull" id="distUndo" type="button">Отменить формирование</button>
+        </div>
       <div class="authError" id="distError" role="alert"></div>
 
       <div class="distBottom">
@@ -6051,9 +6057,6 @@
         <div class="btnRow" id="distButtons">
           <button class="btnGhost" id="distSave" type="button">Сохранить</button>
           <button class="btnPrimary" id="distForm" type="button">Сформировать</button>
-        </div>
-        <div class="field" id="distUndoWrap" hidden>
-          <button class="btnTintRed btnFull" id="distUndo" type="button">Отменить формирование</button>
         </div>
       </div>
     </div>
@@ -8290,7 +8293,7 @@
     // ---------------------------------------------------------------
     // Аванс и зарплата: распределение плана по категориям и переводы из кэша
     // ---------------------------------------------------------------
-    var dist = { rows: [], adv: 0, sal: 0, formed: null, ids: [], busy: false, dirty: false, saveTimer: null, armTimer: null, armed: false, pick: null };
+    var dist = { rows: [], adv: 0, sal: 0, batches: [], busy: false, dirty: false, saveTimer: null, armTimer: null, armed: false, pick: null };
 
     function fmt0(v) { return new Intl.NumberFormat('ru-RU', { maximumFractionDigits: 2 }).format(Number(v || 0)); }
     function r2(x) { return Math.round(Number(x || 0) * 100) / 100; }
@@ -8305,6 +8308,14 @@
       categoriesOfType('INCOME').forEach(function (c) { if (re.test(c.name)) t += Number(bud.budgets[c.id] || 0); });
       return t;
     }
+
+    // Сколько по каждой категории уже вошло в прошлые формирования месяца
+    function distFormedMap(batches) {
+      var m = {};
+      (batches || []).forEach(function (b) { (b.items || []).forEach(function (it) { m[it.c] = r2((m[it.c] || 0) + Number(it.a || 0)); }); });
+      return m;
+    }
+    function distFormedOf(row) { return distFormedMap(dist.batches)[row.cat.id] || 0; }
 
     function distSums() {
       var a = 0, s2 = 0;
@@ -8325,7 +8336,7 @@
       var month = budMonthKey();
       var res = await Promise.all([
         sb.from('budget_distribution').select('category_id,advance,salary').eq('month', month),
-        sb.from('budget_distribution_month').select('month,advance_total,salary_total,formed_at,transfer_ids').eq('month', month)
+        sb.from('budget_distribution_month').select('month,advance_total,salary_total,batches').eq('month', month)
       ]);
       if (res[0].error) throw res[0].error;
       if (res[1].error) throw res[1].error;
@@ -8359,8 +8370,7 @@
         if (!(dist.adv > 0) && planAdv > 0) { dist.adv = planAdv; dist.fromPlan = true; }
         if (!(dist.sal > 0) && planSal > 0) { dist.sal = planSal; dist.fromPlan = true; }
         dist.planAdv = planAdv; dist.planSal = planSal;
-        dist.formed = data.month && data.month.formed_at ? data.month.formed_at : null;
-        dist.ids = data.month && data.month.transfer_ids ? data.month.transfer_ids : [];
+        dist.batches = data.month && Array.isArray(data.month.batches) ? data.month.batches : [];
         dist.dirty = false;
         if (!dist.rows.length) { msg.textContent = 'Сначала задай план расходов на ' + budLabel() + '.'; return; }
         renderDist();
@@ -8375,28 +8385,28 @@
     }
 
     function renderDist() {
-      var locked = Boolean(dist.formed);
       var src = distSrc();
       qs('distMeta').textContent = budLabel() + ' · план расходов ' + money(dist.rows.reduce(function (t, r) { return t + r.plan; }, 0)) +
-        '. Впиши, сколько из аванса и зарплаты кладёшь в каждую категорию. Приложение помнит это до конца месяца.' +
+        '. Распределяй аванс и зарплату целиком или по частям: приложение помнит, что уже распределено и переведено. «Сформировать» создаёт переводы на то, что ещё не переведено.' +
         (dist.fromPlan ? ' Суммы аванса и зарплаты взяты из плана доходов (Advance, Salary), их можно поправить.' : '');
       qs('distAdv').placeholder = dist.planAdv > 0 ? 'по плану ' + dist.planAdv : '0';
       qs('distSal').placeholder = dist.planSal > 0 ? 'по плану ' + dist.planSal : '0';
       qs('distAdv').value = dist.adv > 0 ? String(dist.adv) : '';
       qs('distSal').value = dist.sal > 0 ? String(dist.sal) : '';
-      qs('distAdv').disabled = locked;
-      qs('distSal').disabled = locked;
+      var fm = distFormedMap(dist.batches);
       qs('distBody').innerHTML = dist.rows.map(function (r) {
         var id = r.cat.id;
-        return '<div class="dRow"><div class="dNm"><b>' + escHtml(r.cat.name) + '</b>' + distChipHtml(r.cat) + '</div>' +
+        return '<div class="dRow"><div class="dNm"><b>' + escHtml(r.cat.name) + '</b>' + distChipHtml(r.cat) + '<small class="dDone" data-done="' + id + '"></small></div>' +
           '<div class="dPl">' + fmt0(r.plan) + '</div>' +
-          '<input class="dIn" type="number" min="0" step="100" inputmode="decimal" placeholder="0" data-c="' + id + '" data-k="adv" value="' + (r.adv > 0 ? r.adv : '') + '"' + (locked ? ' disabled' : '') + '>' +
-          '<input class="dIn" type="number" min="0" step="100" inputmode="decimal" placeholder="0" data-c="' + id + '" data-k="sal" value="' + (r.sal > 0 ? r.sal : '') + '"' + (locked ? ' disabled' : '') + '>' +
+          '<input class="dIn" type="number" min="0" step="100" inputmode="decimal" placeholder="0" data-c="' + id + '" data-k="adv" value="' + (r.adv > 0 ? r.adv : '') + '">' +
+          '<input class="dIn" type="number" min="0" step="100" inputmode="decimal" placeholder="0" data-c="' + id + '" data-k="sal" value="' + (r.sal > 0 ? r.sal : '') + '">' +
           '<div class="dDf" data-df="' + id + '"></div></div>';
       }).join('');
-      qs('distBody').querySelectorAll('.dChip').forEach(function (b) { b.disabled = locked; });
-      qs('distButtons').hidden = locked;
-      qs('distUndoWrap').hidden = !locked;
+      qs('distUndoWrap').hidden = !dist.batches.length;
+      if (dist.batches.length) {
+        var last = dist.batches[dist.batches.length - 1];
+        qs('distUndo').textContent = 'Отменить последнее (' + fmt0(last.total) + ' ₴)';
+      }
       qs('distError').textContent = '';
       if (!src) qs('distError').textContent = 'Не выбран счёт для распределения бюджета. Открой «Счета», нажми на Cash, карандаш и поставь галочку «Счёт для распределения бюджета».';
       distRecalc();
@@ -8419,27 +8429,39 @@
       sub(dist.adv, remA, t.a, 'distAdvSub', 'distAdvBar');
       sub(dist.sal, remS, t.s, 'distSalSub', 'distSalBar');
 
-      var planTotal = 0, dfTotal = 0;
+      var fm = distFormedMap(dist.batches);
+      var planTotal = 0, dfTotal = 0, newTotal = 0, doneTotal = 0, below = null;
       dist.rows.forEach(function (r) {
         var df = r2(r.plan - r.adv - r.sal);
-        planTotal += r.plan; dfTotal += df;
+        var total = r2(r.adv + r.sal);
+        var done = fm[r.cat.id] || 0;
+        planTotal += r.plan; dfTotal += df; doneTotal += done;
+        if (total < done) below = below || r.cat.name;
+        else newTotal += total - done;
         var el = qs('distBody').querySelector('[data-df="' + r.cat.id + '"]');
         if (el) {
           el.textContent = df < 0 ? '−' + fmt0(-df) : fmt0(df);
           el.className = 'dDf ' + (df === 0 ? 'z' : (df > 0 ? 'y' : 'n'));
         }
+        var dn = qs('distBody').querySelector('[data-done="' + r.cat.id + '"]');
+        if (dn) {
+          dn.textContent = done > 0 ? (total > done ? '✓ переведено ' + fmt0(done) + ', ещё ' + fmt0(total - done) : (total === done ? '✓ всё переведено' : '⚠ переведено ' + fmt0(done))) : '';
+          dn.className = 'dDone' + (done > 0 && total < done ? ' bad' : '');
+        }
       });
+      newTotal = r2(newTotal);
       qs('distTotal').innerHTML = '<span>Итого</span><span>' + fmt0(planTotal) + '</span><span>' + fmt0(t.a) + '</span><span>' + fmt0(t.s) + '</span><span>' + fmt0(r2(dfTotal)) + '</span>';
 
-      var anyAmt = t.a > 0 || t.s > 0;
-      var ok = !dist.formed && anyAmt && remA === 0 && remS === 0 && Boolean(distSrc());
+      var over = remA < 0 || remS < 0;
+      var ok = newTotal > 0 && !below && !over && Boolean(distSrc());
       qs('distForm').disabled = !ok;
+      qs('distForm').textContent = newTotal > 0 ? 'Сформировать ' + fmt0(newTotal) + ' ₴' : 'Сформировать';
       var note;
-      if (dist.formed) note = 'Сформировано ' + new Date(dist.formed).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' }) + '. Создано переводов: ' + dist.ids.length + '.';
-      else if (!anyAmt) note = 'Впиши суммы аванса и зарплаты, затем распредели их по категориям.';
-      else if (remA < 0 || remS < 0) note = 'Распределено больше, чем есть. Поправь суммы.';
-      else if (remA > 0 || remS > 0) note = 'Осталось распределить: ' + [remA > 0 ? 'аванс ' + fmt0(remA) + ' ₴' : '', remS > 0 ? 'зарплату ' + fmt0(remS) + ' ₴' : ''].filter(Boolean).join(' и ') + '. Пока не ноль, «Сформировать» недоступно.';
-      else note = 'Всё распределено. Можно формировать переводы.';
+      if (over) note = 'Распределено больше, чем есть. Поправь суммы.';
+      else if (below) note = 'В категории «' + below + '» распределено меньше, чем уже переведено. Верни сумму или отмени последнее формирование.';
+      else if (newTotal > 0) note = 'К формированию ' + fmt0(newTotal) + ' ₴ (распределено, но ещё не переведено).' + (doneTotal > 0 ? ' Уже переведено: ' + fmt0(r2(doneTotal)) + ' ₴.' : '') + ((remA > 0 || remS > 0) ? ' Не распределено: ' + [remA > 0 ? 'аванс ' + fmt0(remA) + ' ₴' : '', remS > 0 ? 'зарплата ' + fmt0(remS) + ' ₴' : ''].filter(Boolean).join(', ') + '.' : '');
+      else if (t.a > 0 || t.s > 0) note = (doneTotal > 0 ? 'Всё распределённое уже переведено (' + fmt0(r2(doneTotal)) + ' ₴). ' : '') + ((remA > 0 || remS > 0) ? 'Не распределено: ' + [remA > 0 ? 'аванс ' + fmt0(remA) + ' ₴' : '', remS > 0 ? 'зарплата ' + fmt0(remS) + ' ₴' : ''].filter(Boolean).join(', ') + '.' : 'Всё распределено и переведено.');
+      else note = 'Впиши суммы аванса и зарплаты, затем распредели их по категориям.';
       qs('distNote').textContent = note;
     }
 
@@ -8452,7 +8474,6 @@
 
     async function distSave(silent) {
       if (dist.saveTimer) { clearTimeout(dist.saveTimer); dist.saveTimer = null; }
-      if (dist.formed) return true;
       var month = budMonthKey();
       var btn = qs('distSave');
       try {
@@ -8495,7 +8516,7 @@
     });
     qs('distBody').addEventListener('click', function (e) {
       var chip = e.target.closest('.dChip');
-      if (!chip || dist.formed) return;
+      if (!chip) return;
       openDistPick(Number(chip.getAttribute('data-c')));
     });
 
@@ -8541,7 +8562,7 @@
     qs('distPickOverlay').addEventListener('click', function (e) { if (e.target === qs('distPickOverlay')) qs('distPickOverlay').classList.remove('open'); });
 
     async function closeDist() {
-      if (dist.dirty && !dist.formed) await distSave(true);
+      if (dist.dirty) await distSave(true);
       qs('distOverlay').classList.remove('open');
       refreshDistTile();
     }
@@ -8549,25 +8570,27 @@
     qs('distOverlay').addEventListener('click', function (e) { if (e.target === qs('distOverlay')) closeDist(); });
     qs('distSave').addEventListener('click', function () { distSave(false); });
 
-    // ----- окно «Сформировать»
+    // ----- окно «Сформировать»: переводы на то, что распределено, но ещё не переведено
     function distGroups() {
       var src = distSrc();
-      var by = {}, stay = [], stayTotal = 0, total = 0;
+      var fm = distFormedMap(dist.batches);
+      var by = {}, stay = [], stayTotal = 0, total = 0, items = [];
       dist.rows.forEach(function (r) {
-        var amt = r2(r.adv + r.sal);
+        var amt = r2(r.adv + r.sal - (fm[r.cat.id] || 0));
         if (!(amt > 0)) return;
         total += amt;
+        items.push({ c: r.cat.id, a: amt });
         var t = r.cat.target_account_id;
         if (t && src && t !== src.id && refs.accById[t]) {
           var g = by[t] || (by[t] = { acc: refs.accById[t], sum: 0, names: [] });
           g.sum = r2(g.sum + amt);
-          g.names.push(r.cat.name.replace(/\s*[^\w\sЀ-ӿ()]+\s*$/u, '').trim() || r.cat.name);
+          g.names.push(r.cat.name.replace(/\s*[^\w\s\u0400-\u04FF()]+\s*$/u, '').trim() || r.cat.name);
         } else {
           stay.push({ name: r.cat.name, amt: amt });
           stayTotal += amt;
         }
       });
-      return { by: Object.keys(by).map(function (k) { return by[k]; }), stay: stay, stayTotal: r2(stayTotal), total: r2(total) };
+      return { by: Object.keys(by).map(function (k) { return by[k]; }), stay: stay, stayTotal: r2(stayTotal), total: r2(total), items: items };
     }
 
     async function openDistForm() {
@@ -8576,17 +8599,19 @@
       if (!ok) return;
       var src = distSrc();
       var g = distGroups();
-      qs('distFormMeta').textContent = 'Всё распределено: аванс ' + money(dist.adv) + ' и зарплата ' + money(dist.sal) + '. Из счёта «' + src.name + '» будут созданы переводы:';
+      qs('distFormMeta').textContent = 'К формированию ' + money(g.total) + ': это то, что вы распределили и ещё не переводили. Из счёта «' + src.name + '» будут созданы переводы:';
       qs('distFormList').innerHTML = g.by.length ? g.by.map(function (x) {
         return '<div class="dfRow"><div class="dfIco">' + accountIcon(x.acc.name) + '</div><div class="dfTxt"><b>' + escHtml(src.name) + ' → ' + escHtml(x.acc.name) + '</b><span>' + escHtml(x.names.join(', ')) + '</span></div><div class="dfSum">' + fmt0(x.sum) + ' ₴</div></div>';
-      }).join('') : '<div class="dfRow"><div class="dfTxt"><span>Все категории остаются в кэше, переводов не будет.</span></div></div>';
+      }).join('') : '<div class="dfRow"><div class="dfTxt"><span>Все эти категории остаются в кэше, переводов не будет.</span></div></div>';
       qs('distFormStay').hidden = !g.stay.length;
       qs('distFormStay').innerHTML = '<div class="dfRow"><div class="dfIco">💵</div><div class="dfTxt"><b>Остаётся в кэше</b><span>' + escHtml(g.stay.map(function (x) { return x.name + ' ' + fmt0(x.amt); }).join(', ')) + '</span></div><div class="dfSum">' + fmt0(g.stayTotal) + ' ₴</div></div>';
+      var doneBefore = r2(dist.batches.reduce(function (t, b2) { return t + Number(b2.total || 0); }, 0));
       qs('distFormSum').innerHTML =
-        '<div class="dfLine"><span>Всего распределено</span><b>' + fmt0(g.total) + ' ₴</b></div>' +
+        '<div class="dfLine"><span>Сейчас сформируется</span><b>' + fmt0(g.total) + ' ₴</b></div>' +
+        (doneBefore > 0 ? '<div class="dfLine"><span>Уже сформировано раньше</span><b>' + fmt0(doneBefore) + ' ₴</b></div>' : '') +
         '<div class="dfLine"><span>Переводов будет создано</span><b>' + g.by.length + '</b></div>' +
         '<div class="dfLine"><span>Дата операций</span><b>' + new Date().toLocaleDateString('ru-RU', { day: 'numeric', month: 'short', year: 'numeric' }) + '</b></div>';
-      qs('distFormGo').textContent = g.by.length ? 'Создать ' + g.by.length + ' ' + (g.by.length === 1 ? 'перевод' : (g.by.length < 5 ? 'перевода' : 'переводов')) : 'Сформировать месяц';
+      qs('distFormGo').textContent = g.by.length ? 'Создать ' + g.by.length + ' ' + (g.by.length === 1 ? 'перевод' : (g.by.length < 5 ? 'перевода' : 'переводов')) : 'Сформировать';
       qs('distFormGo').disabled = false;
       qs('distFormError').textContent = '';
       qs('distFormOverlay').classList.add('open');
@@ -8618,19 +8643,20 @@
           ids = (ins.data || []).map(function (r) { return r.id; });
           if (ids.length !== rows.length) throw new Error('Переводы созданы не полностью.');
         }
+        var batches = dist.batches.concat([{ at: now, ids: ids, items: g.items, total: g.total }]);
         var mu = await sb.from('budget_distribution_month').upsert(
-          { month: month, advance_total: dist.adv, salary_total: dist.sal, formed_at: now, transfer_ids: ids }, { onConflict: 'month' });
+          { month: month, advance_total: dist.adv, salary_total: dist.sal, batches: batches }, { onConflict: 'month' });
         if (mu.error) {
-          if (ids.length) await sb.from('transactions').delete().in('id', ids);   // не оставляем переводы без отметки
+          if (ids.length) await sb.from('transactions').delete().in('id', ids);   // не оставляем переводы без записи о них
           throw mu.error;
         }
-        dist.formed = now;
-        dist.ids = ids;
+        dist.batches = batches;
         qs('distFormOverlay').classList.remove('open');
         renderDist();
         refreshAfterChange();
         refreshDistTile();
-        qs('budMsg').textContent = 'Месяц сформирован: создано переводов ' + ids.length + '.';
+        qs('distSave').textContent = 'Сохранено ✓';
+        qs('budMsg').textContent = 'Сформировано ' + fmt0(g.total) + ' ₴: создано переводов ' + ids.length + '.';
       } catch (err) {
         console.error('[ACCOUNTING][DIST_FORM]', err);
         qs('distFormError').textContent = 'Не удалось сформировать: ' + budError(err);
@@ -8644,12 +8670,12 @@
     function disarmDistUndo() {
       dist.armed = false;
       if (dist.armTimer) { clearTimeout(dist.armTimer); dist.armTimer = null; }
-      qs('distUndo').textContent = 'Отменить формирование';
       qs('distUndo').classList.remove('dangerSolid');
+      if (dist.batches.length) qs('distUndo').textContent = 'Отменить последнее (' + fmt0(dist.batches[dist.batches.length - 1].total) + ' ₴)';
     }
 
     async function doDistUndo() {
-      if (dist.busy || !dist.formed) return;
+      if (dist.busy || !dist.batches.length) return;
       if (!dist.armed) {
         dist.armed = true;
         qs('distUndo').textContent = 'Нажми ещё раз: переводы удалятся';
@@ -8660,20 +8686,21 @@
       dist.busy = true;
       qs('distUndo').disabled = true;
       try {
-        if (dist.ids.length) {
-          var del = await sb.from('transactions').delete().in('id', dist.ids);
+        var last = dist.batches[dist.batches.length - 1];
+        if (last.ids && last.ids.length) {
+          var del = await sb.from('transactions').delete().in('id', last.ids);
           if (del.error) throw del.error;
         }
+        var rest = dist.batches.slice(0, -1);
         var mu = await sb.from('budget_distribution_month').upsert(
-          { month: budMonthKey(), advance_total: dist.adv, salary_total: dist.sal, formed_at: null, transfer_ids: [] }, { onConflict: 'month' });
+          { month: budMonthKey(), advance_total: dist.adv, salary_total: dist.sal, batches: rest }, { onConflict: 'month' });
         if (mu.error) throw mu.error;
-        dist.formed = null;
-        dist.ids = [];
+        dist.batches = rest;
         disarmDistUndo();
         renderDist();
         refreshAfterChange();
         refreshDistTile();
-        qs('budMsg').textContent = 'Формирование отменено: переводы удалены, месяц открыт для правки.';
+        qs('budMsg').textContent = 'Последнее формирование отменено: переводы удалены.';
       } catch (err) {
         console.error('[ACCOUNTING][DIST_UNDO]', err);
         disarmDistUndo();
@@ -8700,12 +8727,15 @@
         var d = await distLoad();
         if (req !== distTileReq) return;
         var m = d.month;
-        if (m && m.formed_at) { el.textContent = 'Сформировано'; return; }
         var tot = m ? Number(m.advance_total || 0) + Number(m.salary_total || 0) : 0;
-        if (!(tot > 0)) { el.textContent = 'Не начато'; return; }
         var got = d.rows.reduce(function (t, r) { return t + Number(r.advance || 0) + Number(r.salary || 0); }, 0);
+        var done = (m && Array.isArray(m.batches) ? m.batches : []).reduce(function (t, b2) { return t + Number(b2.total || 0); }, 0);
+        if (!(tot > 0) && !(got > 0)) { el.textContent = 'Не начато'; return; }
         var rem = r2(tot - got);
-        el.textContent = rem === 0 ? 'Всё распределено' : (rem > 0 ? 'Осталось ' + fmt0(rem) + ' ₴' : 'Больше на ' + fmt0(-rem) + ' ₴');
+        if (rem < 0) { el.textContent = 'Больше на ' + fmt0(-rem) + ' ₴'; return; }
+        var pending = r2(got - done);
+        if (pending > 0) { el.textContent = 'К переводу ' + fmt0(pending) + ' ₴'; return; }
+        el.textContent = rem > 0 ? 'Осталось ' + fmt0(rem) + ' ₴' : (done > 0 ? 'Всё сформировано' : 'Всё распределено');
       } catch (err) {
         if (req !== distTileReq) return;
         el.textContent = distMissing(err) ? 'Нужна настройка' : '—';
@@ -10463,7 +10493,7 @@
     // «Ещё»: сводка и переходы
     // ---------------------------------------------------------------
     var APP_VERSION = '2.7';
-    var APP_BUILD = '20261025-0045';
+    var APP_BUILD = '20261025-0130';
 
     // Проверка новой версии: читаем свежий index.html с сервера и сравниваем номер сборки.
     // Если сборка новее, на главном экране появляется уведомление с кнопкой «обновить».
