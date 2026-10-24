@@ -8075,7 +8075,7 @@
       var inp = e.target.closest('.bpAmt');
       if (!inp) return;
       var r = bp.rows[Number(inp.getAttribute('data-i'))];
-      if (r.min > 0 && r.amount < r.min) {
+      if (r.min > 0 && r.amount < r.min && !(r.saving && !(r.amount > 0))) {
         r.amount = r.min;
         inp.value = String(r.min);
         qs('bpError').textContent = r.cat.name + ': меньше минимального порога ' + money(r.min) + ' нельзя.';
@@ -8089,7 +8089,7 @@
 
     async function applyBudPlan() {
       if (bp.busy) return;
-      var low = bp.rows.filter(function (r) { return r.min > 0 && r.amount < r.min; })[0];
+      var low = bp.rows.filter(function (r) { return r.min > 0 && r.amount < r.min && !(r.saving && !(r.amount > 0)); })[0];
       if (low) { qs('bpError').textContent = low.cat.name + ': меньше минимального порога ' + money(low.min) + ' нельзя.'; return; }
       bp.busy = true;
       qs('bpApply').disabled = true;
@@ -9839,7 +9839,7 @@
     // «Ещё»: сводка и переходы
     // ---------------------------------------------------------------
     var APP_VERSION = '2.6';
-    var APP_BUILD = '20261024-2350';
+    var APP_BUILD = '20261024-2405';
     var moreReq = 0;
 
     function escHtml(v) {
