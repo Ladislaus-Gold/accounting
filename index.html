@@ -5882,7 +5882,7 @@
         </label>
         <label class="checkRow budFlagRow">
           <input type="checkbox" id="budSaving">
-          <span><b>Необязательная, но копим</b><br>Накопления: сюда уходит часть дохода, которую откладываешь.</span>
+          <span><b>Необязательная, но копим</b><br>Копилка: деньги откладываются по очереди между копилками, план на месяц не обязателен.</span>
         </label>
         <div class="label">Минимальный порог, ₴</div>
         <input class="input" id="budMin" type="number" min="0" step="1" inputmode="decimal" placeholder="Без порога">
@@ -7199,9 +7199,9 @@
       var fact = factFor(cat);
       var lump = catLump(cat);
       var r = {
-        cat: cat, plan: plan, fact: fact, lump: lump, mandatory: catMandatory(cat),
+        cat: cat, plan: plan, fact: fact, lump: lump, mandatory: catMandatory(cat), saving: catSaving(cat),
         expected: 0, diff: 0, ahead: false, forecast: fact, paid: false,
-        over: plan > 0 && fact > plan + 0.005, unplanned: !(plan > 0) && fact > 0
+        over: plan > 0 && fact > plan + 0.005, unplanned: !(plan > 0) && fact > 0 && !catSaving(cat)
       };
       if (!(plan > 0)) return r;
       if (catSaving(cat)) {
@@ -7254,11 +7254,12 @@
       function add(cls, html) { lines.push({ cls: cls, html: html }); }
       function nm(it) { return '<b>' + escHtml(it.cat.name) + '</b>'; }
       function savingLine() {
-        var sv = items.filter(function (i) { return i.saving && i.plan > 0; });
+        var sv = items.filter(function (i) { return i.saving && (i.plan > 0 || i.fact > 0); });
         if (!sv.length) return;
         var sp = sv.reduce(function (t, i) { return t + i.plan; }, 0);
         var sf = sv.reduce(function (t, i) { return t + i.fact; }, 0);
-        add(sf >= sp - 0.005 ? 'good' : 'neutral', 'Накопления: отложено ' + money(sf) + ' из ' + money(sp) + '.');
+        if (sp > 0) add(sf >= sp - 0.005 ? 'good' : 'neutral', 'Накопления: отложено ' + money(sf) + ' из ' + money(sp) + '.');
+        else add('good', 'Накопления: отложено ' + money(sf) + '.');
       }
 
       var hasPlan = planExp > 0;
@@ -7488,7 +7489,7 @@
         bar.className = 'budBar';
         var fillEl = document.createElement('div');
         var over = !isIncome && plan > 0 && fact > plan;
-        var unplanned = !isIncome && !(plan > 0) && fact > 0;
+        var unplanned = !isIncome && !(plan > 0) && fact > 0 && !catSaving(cat);
         fillEl.className = 'budFill' + ((over || unplanned) ? ' bad' : '');
         var w = plan > 0 ? Math.min(100, (fact / plan) * 100) : (unplanned ? 100 : 0);
         if (over || unplanned) {
@@ -7520,7 +7521,9 @@
         } else if (unplanned) {
           hint.textContent = 'Не предусмотрено бюджетом: потрачено ' + money(fact) + '. Нажми, чтобы задать план';
         } else {
-          hint.textContent = 'План не задан. Нажми, чтобы задать';
+          hint.textContent = catSaving(cat)
+            ? (fact > 0 ? 'Отложено ' + money(fact) + '. План не обязателен' : 'Копим по очереди: план не обязателен')
+            : 'План не задан. Нажми, чтобы задать';
         }
 
         btn.append(top, bar, hint);
@@ -7653,7 +7656,8 @@
       if (cat.type === 'EXPENSE') {
         minReq = refs.savingReady ? (Number(String(qs('budMin').value).replace(',', '.')) || 0) : catMin(cat);
         if (minReq < 0) minReq = 0;
-        if (minReq > 0 && amount < minReq) {
+        var savingNow = refs.savingReady ? qs('budSaving').checked : catSaving(cat);
+        if (minReq > 0 && amount < minReq && !(savingNow && amount === 0)) {
           errorBox.textContent = 'Меньше минимального порога ' + money(minReq) + ' закладывать нельзя.';
           return;
         }
@@ -7811,9 +7815,11 @@
       splitBy500(flex, D, 'extra');
       var S = R - D;                                   // накопления вместе с «хвостом» дохода, не кратным 500
       if (sav.length) {
+        var turnRows = sav.filter(function (r) { return r.turn; });
+        if (!turnRows.length) turnRows = sav;
         var Sunits = floor500(S);
-        splitBy500(sav, Sunits, 'extra');
-        sav[0].extra += S - Sunits;
+        splitBy500(turnRows, Sunits, 'extra');
+        turnRows[0].extra += S - Sunits;
       } else if (flex.length) {
         var big = flex.slice().sort(function (x, y) { return (y.floor + y.extra) - (x.floor + x.extra); })[0];
         big.extra += S;                                // S меньше 500
@@ -7835,12 +7841,12 @@
           return;
         }
 
-        // Шесть закрытых месяцев перед показанным (но не позже текущего реального), среднее считаем по трём последним с данными
+        // До 12 закрытых месяцев перед показанным (но не позже текущего реального): среднее по трём последним с данными, очередь копилок по всем
         var now = new Date();
         var refY = bud.year, refM = bud.month;
         if (refY * 12 + refM > now.getFullYear() * 12 + now.getMonth()) { refY = now.getFullYear(); refM = now.getMonth(); }
         var keys = [];
-        for (var i = 1; i <= 6; i++) {
+        for (var i = 1; i <= 12; i++) {
           var d = new Date(refY, refM - i, 1);
           keys.push(budFirst(d.getFullYear(), d.getMonth()));
         }
@@ -7862,7 +7868,7 @@
           });
           var facts = {}, total = 0;
           Object.keys(per).forEach(function (id) { facts[id] = Math.max(0, per[id].e - per[id].r); total += facts[id]; });
-          if (total > 0) monthFacts.push(facts);
+          if (total > 0) monthFacts.push({ key: keys[m], facts: facts });
         }
         var lastPlan = {};
         (res[keys.length].data || []).slice().sort(function (x, y) { return String(x.month) < String(y.month) ? -1 : 1; })
@@ -7872,7 +7878,7 @@
         var rows = [];
         categoriesOfType('EXPENSE').forEach(function (c) {
           var avg = 0;
-          for (var k = 0; k < avgN; k++) avg += monthFacts[k][c.id] || 0;
+          for (var k = 0; k < avgN; k++) avg += monthFacts[k].facts[c.id] || 0;
           avg = avgN > 0 ? avg / avgN : 0;
           var min = catMin(c);
           var mandatory = catMandatory(c), saving = catSaving(c);
@@ -7885,7 +7891,11 @@
               row.noMin = true;
             }
           } else if (saving) {
-            /* копилка всегда в списке */
+            // Когда откладывали в последний раз (самый свежий месяц, где в копилке были операции)
+            var lastKey = '';
+            monthFacts.forEach(function (mf) { if ((mf.facts[c.id] || 0) > 0 && mf.key > lastKey) lastKey = mf.key; });
+            row.lastKey = lastKey;
+            row.floor = 0;
           } else {
             var base = avg > 0 ? avg : (avgN === 0 ? (lastPlan[c.id] || 0) : 0);
             if (!(base > 0) && !(min > 0)) return;
@@ -7898,6 +7908,11 @@
           msg.textContent = 'Нет данных за прошлые месяцы и не задано ни одного минимального порога. Задай планы вручную.';
           return;
         }
+
+        // Очередь копилок: деньги месяца получает та, в которую откладывали давнее всего (или ни разу)
+        var savRows = rows.filter(function (r) { return r.saving; })
+          .sort(function (x, y) { return x.lastKey < y.lastKey ? -1 : (x.lastKey > y.lastKey ? 1 : x.cat.sort_order - y.cat.sort_order); });
+        savRows.forEach(function (r, idx) { r.turn = idx === 0; r.floor = r.turn ? ceil500(r.min) : 0; });
 
         bp.rows = rows;
         bp.income = income;
@@ -7947,8 +7962,11 @@
         if (r.mandatory) return r.noMin ? 'порог не задан, взято среднее ' + money(r.avg) : 'порог ' + money(r.min);
         var parts = [];
         if (r.min > 0) parts.push('порог ' + money(r.min));
-        if (r.saving) parts.push(r.avg > 0 ? 'раньше в среднем ' + money(r.avg) : 'накопления');
-        else parts.push('в среднем ' + money(r.avg));
+        if (r.saving) {
+          var lastTxt = r.lastKey ? 'откладывал(а) в ' + MONTHS[Number(r.lastKey.slice(5, 7)) - 1] + ' ' + r.lastKey.slice(0, 4) : 'ещё не откладывал(а)';
+          return (r.turn ? 'очередь в этом месяце' : 'не в очереди') + ' · ' + lastTxt + (r.min > 0 && r.turn ? ' · порог ' + money(r.min) : '');
+        }
+        parts.push('в среднем ' + money(r.avg));
         return parts.join(' · ');
       }
       function section(title, key, list) {
@@ -7974,6 +7992,7 @@
       if (mand.some(function (r) { return r.noMin; })) notes.push('Где у обязательной траты нет порога, взято среднее за прошлые месяцы. Задай порог в карточке категории.');
       if (!mand.length) notes.push('Ни одна категория не отмечена как обязательная.');
       if (!sav.length) notes.push('Нет категорий накоплений: отметь в карточке категории «Необязательная, но копим», и появится ползунок.');
+      else if (sav.length > 1) notes.push('Копилки идут по очереди: в этом месяце деньги получает «' + sav.filter(function (r) { return r.turn; })[0].cat.name + '».');
       if (existing) notes.push('В этом месяце уже есть план по ' + existing + ' из этих категорий: суммы будут заменены.');
       qs('bpNote').textContent = notes.join(' ');
     }
@@ -8034,7 +8053,7 @@
       qs('bpError').textContent = '';
       try {
         var month = budMonthKey();
-        var rows = bp.rows.map(function (r) {
+        var rows = bp.rows.filter(function (r) { return !(r.saving && !(r.amount > 0)); }).map(function (r) {
           return { category_id: r.cat.id, month: month, amount: Math.round(r.amount * 100) / 100 };
         });
         var res = await sb.from('budgets').upsert(rows, { onConflict: 'category_id,month' }).select('id');
@@ -9776,7 +9795,7 @@
     // «Ещё»: сводка и переходы
     // ---------------------------------------------------------------
     var APP_VERSION = '2.6';
-    var APP_BUILD = '20261024-2200';
+    var APP_BUILD = '20261024-2240';
     var moreReq = 0;
 
     function escHtml(v) {
