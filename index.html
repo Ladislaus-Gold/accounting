@@ -5086,13 +5086,14 @@
     .dTh,.dRow,.dTt{display:grid;grid-template-columns:minmax(0,1fr) 54px 64px 64px 56px;gap:4px;align-items:center;padding:7px 8px}
     .dTh{background:#E6EDFA;font-size:10px;font-weight:800;color:#1F3A68;text-align:right;text-transform:uppercase;letter-spacing:.02em}
     .dTh span:first-child{text-align:left}
+    .dTh span:nth-child(3),.dTh span:nth-child(4),.dTt span:nth-child(3),.dTt span:nth-child(4){text-align:center}
     .dRow{border-top:1px solid #EEF1F8;font-size:12.5px}
     .dNm{min-width:0}.dNm b{display:block;font-size:13px;font-weight:700;color:#8A2B1E;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
     .dChip{display:inline-block;margin-top:3px;font-size:10.5px;font-weight:700;border-radius:8px;padding:2px 7px;background:#EAF0FF;color:#2747E0;white-space:nowrap;border:0;cursor:pointer;max-width:100%;overflow:hidden;text-overflow:ellipsis;font-family:inherit}
     .dChip.cash{background:#FFF2D6;color:#8A5A00}
     .dChip:disabled{cursor:default;opacity:.8}
     .dPl{text-align:right;color:#27325A;font-weight:600}
-    .dIn{width:100%;height:34px;border-radius:10px;border:1px solid #C6D2F0;background:#F6F9FF;text-align:right;padding:0 6px;font-size:13px;font-weight:700;color:#101B45;font-family:inherit;min-width:0}
+    .dIn{width:100%;height:34px;border-radius:10px;border:1px solid #C6D2F0;background:#F6F9FF;text-align:center;padding:0 6px;font-size:13px;font-weight:700;color:#101B45;font-family:inherit;min-width:0}
     .dIn:disabled{background:#EEF1F8;color:#5B6A90;border-color:#DDE4F3}
     .dDf{text-align:right;font-weight:800;font-size:12.5px;border-radius:8px;padding:5px 4px}
     .dDf.z{color:#9AA7C7;text-decoration:line-through;font-weight:700}
@@ -10462,7 +10463,7 @@
     // «Ещё»: сводка и переходы
     // ---------------------------------------------------------------
     var APP_VERSION = '2.7';
-    var APP_BUILD = '20261025-0030';
+    var APP_BUILD = '20261025-0045';
 
     // Проверка новой версии: читаем свежий index.html с сервера и сравниваем номер сборки.
     // Если сборка новее, на главном экране появляется уведомление с кнопкой «обновить».
