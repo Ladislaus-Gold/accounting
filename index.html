@@ -5033,10 +5033,26 @@
     .bpName{font-size:14px;font-weight:600;color:#101B45}
     .bpAvg{margin-top:2px;font-size:12px;font-weight:400;color:#5B6A90}
     #bpOverlay .bpAmt{text-align:right;padding:10px 12px;font-weight:700}
-    .bpSlider{margin-top:14px;padding:12px 14px;border-radius:16px;background:#F3F6FC}
-    .bpSliderHead{display:flex;justify-content:space-between;gap:10px;font-size:14px;font-weight:700;color:#101B45}
-    .bpSlider input[type=range]{width:100%;margin:12px 0 6px;accent-color:#3157F6}
-    .bpSliderFoot{display:flex;justify-content:space-between;gap:10px;font-size:12px;color:#5B6A90}
+    .bpSlider{margin-top:14px;padding:14px 16px 12px;border-radius:18px;background:#F3F6FC}
+    .bpSliderTitle{font-size:14px;font-weight:800;color:#101B45}
+    .bpSliderSub{margin-top:2px;font-size:12px;color:#5B6A90}
+    .bpSliderEnds{display:flex;justify-content:space-between;gap:10px;margin-top:12px;font-size:13px;font-weight:700}
+    .bpSliderEnds .l{color:#8A5A00}
+    .bpSliderEnds .r{color:#1B7A4B;text-align:right}
+    .bpSliderEnds small{display:block;font-size:12px;font-weight:600;color:#27325A}
+    .bpSlider input[type=range]{--p:0%;-webkit-appearance:none;appearance:none;display:block;width:100%;height:36px;margin:2px 0 0;background:transparent;touch-action:pan-y;cursor:grab;-webkit-tap-highlight-color:transparent}
+    .bpSlider input[type=range]:active{cursor:grabbing}
+    .bpSlider input[type=range]:focus{outline:none}
+    .bpSlider input[type=range]::-webkit-slider-runnable-track{height:10px;border-radius:999px;background:linear-gradient(90deg,#F2B544 0,#F2B544 var(--p),#3CB878 var(--p),#3CB878 100%)}
+    .bpSlider input[type=range]::-moz-range-track{height:10px;border-radius:999px;background:linear-gradient(90deg,#F2B544 0,#F2B544 var(--p),#3CB878 var(--p),#3CB878 100%)}
+    .bpSlider input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:32px;height:32px;margin-top:-11px;border-radius:50%;background:#fff;border:0;box-shadow:0 3px 10px rgba(16,27,69,.28),0 0 0 .5px rgba(16,27,69,.12);transition:transform .15s ease}
+    .bpSlider input[type=range]::-moz-range-thumb{width:32px;height:32px;border-radius:50%;background:#fff;border:0;box-shadow:0 3px 10px rgba(16,27,69,.28),0 0 0 .5px rgba(16,27,69,.12);transition:transform .15s ease}
+    .bpSlider input[type=range]:active::-webkit-slider-thumb{transform:scale(1.12)}
+    .bpSlider input[type=range]:active::-moz-range-thumb{transform:scale(1.12)}
+    .bpExplain{margin-top:10px;padding-top:10px;border-top:1px solid #DDE4F3;font-size:13px;line-height:1.45;color:#27325A}
+    .bpExplain p{margin:0 0 6px}
+    .bpExplain p:last-child{margin-bottom:0}
+    .bpExplain b{color:#101B45}
     .bpTotals{margin-top:16px;padding:12px 14px;border-radius:16px;background:#F3F6FC;display:grid;gap:8px}
     .bpTotals .bpTRow{display:flex;justify-content:space-between;gap:10px;font-size:14px;color:#27325A}
     .bpTotals .bpTRow.big{font-size:16px;font-weight:700;padding-top:8px;border-top:1px solid #DCE4F3}
@@ -5929,10 +5945,15 @@
         <div class="editMeta" id="bpMeta">—</div>
       </div>
 
-      <div class="bpSlider" id="bpSliderBox" hidden>
-        <div class="bpSliderHead"><span>Необязательные расходы</span><span id="bpSliderVal">—</span></div>
-        <input type="range" id="bpSlider" min="0" max="0" step="500" value="0">
-        <div class="bpSliderFoot"><span id="bpSliderLeft">—</span><span id="bpSliderRight">—</span></div>
+      <div class="bpSlider" id="bpSliderBox">
+        <div class="bpSliderTitle">Куда пойдёт остаток дохода</div>
+        <div class="bpSliderSub" id="bpSliderSub">—</div>
+        <div class="bpSliderEnds">
+          <span class="l">В обязательные<small id="bpSliderLeft">—</small></span>
+          <span class="r">В копилки<small id="bpSliderRight">—</small></span>
+        </div>
+        <input type="range" id="bpSlider" min="0" max="1000" step="1" value="0" aria-label="Куда пойдёт остаток дохода">
+        <div class="bpExplain" id="bpExplain"></div>
       </div>
 
       <div id="bpBody"></div>
@@ -7765,7 +7786,7 @@
     // Обязательные траты получают деньги первыми (в среднем за прошлые месяцы),
     // остальное делится между прочими категориями пропорционально их средним расходам.
     // ---------------------------------------------------------------
-    var bp = { rows: [], income: 0, months: 0, busy: false, F: 0, R: 0, D: 0 };
+    var bp = { rows: [], income: 0, months: 0, busy: false, F: 0, R: 0, P: 0, S: 0, M: 0 };
 
     function ceil500(v) { return Math.ceil(v / 500 - 1e-9) * 500; }
     function floor500(v) { return Math.floor(v / 500 + 1e-9) * 500; }
@@ -7791,38 +7812,38 @@
       list.forEach(function (r, i) { r[key] = base[i] * 500; });
     }
 
-    // Приоритет: 1) минимальные пороги (и обязательные без порога по среднему), 2) остаток делится ползунком
-    // между необязательными расходами и накоплениями. Сумма = плановый доход, всё кратно 500.
-    // D: сколько отдать необязательным сверх порогов (кратно 500) или null — по умолчанию половина остатка.
-    function computeBudPlan(D) {
+    // Приоритет: 1) минимальные пороги обязательных (и копилок, где порог задан), 2) остаток дохода уходит
+    // либо в обязательные траты (ползунок слева), либо в копилки (справа). Необязательные расходы не участвуют.
+    // Всё кратно 500, сумма равна плановому доходу. P: положение ползунка 0..1000.
+    function computeBudPlan(P) {
       var rows = bp.rows;
-      var flex = rows.filter(function (r) { return !r.mandatory && !r.saving; });
-      var sav = rows.filter(function (r) { return r.saving; });
+      var mand = rows.filter(function (r) { return r.mandatory; });
+      var sav = rows.filter(function (r) { return r.saving; }).sort(function (x, y) { return x.order - y.order; });
 
       rows.forEach(function (r) { r.amount = r.floor; r.extra = 0; });
       var F = rows.reduce(function (t, r) { return t + r.floor; }, 0);
       var R = bp.income - F;
-      bp.F = F; bp.R = R; bp.D = 0;
+      bp.F = F; bp.R = R; bp.S = 0; bp.M = 0;
+      if (P !== null && P !== undefined) bp.P = Math.max(0, Math.min(1000, P));
       if (R <= 0) return;
 
-      var Rmax = floor500(R);
-      if (!flex.length) D = 0;
-      else if (!sav.length) D = Rmax;
-      else if (D === null || D === undefined) D = Math.min(Rmax, floor500(R * 0.5));
-      else D = Math.max(0, Math.min(Rmax, floor500(D)));
-      bp.D = D;
+      var U = Math.floor(R / 500);                     // сколько «пятисоток» свободно
+      var tail = R - U * 500;                          // хвост меньше 500
+      var su;
+      if (!sav.length) su = 0;
+      else if (!mand.length) su = U;
+      else su = Math.round(U * bp.P / 1000);
+      var mu = U - su;
+      bp.S = su * 500; bp.M = mu * 500;
 
-      splitBy500(flex, D, 'extra');
-      var S = R - D;                                   // накопления вместе с «хвостом» дохода, не кратным 500
-      if (sav.length) {
-        var turnRows = sav.filter(function (r) { return r.turn; });
-        if (!turnRows.length) turnRows = sav;
-        var Sunits = floor500(S);
-        splitBy500(turnRows, Sunits, 'extra');
-        turnRows[0].extra += S - Sunits;
-      } else if (flex.length) {
-        var big = flex.slice().sort(function (x, y) { return (y.floor + y.extra) - (x.floor + x.extra); })[0];
-        big.extra += S;                                // S меньше 500
+      splitBy500(mand, mu * 500, 'extra');             // в обязательные: пропорционально обычным тратам
+      for (var k = 0; k < su; k++) sav[k % sav.length].extra += 500;   // в копилки: по 500, по очереди
+      if (tail > 0) {
+        if (mand.length && (mu > 0 || !sav.length)) {
+          var big = mand.slice().sort(function (x, y) { return (y.floor + y.extra) - (x.floor + x.extra); })[0];
+          big.extra += tail;
+        } else if (sav.length) sav[0].extra += tail;
+        else if (mand.length) mand[0].extra += tail;
       }
       rows.forEach(function (r) { r.amount = r.floor + r.extra; });
     }
@@ -7897,27 +7918,24 @@
             row.lastKey = lastKey;
             row.floor = 0;
           } else {
-            var base = avg > 0 ? avg : (avgN === 0 ? (lastPlan[c.id] || 0) : 0);
-            if (!(base > 0) && !(min > 0)) return;
-            row.weight = base;
-            row.avg = base;
+            return;                                  // необязательные расходы в распределении не участвуют
           }
           rows.push(row);
         });
         if (!rows.length) {
-          msg.textContent = 'Нет данных за прошлые месяцы и не задано ни одного минимального порога. Задай планы вручную.';
+          msg.textContent = 'Нет ни одной обязательной траты или копилки. Отметь категории в карточке и повтори.';
           return;
         }
 
         // Очередь копилок: деньги месяца получает та, в которую откладывали давнее всего (или ни разу)
         var savRows = rows.filter(function (r) { return r.saving; })
           .sort(function (x, y) { return x.lastKey < y.lastKey ? -1 : (x.lastKey > y.lastKey ? 1 : x.cat.sort_order - y.cat.sort_order); });
-        savRows.forEach(function (r, idx) { r.turn = idx === 0; r.floor = r.turn ? ceil500(r.min) : 0; });
+        savRows.forEach(function (r, idx) { r.order = idx; r.turn = idx === 0; r.floor = ceil500(r.min); });
 
         bp.rows = rows;
         bp.income = income;
         bp.months = avgN;
-        computeBudPlan(null);
+        computeBudPlan(0);
         buildBpSlider();
         renderBudPlan();
         qs('bpError').textContent = '';
@@ -7932,42 +7950,62 @@
       }
     }
 
-    // Ползунок «Необязательные расходы»: от 0 до остатка после минимальных порогов, шаг 500
+    // Ползунок: слева весь остаток в обязательные, справа весь остаток в копилки. Ход плавный (0..1000),
+    // значения внутри привязываются к шагу 500.
     function buildBpSlider() {
-      var hasFlex = bp.rows.some(function (r) { return !r.mandatory && !r.saving; });
+      var hasMand = bp.rows.some(function (r) { return r.mandatory; });
       var hasSav = bp.rows.some(function (r) { return r.saving; });
-      var rmax = Math.max(0, floor500(bp.R));
-      qs('bpSliderBox').hidden = !(hasFlex && hasSav && rmax > 0);
       var sl = qs('bpSlider');
-      sl.max = String(rmax);
-      sl.value = String(bp.D);
+      sl.value = String(bp.P);
+      sl.disabled = !(hasMand && hasSav && bp.R >= 500);
+      sl.style.opacity = sl.disabled ? '.45' : '1';
+      sl.style.setProperty('--p', (bp.P / 10) + '%');
     }
     function updateBpSliderLabels() {
-      var flexTotal = 0, savTotal = 0;
-      bp.rows.forEach(function (r) { if (r.saving) savTotal += r.amount; else if (!r.mandatory) flexTotal += r.amount; });
-      qs('bpSliderVal').textContent = money(flexTotal);
-      qs('bpSliderLeft').textContent = 'Копим: ' + money(savTotal);
-      qs('bpSliderRight').textContent = 'Свободно сверх порогов: ' + money(Math.max(0, bp.R));
+      qs('bpSliderSub').textContent = bp.R > 0
+        ? 'Свободно сверх минимальных порогов: ' + money(bp.R) + '. Двигай ползунок.'
+        : 'Свободных денег сверх порогов нет.';
+      qs('bpSliderLeft').textContent = '+' + money(bp.M);
+      qs('bpSliderRight').textContent = '+' + money(bp.S);
+      qs('bpSlider').style.setProperty('--p', (bp.P / 10) + '%');
+
+      var mand = bp.rows.filter(function (r) { return r.mandatory; });
+      var sav = bp.rows.filter(function (r) { return r.saving; }).sort(function (x, y) { return x.order - y.order; });
+      var h = '<p><b>Сейчас:</b> @NOW@</p><details><summary style="cursor:pointer;font-weight:700;color:#3157F6">Как это считается</summary><p style="margin-top:6px">1) Каждой обязательной категории (и копилке, если у неё есть порог) закладывается минимальный порог: вместе ' + money(bp.F) +
+        '. 2) Остаток дохода ' + money(Math.max(0, bp.R)) + ' делится на пятисотки. 3) Ползунок решает, куда они пойдут. Необязательные расходы в этот расчёт не входят.</p>';
+      var now = '';
+      if (bp.R >= 500) {
+        if (!sav.length) h += '<p>Копилок нет, поэтому весь остаток уходит в обязательные траты. Чтобы копить, отметь категорию «Необязательная, но копим».</p>';
+        else if (!mand.length) h += '<p>Обязательных трат нет, поэтому весь остаток уходит в копилки.</p>';
+        else {
+          h += '<p><b>Слева:</b> остаток добавляется обязательным тратам по 500, больше туда, где обычно тратишь больше. Это запас: что не потратишь за месяц, останется тебе.</p>';
+          h += '<p><b>Справа:</b> остаток откладывается по 500 в каждую копилку по очереди: сначала в ту, куда откладывали давнее всего, потом в следующую, и так по кругу.</p>';
+          var parts = sav.filter(function (r) { return r.extra > 0; }).map(function (r) { return escHtml(r.cat.name) + ' +' + money(r.extra); });
+          now = 'в обязательные ' + money(bp.M) + (bp.S > 0 ? ', в копилки ' + money(bp.S) + (parts.length ? ' (' + parts.join(', ') + ')' : '') : ', копилкам ничего сверх порогов') + '.';
+        }
+      } else now = 'сверх порогов ничего не остаётся.';
+      if (!now) now = !sav.length ? 'весь остаток в обязательные.' : 'весь остаток в копилки.';
+      qs('bpExplain').innerHTML = h.replace('@NOW@', now) + '</details>';
     }
     qs('bpSlider').addEventListener('input', function () {
       computeBudPlan(Number(this.value));
-      renderBudPlan();
+      // Обновляем только числа, без перерисовки списка: ход ползунка остаётся плавным
+      bp.rows.forEach(function (r, i) {
+        var el = qs('bpBody').querySelector('.bpAmt[data-i="' + i + '"]');
+        if (el) el.value = String(r.amount);
+      });
+      updateBpSliderLabels();
+      recalcBudPlan();
     });
 
     function renderBudPlan() {
       qs('bpIncome').textContent = money(bp.income);
-      qs('bpMeta').textContent = budLabel() + ' · плановый доход. Сначала минимальные пороги, остаток делится ползунком.';
+      qs('bpMeta').textContent = budLabel() + ' · плановый доход. Сначала минимальные пороги, остаток уходит в обязательные или в копилки.';
 
       function sub(r) {
         if (r.mandatory) return r.noMin ? 'порог не задан, взято среднее ' + money(r.avg) : 'порог ' + money(r.min);
-        var parts = [];
-        if (r.min > 0) parts.push('порог ' + money(r.min));
-        if (r.saving) {
-          var lastTxt = r.lastKey ? 'откладывал(а) в ' + MONTHS[Number(r.lastKey.slice(5, 7)) - 1] + ' ' + r.lastKey.slice(0, 4) : 'ещё не откладывал(а)';
-          return (r.turn ? 'очередь в этом месяце' : 'не в очереди') + ' · ' + lastTxt + (r.min > 0 && r.turn ? ' · порог ' + money(r.min) : '');
-        }
-        parts.push('в среднем ' + money(r.avg));
-        return parts.join(' · ');
+        var lastTxt = r.lastKey ? 'откладывал(а) в ' + MONTHS[Number(r.lastKey.slice(5, 7)) - 1] + ' ' + r.lastKey.slice(0, 4) : 'ещё не откладывал(а)';
+        return (r.order + 1) + '-я в очереди · ' + lastTxt + (r.min > 0 ? ' · порог ' + money(r.min) : '');
       }
       function section(title, key, list) {
         if (!list.length) return '';
@@ -7980,9 +8018,8 @@
           }).join('');
       }
       var mand = bp.rows.filter(function (r) { return r.mandatory; });
-      var flex = bp.rows.filter(function (r) { return !r.mandatory && !r.saving; });
-      var sav = bp.rows.filter(function (r) { return r.saving; });
-      qs('bpBody').innerHTML = section('Обязательные', 'mand', mand) + section('Необязательные', 'flex', flex) + section('Копим', 'sav', sav);
+      var sav = bp.rows.filter(function (r) { return r.saving; }).sort(function (x, y) { return x.order - y.order; });
+      qs('bpBody').innerHTML = section('Обязательные', 'mand', mand) + section('Копим', 'sav', sav);
       updateBpSliderLabels();
       recalcBudPlan();
 
@@ -7992,18 +8029,17 @@
       if (mand.some(function (r) { return r.noMin; })) notes.push('Где у обязательной траты нет порога, взято среднее за прошлые месяцы. Задай порог в карточке категории.');
       if (!mand.length) notes.push('Ни одна категория не отмечена как обязательная.');
       if (!sav.length) notes.push('Нет категорий накоплений: отметь в карточке категории «Необязательная, но копим», и появится ползунок.');
-      else if (sav.length > 1) notes.push('Копилки идут по очереди: в этом месяце деньги получает «' + sav.filter(function (r) { return r.turn; })[0].cat.name + '».');
       if (existing) notes.push('В этом месяце уже есть план по ' + existing + ' из этих категорий: суммы будут заменены.');
       qs('bpNote').textContent = notes.join(' ');
     }
 
     function recalcBudPlan() {
-      var sums = { mand: 0, flex: 0, sav: 0 };
-      bp.rows.forEach(function (r) { sums[r.mandatory ? 'mand' : (r.saving ? 'sav' : 'flex')] += r.amount; });
-      var total = sums.mand + sums.flex + sums.sav;
+      var sums = { mand: 0, sav: 0 };
+      bp.rows.forEach(function (r) { sums[r.mandatory ? 'mand' : 'sav'] += r.amount; });
+      var total = sums.mand + sums.sav;
       var diff = Math.round((bp.income - total) * 100) / 100;
 
-      ['mand', 'flex', 'sav'].forEach(function (k) {
+      ['mand', 'sav'].forEach(function (k) {
         var el = qs('bpBody').querySelector('[data-sum="' + k + '"]');
         if (el) el.textContent = money(sums[k]);
       });
@@ -8013,7 +8049,6 @@
       qs('bpTotals').innerHTML =
         '<div class="bpTRow"><span>Доход по плану</span><span>' + money(bp.income) + '</span></div>' +
         '<div class="bpTRow"><span>Обязательные</span><span>' + money(sums.mand) + '</span></div>' +
-        '<div class="bpTRow"><span>Необязательные</span><span>' + money(sums.flex) + '</span></div>' +
         '<div class="bpTRow"><span>Копим</span><span>' + money(sums.sav) + '</span></div>' +
         '<div class="bpTRow big"><span>Всего</span><span>' + money(total) + '</span></div>' +
         '<div class="bpTRow">' + status + '<span></span></div>';
@@ -9795,7 +9830,7 @@
     // «Ещё»: сводка и переходы
     // ---------------------------------------------------------------
     var APP_VERSION = '2.6';
-    var APP_BUILD = '20261024-2240';
+    var APP_BUILD = '20261024-2320';
     var moreReq = 0;
 
     function escHtml(v) {
