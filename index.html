@@ -5090,6 +5090,10 @@
     .dRow{border-top:1px solid #EEF1F8;font-size:12.5px}
     .dNm{min-width:0}.dNm b{display:block;font-size:13px;font-weight:700;color:#8A2B1E;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
     .dChip{display:inline-block;margin-top:3px;font-size:10.5px;font-weight:700;border-radius:8px;padding:2px 7px;background:#EAF0FF;color:#2747E0;white-space:nowrap;border:0;cursor:pointer;max-width:100%;overflow:hidden;text-overflow:ellipsis;font-family:inherit}
+    .distToast{position:fixed;left:50%;top:calc(14px + env(safe-area-inset-top));transform:translateX(-50%);z-index:3000;max-width:min(92vw,400px);padding:12px 18px;border-radius:16px;background:#1B9E5A;color:#fff;font-size:14px;font-weight:700;line-height:1.35;text-align:center;box-shadow:0 10px 28px rgba(27,158,90,.4);animation:toastIn .28s ease}
+    .distToast[hidden]{display:none}
+    .distToast.out{opacity:0;transition:opacity .35s ease}
+    @keyframes toastIn{from{opacity:0;transform:translate(-50%,-12px)}to{opacity:1;transform:translate(-50%,0)}}
     .dDone{display:block;margin-top:3px;font-size:10.5px;font-weight:700;color:#1B7A4B;line-height:1.25}
     .dDone:empty{display:none}
     .dDone.bad{color:#C0261D}
@@ -5107,7 +5111,7 @@
     .distLegend{margin-top:10px;font-size:11.5px;color:#5B6A90;line-height:1.45}
     .distBottom{position:sticky;bottom:0;background:#fff;padding:10px 0 4px;margin-top:12px}
     .distNote{font-size:12px;color:#5B6A90;text-align:center;margin-bottom:8px}
-    .distBottom .btnRow #distForm{flex:1.7 1 0;white-space:nowrap}
+    .distBottom .btnRow #distForm{flex:1 1 0;white-space:nowrap}
     #distFormOverlay .btnRow #distFormGo{flex:1.7 1 0;white-space:nowrap}
     #distFormOverlay .btnRow{position:sticky;bottom:0;background:#fff;padding:10px 0 4px;margin-top:12px}
     .distBottom .btnRow button:disabled{background:#D7DEF0;color:#8B97B8;box-shadow:none}
@@ -6049,13 +6053,13 @@
       <div class="distLegend">Метка под названием: «→ счёт» значит, что деньги переведутся туда; «остаётся в кэше» значит, что останутся на счёте для распределения бюджета. Нажми на метку, чтобы сменить счёт.</div>
         <div class="field" id="distUndoWrap" hidden style="margin-top:12px">
           <button class="btnTintRed btnFull" id="distUndo" type="button">Отменить формирование</button>
+          <div class="muted" style="text-align:center;margin-top:6px">Кнопка исчезнет через минуту после формирования.</div>
         </div>
       <div class="authError" id="distError" role="alert"></div>
 
       <div class="distBottom">
         <div class="distNote" id="distNote"></div>
         <div class="btnRow" id="distButtons">
-          <button class="btnGhost" id="distSave" type="button">Сохранить</button>
           <button class="btnPrimary" id="distForm" type="button">Сформировать</button>
         </div>
       </div>
@@ -6080,6 +6084,8 @@
       </div>
     </div>
   </div>
+
+  <div class="distToast" id="distToast" role="status" aria-live="polite" hidden></div>
 
   <div class="sheetOverlay" id="distPickOverlay">
     <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="distPickTitle">
@@ -8293,7 +8299,7 @@
     // ---------------------------------------------------------------
     // Аванс и зарплата: распределение плана по категориям и переводы из кэша
     // ---------------------------------------------------------------
-    var dist = { rows: [], adv: 0, sal: 0, batches: [], busy: false, dirty: false, saveTimer: null, armTimer: null, armed: false, pick: null };
+    var dist = { rows: [], adv: 0, sal: 0, batches: [], undoTimer: null, busy: false, dirty: false, saveTimer: null, armTimer: null, armed: false, pick: null };
 
     function fmt0(v) { return new Intl.NumberFormat('ru-RU', { maximumFractionDigits: 2 }).format(Number(v || 0)); }
     function r2(x) { return Math.round(Number(x || 0) * 100) / 100; }
@@ -8402,14 +8408,44 @@
           '<input class="dIn" type="number" min="0" step="100" inputmode="decimal" placeholder="0" data-c="' + id + '" data-k="sal" value="' + (r.sal > 0 ? r.sal : '') + '">' +
           '<div class="dDf" data-df="' + id + '"></div></div>';
       }).join('');
-      qs('distUndoWrap').hidden = !dist.batches.length;
-      if (dist.batches.length) {
-        var last = dist.batches[dist.batches.length - 1];
-        qs('distUndo').textContent = 'Отменить последнее (' + fmt0(last.total) + ' ₴)';
-      }
+      distUndoTick();
       qs('distError').textContent = '';
       if (!src) qs('distError').textContent = 'Не выбран счёт для распределения бюджета. Открой «Счета», нажми на Cash, карандаш и поставь галочку «Счёт для распределения бюджета».';
       distRecalc();
+    }
+
+    // Кнопка «Отменить формирование» живёт одну минуту после формирования, потом исчезает
+    var DIST_UNDO_MS = 60000;
+    function distUndoLeft() {
+      if (!dist.batches.length) return 0;
+      var t = Date.parse(dist.batches[dist.batches.length - 1].at);
+      return isFinite(t) ? Math.max(0, t + DIST_UNDO_MS - Date.now()) : 0;
+    }
+    function distUndoTick() {
+      if (dist.undoTimer) { clearInterval(dist.undoTimer); dist.undoTimer = null; }
+      function paint() {
+        var left = distUndoLeft();
+        qs('distUndoWrap').hidden = left <= 0;
+        if (left <= 0) { if (dist.undoTimer) { clearInterval(dist.undoTimer); dist.undoTimer = null; } return; }
+        var sec = Math.ceil(left / 1000);
+        qs('distUndo').textContent = 'Отменить формирование (' + Math.floor(sec / 60) + ':' + (sec % 60 < 10 ? '0' : '') + (sec % 60) + ')';
+      }
+      paint();
+      if (distUndoLeft() > 0) dist.undoTimer = setInterval(paint, 1000);
+    }
+
+    // Зелёное всплывающее сообщение сверху
+    var distToastTimer = null;
+    function distToast(text) {
+      var el = qs('distToast');
+      el.textContent = text;
+      el.classList.remove('out');
+      el.hidden = false;
+      if (distToastTimer) clearTimeout(distToastTimer);
+      distToastTimer = setTimeout(function () {
+        el.classList.add('out');
+        distToastTimer = setTimeout(function () { el.hidden = true; el.classList.remove('out'); }, 380);
+      }, 2800);
     }
 
     function distRecalc() {
@@ -8467,7 +8503,6 @@
 
     function distScheduleSave() {
       dist.dirty = true;
-      qs('distSave').textContent = 'Сохранить';
       if (dist.saveTimer) clearTimeout(dist.saveTimer);
       dist.saveTimer = setTimeout(function () { distSave(true); }, 1200);
     }
@@ -8475,7 +8510,6 @@
     async function distSave(silent) {
       if (dist.saveTimer) { clearTimeout(dist.saveTimer); dist.saveTimer = null; }
       var month = budMonthKey();
-      var btn = qs('distSave');
       try {
         var up = [], del = [];
         dist.rows.forEach(function (r) {
@@ -8493,7 +8527,6 @@
         var m = await sb.from('budget_distribution_month').upsert({ month: month, advance_total: dist.adv, salary_total: dist.sal }, { onConflict: 'month' });
         if (m.error) throw m.error;
         dist.dirty = false;
-        btn.textContent = 'Сохранено ✓';
         refreshDistTile();
         return true;
       } catch (err) {
@@ -8563,12 +8596,12 @@
 
     async function closeDist() {
       if (dist.dirty) await distSave(true);
+      if (dist.undoTimer) { clearInterval(dist.undoTimer); dist.undoTimer = null; }
       qs('distOverlay').classList.remove('open');
       refreshDistTile();
     }
     qs('distClose').addEventListener('click', closeDist);
     qs('distOverlay').addEventListener('click', function (e) { if (e.target === qs('distOverlay')) closeDist(); });
-    qs('distSave').addEventListener('click', function () { distSave(false); });
 
     // ----- окно «Сформировать»: переводы на то, что распределено, но ещё не переведено
     function distGroups() {
@@ -8655,8 +8688,7 @@
         renderDist();
         refreshAfterChange();
         refreshDistTile();
-        qs('distSave').textContent = 'Сохранено ✓';
-        qs('budMsg').textContent = 'Сформировано ' + fmt0(g.total) + ' ₴: создано переводов ' + ids.length + '.';
+        distToast('Сформировано ' + fmt0(g.total) + ' ₴. Данные сохранены ✓');
       } catch (err) {
         console.error('[ACCOUNTING][DIST_FORM]', err);
         qs('distFormError').textContent = 'Не удалось сформировать: ' + budError(err);
@@ -8667,22 +8699,9 @@
       }
     }
 
-    function disarmDistUndo() {
-      dist.armed = false;
-      if (dist.armTimer) { clearTimeout(dist.armTimer); dist.armTimer = null; }
-      qs('distUndo').classList.remove('dangerSolid');
-      if (dist.batches.length) qs('distUndo').textContent = 'Отменить последнее (' + fmt0(dist.batches[dist.batches.length - 1].total) + ' ₴)';
-    }
-
     async function doDistUndo() {
       if (dist.busy || !dist.batches.length) return;
-      if (!dist.armed) {
-        dist.armed = true;
-        qs('distUndo').textContent = 'Нажми ещё раз: переводы удалятся';
-        qs('distUndo').classList.add('dangerSolid');
-        dist.armTimer = setTimeout(disarmDistUndo, 4000);
-        return;
-      }
+      if (distUndoLeft() <= 0) { distUndoTick(); return; }
       dist.busy = true;
       qs('distUndo').disabled = true;
       try {
@@ -8696,14 +8715,12 @@
           { month: budMonthKey(), advance_total: dist.adv, salary_total: dist.sal, batches: rest }, { onConflict: 'month' });
         if (mu.error) throw mu.error;
         dist.batches = rest;
-        disarmDistUndo();
         renderDist();
         refreshAfterChange();
         refreshDistTile();
-        qs('budMsg').textContent = 'Последнее формирование отменено: переводы удалены.';
+        distToast('Формирование отменено. Данные сохранены, всё вернулось как было ✓');
       } catch (err) {
         console.error('[ACCOUNTING][DIST_UNDO]', err);
-        disarmDistUndo();
         qs('distError').textContent = 'Не удалось отменить: ' + budError(err);
       } finally {
         dist.busy = false;
@@ -10493,7 +10510,7 @@
     // «Ещё»: сводка и переходы
     // ---------------------------------------------------------------
     var APP_VERSION = '2.7';
-    var APP_BUILD = '20261025-0130';
+    var APP_BUILD = '20261025-0150';
 
     // Проверка новой версии: читаем свежий index.html с сервера и сравниваем номер сборки.
     // Если сборка новее, на главном экране появляется уведомление с кнопкой «обновить».
