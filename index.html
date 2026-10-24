@@ -4933,27 +4933,28 @@
     #editOverlay{z-index:1800!important}
     #editOverlay .sheet{--k1:#6B93FF;--k2:#2747E0;--kt:#EAF0FF;--ke:#B5C8F0;
       background:linear-gradient(180deg,var(--kt) 0,#fff 150px)!important;border:1px solid var(--ke);box-shadow:0 -14px 40px rgba(30,50,120,.28)!important}
-    #editOverlay[data-kind=EXPENSE] .sheet{--k1:#FF7A6B;--k2:#E5383B;--kt:#FFEDEA;--ke:#FFC5BE}
-    #editOverlay[data-kind=INCOME] .sheet{--k1:#3FD67F;--k2:#14A150;--kt:#E6F9EE;--ke:#AEE7C5}
-    #editOverlay[data-kind=RETURN] .sheet{--k1:#3CC4DB;--k2:#0E8FA8;--kt:#E3F7FB;--ke:#A9E3EE}
+    /* v2.6: все виды операции в одном цвете (различаются значком в заголовке и названием вкладки) */
+    #editOverlay[data-kind=EXPENSE] .sheet,
+    #editOverlay[data-kind=INCOME] .sheet,
+    #editOverlay[data-kind=RETURN] .sheet,
     #editOverlay[data-kind=TRANSFER] .sheet{--k1:#6B93FF;--k2:#2747E0;--kt:#EAF0FF;--ke:#B5C8F0}
     #editOverlay .sheetHeader{margin:0 0 10px;padding:4px 2px 12px;border-radius:0;background:none;box-shadow:none;
       border-bottom:2px solid transparent;border-image:linear-gradient(90deg,var(--k2),transparent) 1}
     #editOverlay .sheetTitle{display:flex;align-items:center;gap:12px;color:#1B2547;font-size:19px;font-weight:800;letter-spacing:-.02em}
     #editOverlay .sheetTitle::before{content:"\2212";display:grid;place-items:center;flex:0 0 36px;width:36px;height:36px;border-radius:12px;
-      background:linear-gradient(135deg,var(--k1),var(--k2));color:#fff;font-size:22px;font-weight:700;line-height:1;box-shadow:0 5px 12px rgba(0,0,0,.20)}
+      background:linear-gradient(135deg,var(--k1),var(--k2));color:#fff;font-size:22px;font-weight:700;line-height:1;box-shadow:0 5px 12px rgba(39,71,224,.28)}
     #editOverlay[data-kind=INCOME] .sheetTitle::before{content:"+"}
     #editOverlay[data-kind=RETURN] .sheetTitle::before{content:"\21A9";font-size:19px}
     #editOverlay[data-kind=TRANSFER] .sheetTitle::before{content:"\21C4";font-size:19px}
     #editOverlay .xbtn{background:#fff!important;color:var(--k2)!important;border:1.5px solid var(--ke);box-shadow:0 2px 6px rgba(30,50,120,.10)}
     #editOverlay .seg{background:rgba(255,255,255,.75)!important;border:1px solid var(--ke)}
     #editOverlay .seg button.active,#editOverlay #txSeg.txCrudSeg button.active{background:linear-gradient(135deg,var(--k1),var(--k2))!important;color:#fff!important;
-      box-shadow:0 5px 12px rgba(0,0,0,.25)!important}
+      box-shadow:0 5px 12px rgba(39,71,224,.30)!important}
     #editOverlay .label{color:var(--k2);font-weight:700;text-transform:uppercase;font-size:11px;letter-spacing:.05em}
     #editOverlay .input,#editOverlay .select,#editOverlay .textarea{background:#fff!important;border:1.5px solid var(--ke)!important;border-radius:13px;
       box-shadow:0 2px 6px rgba(30,50,120,.06)}
     #editOverlay .input:focus,#editOverlay .select:focus,#editOverlay .textarea:focus{border-color:var(--k2)!important;box-shadow:0 0 0 4px rgba(0,0,0,.07)!important}
-    #editOverlay #editSave{background:linear-gradient(135deg,var(--k1),var(--k2))!important;box-shadow:0 8px 18px rgba(0,0,0,.25)!important}
+    #editOverlay #editSave{background:linear-gradient(135deg,var(--k1),var(--k2))!important;box-shadow:0 8px 18px rgba(39,71,224,.30)!important}
     #editOverlay .checkRow{background:#fff;border:1px solid var(--ke);border-radius:13px;padding:10px 12px}
     #editOverlay .editSummary{background:#fff;border:1px solid var(--ke);border-radius:14px;box-shadow:0 4px 12px rgba(30,50,120,.08)}
 
@@ -4989,6 +4990,11 @@
     #editOverlay .input:focus,#editOverlay .select:focus,#editOverlay .textarea:focus{border-color:#9DB0DE!important;box-shadow:0 0 0 3px rgba(60,90,170,.10)!important}
     #editOverlay .checkRow{border:1px solid #E1E8F5!important;background:#fff!important}
     #editOverlay .editSummary{border-color:#E1E8F5!important;box-shadow:none!important}
+    #editOverlay .sheet:has(#txSeg:not([hidden])){min-height:min(790px,92dvh);display:flex;flex-direction:column}
+    #editOverlay .sheet:has(#txSeg:not([hidden]))>*{flex-shrink:0}
+    #editOverlay .sheet:has(#txSeg:not([hidden])) #editButtons{margin-top:auto}
+    #editOverlay .row2>.field{min-width:0}
+    #editOverlay input[type=date]{min-width:0;width:100%;max-width:100%;box-sizing:border-box}
     #editOverlay #txAmount{font-size:18px!important;font-weight:600!important}
     #editOverlay #txAmount.amtBad{background:#FFF6F6!important;border-color:#F4C7C7!important;color:#C77272!important;box-shadow:none!important}
     #editOverlay #txAmount.amtBad::placeholder{color:#E0A3A3!important;opacity:1}
@@ -8981,7 +8987,7 @@
     // «Ещё»: сводка и переходы
     // ---------------------------------------------------------------
     var APP_VERSION = '2.5';
-    var APP_BUILD = '20261024-1825';
+    var APP_BUILD = '20261024-1840';
     var moreReq = 0;
 
     function escHtml(v) {
