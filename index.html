@@ -5156,6 +5156,22 @@
     .budOpsList .txDayHead{padding:5px 2px 0}
     .budOpsEmpty{padding:16px;text-align:center;font-size:13px;color:#4A5A86}
 
+      /* ===== Анимации входа (как в My CAR): появление страницы, подъезд карточек, отклик на нажатие ===== */
+    @keyframes pgin{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+    @keyframes cardin{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+    .page.active{animation:pgin .25s ease-out}
+    .page.active > *:not(.saldoDashShell),.page.active > .saldoDashShell > *{animation:cardin .35s cubic-bezier(.22,1,.36,1) backwards}
+    .page.active > *:nth-child(2),.page.active > .saldoDashShell > *:nth-child(2){animation-delay:.04s}
+    .page.active > *:nth-child(3),.page.active > .saldoDashShell > *:nth-child(3){animation-delay:.08s}
+    .page.active > *:nth-child(4),.page.active > .saldoDashShell > *:nth-child(4){animation-delay:.12s}
+    .page.active > *:nth-child(5),.page.active > .saldoDashShell > *:nth-child(5){animation-delay:.16s}
+    .page.active > *:nth-child(6),.page.active > .saldoDashShell > *:nth-child(6){animation-delay:.20s}
+    .page.active > *:nth-child(7),.page.active > .saldoDashShell > *:nth-child(7){animation-delay:.24s}
+    .page.active > *:nth-child(n+8),.page.active > .saldoDashShell > *:nth-child(n+8){animation-delay:.28s}
+    .tab{transition:transform .12s ease}
+    @media (prefers-reduced-motion:reduce){
+      .page.active,.page.active > *,.page.active > .saldoDashShell > *{animation:none!important}
+    }
   </style>
 </head>
 
@@ -10510,8 +10526,8 @@
     // ---------------------------------------------------------------
     // «Ещё»: сводка и переходы
     // ---------------------------------------------------------------
-    var APP_VERSION = '2.7';
-    var APP_BUILD = '20261025-0210';
+    var APP_VERSION = '2.7.1';
+    var APP_BUILD = '20261102-1545';
 
     // Проверка новой версии: читаем свежий index.html с сервера и сравниваем номер сборки.
     // Если сборка новее, на главном экране появляется уведомление с кнопкой «обновить».
@@ -12112,6 +12128,7 @@
 
     document.querySelectorAll('.tab').forEach(function (tab) {
       tab.addEventListener('click', function () {
+        try { if (navigator.vibrate && !matchMedia('(prefers-reduced-motion: reduce)').matches) navigator.vibrate(8); } catch (e) {}
         setPage(tab.getAttribute('data-page'));
       });
     });
