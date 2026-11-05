@@ -4611,9 +4611,13 @@
     .splitRow input{width:88px;height:44px;box-sizing:border-box;border-radius:12px;border:1.5px solid var(--sc);background:#fff;text-align:right;padding:0 10px;font:inherit;font-size:16px;font-weight:800;color:#101b45}
     .splitRow .splitDel{width:36px;height:44px;border:0;background:transparent;padding:0;color:#7a86a8;font-size:20px;cursor:pointer}
     .splitAdd{width:100%;height:44px;border:0;border-radius:16px;background:#eaf0ff;color:#2747e0;font:inherit;font-size:14px;font-weight:700;cursor:pointer}
-    .splitBar{display:flex;height:8px;border-radius:4px;overflow:hidden;background:#dfe3f1;margin-top:10px}
-    .splitSum{margin-top:6px;display:flex;justify-content:space-between;gap:8px;font-size:12px;color:#27325a}
-    .splitSum b.ok{color:#1b7a4b}.splitSum b.bad{color:#b4531a}
+    .splitTotal{margin:14px 0 18px;padding:12px 14px;border-radius:16px;background:#f3f6fd}
+    .splitBar{display:flex;height:8px;border-radius:4px;overflow:hidden;background:#dfe3f1}
+    .splitSum{margin-top:10px;display:flex;align-items:center;justify-content:space-between;gap:8px}
+    .splitSumLabel{font-size:12px;color:#5b6a90}
+    .splitSum b{font-size:16px;font-weight:800;color:#101b45}
+    .splitState{display:inline-flex;align-items:center;height:26px;padding:0 10px;border-radius:13px;font-size:12px;font-weight:700;white-space:nowrap}
+    .splitState.ok{background:#d9f0e3;color:#1b6e42}.splitState.bad{background:#fde9d3;color:#a8480f}
     .saldoTxIcon.isSplit,.saldoAccountHistoryTxIcon.isSplit{background:#fff!important;border:1.5px solid #c6d2f0;box-sizing:border-box}
     .checkRow input{width:20px;height:20px;margin:1px 0 0;flex:0 0 auto}
     #editHint{margin:8px 4px 0}
@@ -5986,8 +5990,13 @@
         </div>
         <div id="splitRows"></div>
         <button type="button" class="splitAdd" id="splitAdd">+ Добавить категорию</button>
-        <div class="splitBar" id="splitBar"></div>
-        <div class="splitSum"><span id="splitSumText"></span><b id="splitSumState"></b></div>
+        <div class="splitTotal">
+          <div class="splitBar" id="splitBar"></div>
+          <div class="splitSum">
+            <div><span class="splitSumLabel">Итого</span> <b id="splitSumText"></b></div>
+            <span class="splitState" id="splitSumState"></span>
+          </div>
+        </div>
       </div>
 
       <div class="field" id="fieldCurrency">
@@ -7111,11 +7120,11 @@
         seg.style.background = SPLIT_COLORS[i % SPLIT_COLORS.length][0];
         bar.appendChild(seg);
       });
-      qs('splitSumText').textContent = sums.map(splitFmt).join(' + ') + ' = ' + splitFmt(sum) + ' из ' + splitFmt(total) + ' ₴';
+      qs('splitSumText').textContent = splitFmt(total) + ' ₴';
       var st = qs('splitSumState');
-      if (left === 0) { st.textContent = '✓ осталось 0'; st.className = 'ok'; }
-      else if (left > 0) { st.textContent = 'осталось ' + splitFmt(left); st.className = 'bad'; }
-      else { st.textContent = 'лишние ' + splitFmt(-left); st.className = 'bad'; }
+      if (left === 0) { st.textContent = '✓ Сумма сходится'; st.className = 'splitState ok'; }
+      else if (left > 0) { st.textContent = 'Не хватает ' + splitFmt(left) + ' ₴'; st.className = 'splitState bad'; }
+      else { st.textContent = 'Лишние ' + splitFmt(-left) + ' ₴'; st.className = 'splitState bad'; }
     }
 
     // Меняешь сумму части: другая часть сама подстраивается, чтобы итог остался равен сумме операции.
