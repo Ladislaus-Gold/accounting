@@ -5080,6 +5080,9 @@
     /* Аванс и зарплата */
     #distOverlay{z-index:1500 !important}#distFormOverlay{z-index:1510 !important}#distPickOverlay{z-index:1520 !important}
     #distOverlay .sheet{max-height:94vh;overflow-y:auto}
+    /* Окно закрывается свайпом вниз; крестик остаётся только там, где нет касаний (компьютер) */
+    #distClose{display:none}
+    @media (hover:hover) and (pointer:fine){#distClose{display:grid}}
     .distSrcs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:12px}
     .distSrc{border-radius:16px;background:#F3F6FC;padding:10px;min-width:0}
     .distSrc.auto{background:#EEF6F0}
@@ -8684,6 +8687,55 @@
     }
     qs('distClose').addEventListener('click', closeDist);
     qs('distOverlay').addEventListener('click', function (e) { if (e.target === qs('distOverlay')) closeDist(); });
+
+    // Закрытие свайпом вниз: потяни за ручку, заголовок или вводный текст
+    (function () {
+      var overlay = qs('distOverlay');
+      var sheet = overlay.querySelector('.sheet');
+      var st = null;
+      function reset() { sheet.style.transition = ''; sheet.style.transform = ''; overlay.style.background = ''; }
+      sheet.addEventListener('touchstart', function (e) {
+        if (e.touches.length !== 1 || dist.busy) return;
+        var t = e.touches[0];
+        var inHandle = sheet.scrollTop <= 0 && t.clientY - sheet.getBoundingClientRect().top < 28;
+        if (!inHandle && !e.target.closest('.sheetHeader, #distMeta')) return;
+        st = { x: t.clientX, y: t.clientY, t: Date.now(), dy: 0, drag: false };
+      }, { passive: true });
+      sheet.addEventListener('touchmove', function (e) {
+        if (!st) return;
+        var t = e.touches[0];
+        var dx = t.clientX - st.x, dy = t.clientY - st.y;
+        if (!st.drag) {
+          if (Math.abs(dx) > 10 && Math.abs(dx) > Math.abs(dy)) { st = null; return; }
+          if (dy < 0 && Math.abs(dy) > 10) { st = null; return; }
+          if (dy < 8) return;
+          st.drag = true;
+          sheet.style.transition = 'none';
+        }
+        e.preventDefault();
+        st.dy = Math.max(0, dy);
+        sheet.style.transform = 'translateY(' + st.dy + 'px)';
+        overlay.style.background = 'rgba(0,0,0,' + (0.35 * (1 - Math.min(1, st.dy / Math.max(1, sheet.offsetHeight)))) + ')';
+      }, { passive: false });
+      function end() {
+        if (!st) return;
+        var s = st;
+        st = null;
+        if (!s.drag) return;
+        var v = s.dy / Math.max(1, Date.now() - s.t);
+        sheet.style.transition = 'transform .2s ease';
+        if (s.dy > 110 || (s.dy > 40 && v > 0.5)) {
+          sheet.style.transform = 'translateY(' + sheet.offsetHeight + 'px)';
+          setTimeout(function () { closeDist().then(reset, reset); }, 200);
+        } else {
+          sheet.style.transform = '';
+          overlay.style.background = '';
+          setTimeout(function () { sheet.style.transition = ''; }, 220);
+        }
+      }
+      sheet.addEventListener('touchend', end);
+      sheet.addEventListener('touchcancel', end);
+    })();
 
     // ----- окно «Сформировать»: переводы на то, что распределено, но ещё не переведено
     function distGroups() {
