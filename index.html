@@ -7118,11 +7118,26 @@
       else { st.textContent = 'лишние ' + splitFmt(-left); st.className = 'bad'; }
     }
 
+    // Меняешь сумму части: другая часть сама подстраивается, чтобы итог остался равен сумме операции.
+    // Правишь часть 2, 3...: уменьшается (растёт) часть 1. Правишь часть 1: подстраивается последняя.
+    function splitBalance(edited, inputs) {
+      var parts = form.split;
+      var total = splitTotalCents();
+      if (!parts || parts.length < 2 || !total) return;
+      var target = edited === 0 ? parts.length - 1 : 0;
+      var others = 0;
+      parts.forEach(function (p, j) { if (j !== target) others += splitPartCents(p); });
+      var rest = Math.max(0, total - others);
+      parts[target].amt = String(rest / 100);
+      if (inputs && inputs[target]) inputs[target].value = parts[target].amt;
+    }
+
     function splitRender() {
       var box = qs('splitRows');
       box.innerHTML = '';
       if (!form.split) return;
       var type = form.action === 'INCOME' ? 'INCOME' : 'EXPENSE';
+      var inputs = [];
       form.split.forEach(function (p, i) {
         var col = SPLIT_COLORS[i % SPLIT_COLORS.length];
         var row = document.createElement('div');
@@ -7151,7 +7166,12 @@
         inp.placeholder = '0,00';
         inp.value = p.amt;
         inp.setAttribute('aria-label', 'Сумма, часть ' + (i + 1));
-        inp.addEventListener('input', function () { p.amt = inp.value; splitSync(); });
+        inputs.push(inp);
+        inp.addEventListener('input', function () {
+          p.amt = inp.value;
+          splitBalance(i, inputs);
+          splitSync();
+        });
         row.append(num, sel, inp);
         if (form.split.length > 2) {
           var del = document.createElement('button');
