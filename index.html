@@ -4599,6 +4599,22 @@
     .editAmount.income{color:var(--green)}
     .editMeta{margin-top:4px;font-size:13px;color:var(--muted);line-height:1.4}
     .checkRow{display:flex;align-items:flex-start;gap:10px;margin:12px 4px 4px;font-size:14px;line-height:1.35;cursor:pointer}
+    /* Разделение операции на несколько категорий */
+    .splitLink{display:flex;align-items:center;gap:8px;min-height:44px;margin:2px 0;padding:0 2px;border:0;background:transparent;font:inherit;font-size:14px;font-weight:700;color:#2747e0;cursor:pointer}
+    .splitLink .splitPlus{width:22px;height:22px;border-radius:11px;background:#dbe4fb;display:flex;align-items:center;justify-content:center;font-size:16px;line-height:1}
+    .splitHead{display:flex;align-items:center;justify-content:space-between;margin-top:8px}
+    .splitHead .label{margin:0}
+    .splitOff{border:0;background:transparent;min-height:40px;padding:0 0 0 8px;font:inherit;font-size:13px;font-weight:700;color:#2747e0;cursor:pointer}
+    .splitRow{display:flex;align-items:center;gap:8px;border:1.5px solid var(--sc);border-radius:16px;padding:4px 4px 4px 12px;background:var(--sb);margin-bottom:8px}
+    .splitNum{width:22px;height:22px;border-radius:11px;background:var(--sc);color:#fff;font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center;flex:none}
+    .splitRow select{flex:1;min-width:0;height:44px;border:0;background:transparent;font:inherit;font-size:15px;font-weight:600;color:#101b45}
+    .splitRow input{width:88px;height:44px;box-sizing:border-box;border-radius:12px;border:1.5px solid var(--sc);background:#fff;text-align:right;padding:0 10px;font:inherit;font-size:16px;font-weight:800;color:#101b45}
+    .splitRow .splitDel{width:36px;height:44px;border:0;background:transparent;padding:0;color:#7a86a8;font-size:20px;cursor:pointer}
+    .splitAdd{width:100%;height:44px;border:0;border-radius:16px;background:#eaf0ff;color:#2747e0;font:inherit;font-size:14px;font-weight:700;cursor:pointer}
+    .splitBar{display:flex;height:8px;border-radius:4px;overflow:hidden;background:#dfe3f1;margin-top:10px}
+    .splitSum{margin-top:6px;display:flex;justify-content:space-between;gap:8px;font-size:12px;color:#27325a}
+    .splitSum b.ok{color:#1b7a4b}.splitSum b.bad{color:#b4531a}
+    .saldoTxIcon.isSplit,.saldoAccountHistoryTxIcon.isSplit{background:#fff!important;border:1.5px solid #c6d2f0;box-sizing:border-box}
     .checkRow input{width:20px;height:20px;margin:1px 0 0;flex:0 0 auto}
     #editHint{margin:8px 4px 0}
     .opsHeadRight{display:flex;align-items:flex-start;gap:10px}
@@ -5960,6 +5976,20 @@
         <select class="select" id="editCategory"></select>
       </div>
 
+      <button type="button" class="splitLink" id="splitLink" hidden>
+        <span class="splitPlus">+</span>Разделить на несколько категорий
+      </button>
+      <div id="splitBox" hidden>
+        <div class="splitHead">
+          <div class="label" id="splitTitle">Категории операции</div>
+          <button type="button" class="splitOff" id="splitOff">Не делить</button>
+        </div>
+        <div id="splitRows"></div>
+        <button type="button" class="splitAdd" id="splitAdd">+ Добавить категорию</button>
+        <div class="splitBar" id="splitBar"></div>
+        <div class="splitSum"><span id="splitSumText"></span><b id="splitSumState"></b></div>
+      </div>
+
       <div class="field" id="fieldCurrency">
         <div class="label">Валюта</div>
         <select class="select" id="txCurrency">
@@ -6598,6 +6628,59 @@
     // ---------------------------------------------------------------
     var refs = { categories: [], accounts: [], catById: {}, accById: {}, loaded: false };
 
+    // Части операций, разделённых на несколько категорий (таблица transaction_splits)
+    var splits = { map: {}, ready: true };
+    var SPLIT_COLORS = [
+      ['#2747e0', '#f6f9ff', '#c6d2f0'], ['#2f8f5b', '#f3faf5', '#bfdcc9'], ['#c9731a', '#fff8ee', '#f0d3ae'],
+      ['#b03a8c', '#fdf4fa', '#e6c3da'], ['#0f8a9d', '#f1fafb', '#bde0e6'], ['#7a5af8', '#f6f3ff', '#d6cbfb']
+    ];
+
+    async function loadSplits() {
+      try {
+        var r = await sb.from('transaction_splits').select('transaction_id,category_id,amount,sort_order').order('sort_order');
+        if (r.error) throw r.error;
+        splits.map = {};
+        (r.data || []).forEach(function (p) {
+          (splits.map[p.transaction_id] = splits.map[p.transaction_id] || []).push(
+            { category_id: p.category_id, amount: Number(p.amount) });
+        });
+        splits.ready = true;
+      } catch (err) {
+        // Таблицы ещё нет (не запущен transaction_splits.sql): приложение работает как раньше
+        splits.map = {};
+        splits.ready = false;
+      }
+    }
+
+    function splitIconSvg(size) {
+      return '<svg width="' + size + '" height="' + size + '" viewBox="0 0 24 24" fill="none" aria-hidden="true">' +
+        '<g transform="rotate(-90 12 12)" stroke-width="5.5" fill="none">' +
+        '<circle cx="12" cy="12" r="8" stroke="#2747e0" stroke-dasharray="21.1 50.27"/>' +
+        '<circle cx="12" cy="12" r="8" stroke="#2f8f5b" stroke-dasharray="15.1 50.27" stroke-dashoffset="-22.6"/>' +
+        '<circle cx="12" cy="12" r="8" stroke="#c9731a" stroke-dasharray="9.6 50.27" stroke-dashoffset="-39.2"/></g></svg>';
+    }
+
+    function setTxIcon(el, row) {
+      if (splits.map[row.id]) {
+        el.classList.add('isSplit');
+        el.innerHTML = splitIconSvg(24);
+      } else {
+        el.textContent = txIcon(row);
+      }
+    }
+
+    function splitMetaText(row) {
+      var parts = splits.map[row.id];
+      if (!parts) return '';
+      var n = parts.length;
+      var word = (n % 10 >= 2 && n % 10 <= 4 && (n < 12 || n > 14)) ? 'категории' : 'категорий';
+      var names = parts.map(function (p) {
+        var c = refs.catById[p.category_id];
+        return c ? c.name.replace(/\s*\p{Extended_Pictographic}\uFE0F?\s*/gu, ' ').trim() : '?';
+      });
+      return n + ' ' + word + ': ' + names.join(', ');
+    }
+
     async function loadRefs() {
       // Признаки категорий (обязательная, разовая) лежат в колонках is_mandatory и spend_mode.
       // Если колонок ещё нет (не запущен budget_flags.sql), читаем без них, приложение работает как раньше.
@@ -6635,6 +6718,7 @@
       refs.categories.forEach(function (c) { refs.catById[c.id] = c; });
       refs.accounts.forEach(function (a) { refs.accById[a.id] = a; });
       refs.loaded = true;
+      await loadSplits();
 
       fillCategoryFilter();
     }
@@ -6702,6 +6786,7 @@
 
     function txTitle(row) {
       if (row.action === 'TRANSFER') return 'Перевод';
+      if (splits.map[row.id]) return cleanNote(row.note) || 'Несколько категорий';
       return catName(row) || '(без категории)';
     }
 
@@ -6884,7 +6969,7 @@
 
           var iconWrap = document.createElement('span');
           iconWrap.className = 'saldoTxIcon ' + String(row.action || '').toLowerCase();
-          iconWrap.textContent = txIcon(row);
+          setTxIcon(iconWrap, row);
 
           var left = document.createElement('div');
           left.className = 'txLeft';
@@ -6893,7 +6978,9 @@
           title.textContent = txTitle(row);
           var meta = document.createElement('div');
           meta.className = 'txMeta';
-          meta.textContent = [accText(row), cleanNote(row.note)].filter(Boolean).join(' · ');
+          meta.textContent = splits.map[row.id]
+            ? [splitMetaText(row), accText(row)].filter(Boolean).join(' · ')
+            : [accText(row), cleanNote(row.note)].filter(Boolean).join(' · ');
           left.append(title, meta);
 
           var right = document.createElement('div');
@@ -6979,6 +7066,134 @@
       if (select.value !== want) select.value = '';
     }
 
+    // ---- разделение на категории в окне операции
+    function splitTotalCents() {
+      var v;
+      if (form.mode === 'bank' && form.row) v = Math.abs(Number(form.row.amount || 0));
+      else v = Number(String(qs('txAmount').value).replace(',', '.'));
+      return Math.round((isFinite(v) ? v : 0) * 100);
+    }
+
+    function splitFmt(cents) {
+      return new Intl.NumberFormat('ru-RU', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(cents / 100);
+    }
+
+    function splitPartCents(p) {
+      var v = Number(String(p.amt).replace(',', '.'));
+      return isFinite(v) && v > 0 ? Math.round(v * 100) : 0;
+    }
+
+    function splitError() {
+      var parts = form.split;
+      if (!parts || parts.length < 2) return 'Добавь минимум две категории.';
+      for (var i = 0; i < parts.length; i++) {
+        if (!parts[i].cat) return 'Выбери категорию в части ' + (i + 1) + '.';
+        if (!splitPartCents(parts[i])) return 'Введи сумму больше нуля в части ' + (i + 1) + '.';
+      }
+      var total = splitTotalCents();
+      var sum = parts.reduce(function (a, p) { return a + splitPartCents(p); }, 0);
+      if (sum !== total) return 'Сумма частей ' + splitFmt(sum) + ' должна равняться ' + splitFmt(total) + '.';
+      return '';
+    }
+
+    function splitSync() {
+      if (!form.split) return;
+      var total = splitTotalCents();
+      var sums = form.split.map(splitPartCents);
+      var sum = sums.reduce(function (a, b) { return a + b; }, 0);
+      var left = total - sum;
+      qs('splitTitle').textContent = 'Категории операции · ' + form.split.length;
+      var bar = qs('splitBar');
+      bar.innerHTML = '';
+      sums.forEach(function (c, i) {
+        var seg = document.createElement('div');
+        seg.style.width = (total > 0 ? Math.min(100, c / total * 100) : 0) + '%';
+        seg.style.background = SPLIT_COLORS[i % SPLIT_COLORS.length][0];
+        bar.appendChild(seg);
+      });
+      qs('splitSumText').textContent = sums.map(splitFmt).join(' + ') + ' = ' + splitFmt(sum) + ' из ' + splitFmt(total) + ' ₴';
+      var st = qs('splitSumState');
+      if (left === 0) { st.textContent = '✓ осталось 0'; st.className = 'ok'; }
+      else if (left > 0) { st.textContent = 'осталось ' + splitFmt(left); st.className = 'bad'; }
+      else { st.textContent = 'лишние ' + splitFmt(-left); st.className = 'bad'; }
+    }
+
+    function splitRender() {
+      var box = qs('splitRows');
+      box.innerHTML = '';
+      if (!form.split) return;
+      var type = form.action === 'INCOME' ? 'INCOME' : 'EXPENSE';
+      form.split.forEach(function (p, i) {
+        var col = SPLIT_COLORS[i % SPLIT_COLORS.length];
+        var row = document.createElement('div');
+        row.className = 'splitRow';
+        row.style.setProperty('--sc', col[0]);
+        row.style.setProperty('--sb', col[1]);
+        row.style.borderColor = col[2];
+        var num = document.createElement('div');
+        num.className = 'splitNum';
+        num.textContent = String(i + 1);
+        var sel = document.createElement('select');
+        sel.setAttribute('aria-label', 'Категория, часть ' + (i + 1));
+        var ph = document.createElement('option');
+        ph.value = ''; ph.textContent = 'Выбери категорию';
+        sel.appendChild(ph);
+        categoriesOfType(type).forEach(function (c) {
+          var o = document.createElement('option');
+          o.value = String(c.id); o.textContent = c.name;
+          sel.appendChild(o);
+        });
+        sel.value = p.cat || '';
+        if (sel.value !== (p.cat || '')) { sel.value = ''; p.cat = ''; }
+        sel.addEventListener('change', function () { p.cat = sel.value; });
+        var inp = document.createElement('input');
+        inp.type = 'number'; inp.min = '0'; inp.step = '0.01'; inp.inputMode = 'decimal';
+        inp.placeholder = '0,00';
+        inp.value = p.amt;
+        inp.setAttribute('aria-label', 'Сумма, часть ' + (i + 1));
+        inp.addEventListener('input', function () { p.amt = inp.value; splitSync(); });
+        row.append(num, sel, inp);
+        if (form.split.length > 2) {
+          var del = document.createElement('button');
+          del.type = 'button'; del.className = 'splitDel'; del.textContent = '×';
+          del.setAttribute('aria-label', 'Убрать часть ' + (i + 1));
+          del.addEventListener('click', function () { form.split.splice(i, 1); splitRender(); });
+          row.appendChild(del);
+        }
+        box.appendChild(row);
+      });
+      splitSync();
+    }
+
+    function splitApply() {
+      var isTransfer = form.action === 'TRANSFER';
+      var can = splits.ready && form.mode !== 'create' && !isTransfer;
+      if (!can) form.split = null;
+      var on = !!form.split;
+      qs('splitLink').hidden = !can || on;
+      qs('splitBox').hidden = !on;
+      qs('fieldCategory').hidden = isTransfer || on;
+      qs('editRuleRow').hidden = isTransfer || on;
+      qs('editHint').textContent = on
+        ? 'Операция остаётся одной: сумма, дата и счёт не меняются. Бюджет считает её по частям.'
+        : (form.hint || '');
+      if (on) splitRender();
+    }
+
+    function splitStart() {
+      var total = splitTotalCents();
+      var existing = form.row && splits.map[form.row.id];
+      if (existing) {
+        form.split = existing.map(function (p) { return { cat: String(p.category_id), amt: String(p.amount) }; });
+      } else {
+        form.split = [
+          { cat: qs('editCategory').value || '', amt: total ? String(total / 100) : '' },
+          { cat: '', amt: '' }
+        ];
+      }
+      splitApply();
+    }
+
     function setFormAction(action) {
       form.action = action;
       var isTransfer = action === 'TRANSFER';
@@ -6998,6 +7213,7 @@
       qs('fieldTransfer').hidden = !full || !isTransfer;
       qs('fieldCategory').hidden = isTransfer;
       qs('editRuleRow').hidden = isTransfer;
+      splitApply();
     }
 
     // Сумма: красная, пока не введено число больше нуля; затем зелёная
@@ -7056,6 +7272,14 @@
       qs('editRule').checked = false;
       updateAmountState();
 
+      var existingSplit = row && splits.map[row.id];
+      form.split = existingSplit
+        ? existingSplit.map(function (p) { return { cat: String(p.category_id), amt: String(p.amount) }; })
+        : null;
+      form.hint = isBank
+        ? 'Банковская операция: сумма, дата и счёт защищены. Меняются только категория и заметка.'
+        : '';
+
       setFormAction(action);
 
       // Банковский перевод: категория не меняется
@@ -7064,6 +7288,7 @@
       qs('editHint').textContent = isBank
         ? 'Банковская операция: сумма, дата и счёт защищены. Меняются только категория и заметка.'
         : '';
+      splitApply();
 
       qs('editDeleteWrap').hidden = mode !== 'manual';
       qs('editDeleteConfirm').hidden = true;
@@ -7115,6 +7340,16 @@
       var err = '';
 
       var categoryId = qs('editCategory').value ? Number(qs('editCategory').value) : null;
+      var splitOn = !!form.split && !isTransfer;
+      if (splitOn) {
+        // Основная категория операции — категория самой крупной части
+        var big = null, bigC = -1;
+        form.split.forEach(function (p) {
+          var c = splitPartCents(p);
+          if (p.cat && c > bigC) { big = p; bigC = c; }
+        });
+        categoryId = big ? Number(big.cat) : null;
+      }
 
       if (!isBank) {
         var amount = Number(String(qs('txAmount').value).replace(',', '.'));
@@ -7144,16 +7379,21 @@
         } else if (!err) {
           var acc = qs('txAccount').value ? Number(qs('txAccount').value) : null;
           if (!acc) err = 'Выбери счёт.';
-          else if (!categoryId) err = 'Выбери категорию.';
+          else if (!categoryId && !splitOn) err = 'Выбери категорию.';
           out.account_id = acc;
           out.category_id = categoryId;
           out.from_account_id = null;
           out.to_account_id = null;
         }
       } else if (action !== 'TRANSFER') {
-        if (!categoryId) err = 'Выбери категорию.';
+        if (!categoryId && !splitOn) err = 'Выбери категорию.';
         out.category_id = categoryId;
       }
+
+      if (!err && splitOn) err = splitError();
+      out.splitParts = (!err && splitOn)
+        ? form.split.map(function (p) { return { category_id: Number(p.cat), amount: splitPartCents(p) / 100 }; })
+        : null;
 
       out.error = err;
       return out;
@@ -7168,7 +7408,7 @@
       if (data.error) { errorBox.textContent = data.error; return; }
 
       var isTransfer = form.action === 'TRANSFER';
-      var wantRule = qs('editRule').checked && !isTransfer;
+      var wantRule = qs('editRule').checked && !isTransfer && !form.split;
 
       if (wantRule) {
         var chosen = refs.catById[data.category_id];
@@ -7186,7 +7426,7 @@
 
       try {
         var payload = {};
-        Object.keys(data).forEach(function (k) { if (k !== 'error') payload[k] = data[k]; });
+        Object.keys(data).forEach(function (k) { if (k !== 'error' && k !== 'splitParts') payload[k] = data[k]; });
 
         if (form.mode === 'create') {
           var ins = await sb.from('transactions').insert(payload).select('id');
@@ -7196,6 +7436,23 @@
           var upd = await sb.from('transactions').update(payload).eq('id', form.row.id).select('id');
           if (upd.error) throw upd.error;
           if (!upd.data || !upd.data.length) throw new Error('Операция не найдена или нет доступа.');
+
+          // Части разделения: заменяем набор целиком
+          var txId = form.row.id;
+          var hadSplit = !!splits.map[txId];
+          if (splits.ready && (data.splitParts || hadSplit)) {
+            var del = await sb.from('transaction_splits').delete().eq('transaction_id', txId);
+            if (del.error) throw del.error;
+            if (data.splitParts) {
+              var insParts = await sb.from('transaction_splits').insert(data.splitParts.map(function (p, i) {
+                return { transaction_id: txId, category_id: p.category_id, amount: p.amount, sort_order: i };
+              }));
+              if (insParts.error) throw insParts.error;
+              splits.map[txId] = data.splitParts;
+            } else {
+              delete splits.map[txId];
+            }
+          }
         }
 
         if (wantRule) {
@@ -7264,6 +7521,15 @@
     });
 
     qs('txMore').addEventListener('click', function () { loadTransactions(true); });
+
+    qs('splitLink').addEventListener('click', splitStart);
+    qs('splitOff').addEventListener('click', function () { form.split = null; splitApply(); });
+    qs('splitAdd').addEventListener('click', function () {
+      if (!form.split) return;
+      form.split.push({ cat: '', amt: '' });
+      splitRender();
+    });
+    qs('txAmount').addEventListener('input', splitSync);
 
     qs('opsSearchInput').addEventListener('input', function () {
       tx.search = qs('opsSearchInput').value;
@@ -9499,7 +9765,7 @@
 
           var icon = document.createElement('span');
           icon.className = 'saldoAccountHistoryTxIcon ' + String(row.action || '').toLowerCase();
-          icon.textContent = txIcon(row);
+          setTxIcon(icon, row);
 
           var center = document.createElement('span');
           center.className = 'saldoAccountHistoryTxCenter';
@@ -9509,7 +9775,7 @@
           var route = row.action === 'TRANSFER'
             ? (accName(row.from_account_id) || '?') + ' → ' + (accName(row.to_account_id) || '?')
             : cleanNote(row.note);
-          meta.textContent = [ACTION_LABEL[row.action] || row.action, route].filter(Boolean).join(' · ');
+          meta.textContent = [ACTION_LABEL[row.action] || row.action, splitMetaText(row), splits.map[row.id] ? '' : route].filter(Boolean).join(' · ');
           center.append(title, meta);
 
           var right = document.createElement('span');
