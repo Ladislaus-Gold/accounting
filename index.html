@@ -5080,20 +5080,27 @@
     /* Аванс и зарплата */
     #distOverlay{z-index:1500 !important}#distFormOverlay{z-index:1510 !important}#distPickOverlay{z-index:1520 !important}
     #distOverlay .sheet{max-height:94vh;overflow-y:auto}
-    .distSrcs{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
-    .distSrc{border-radius:16px;background:#F3F6FC;padding:11px 12px;min-width:0}
-    .distSrc b{display:block;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:#5B6A90}
-    .distSrcIn{width:100%;margin:4px 0 8px;padding:6px 8px;border-radius:10px;border:1px solid #C6D2F0;background:#fff;font-size:18px;font-weight:800;color:#101B45;font-family:inherit}
+    .distSrcs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:12px}
+    .distSrc{border-radius:16px;background:#F3F6FC;padding:10px;min-width:0}
+    .distSrc.auto{background:#EEF6F0}
+    .distSrc b{display:flex;align-items:center;justify-content:space-between;gap:4px;font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:#5B6A90}
+    .distSrc.auto b{color:#3D5A47}
+    .distAuto{font-size:9.5px;font-weight:800;letter-spacing:0;text-transform:none;color:#1B6A3D;background:#D3ECDB;border-radius:6px;padding:2px 5px}
+    .distSrcIn,.distSrcVal{width:100%;height:34px;box-sizing:border-box;margin:6px 0 8px;padding:0 8px;border-radius:10px;font-size:16px;font-weight:800;color:#101B45;font-family:inherit;min-width:0}
+    .distSrcIn{border:1px solid #C6D2F0;background:#fff}
+    .distSrcVal{display:flex;align-items:center;border:1px dashed #A9CDB5;background:#F8FCF9}
+    .distSrcIn::-webkit-inner-spin-button,.dIn::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+    .distSrcIn,.dIn{-moz-appearance:textfield}
     .distBar{height:6px;border-radius:9px;background:#DDE4F3;overflow:hidden}
     .distBar i{display:block;height:100%;width:0;background:#F2B544;transition:width .25s ease}
     .distBar i.ok{background:#3CB878}
-    .distSrc small{display:block;margin-top:5px;font-size:11.5px;color:#27325A;min-height:15px}
+    .distSrc small{display:block;margin-top:5px;font-size:11px;line-height:1.3;color:#27325A;min-height:15px}
     .distSrc .ok{color:#1B7A4B;font-weight:700}.distSrc .warn{color:#8A5A00;font-weight:700}.distSrc .bad{color:#C0261D;font-weight:700}
     .distTbl{margin-top:14px;border:1px solid #DDE4F3;border-radius:16px;overflow:hidden}
-    .dTh,.dRow,.dTt{display:grid;grid-template-columns:minmax(0,1fr) 54px 64px 64px 56px;gap:4px;align-items:center;padding:7px 8px}
-    .dTh{background:#E6EDFA;font-size:10px;font-weight:800;color:#1F3A68;text-align:right;text-transform:uppercase;letter-spacing:.02em}
+    .dTh,.dRow,.dTt{display:grid;grid-template-columns:minmax(0,1fr) 44px 42px 42px 42px 64px;gap:4px;align-items:center;padding:7px 8px}
+    .dTh{background:#E6EDFA;font-size:9px;font-weight:800;color:#1F3A68;text-align:right;text-transform:uppercase;letter-spacing:.02em}
     .dTh span:first-child{text-align:left}
-    .dTh span:nth-child(3),.dTh span:nth-child(4),.dTt span:nth-child(3),.dTt span:nth-child(4){text-align:center}
+    .dTh span:nth-child(n+3),.dTt span:nth-child(n+3){text-align:center}
     .dRow{border-top:1px solid #EEF1F8;font-size:12.5px}
     .dNm{min-width:0}.dNm b{display:block;font-size:13px;font-weight:700;color:#8A2B1E;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
     .dChip{display:inline-block;margin-top:3px;font-size:10.5px;font-weight:700;border-radius:8px;padding:2px 7px;background:#EAF0FF;color:#2747E0;white-space:nowrap;border:0;cursor:pointer;max-width:100%;overflow:hidden;text-overflow:ellipsis;font-family:inherit}
@@ -5106,14 +5113,15 @@
     .dDone.bad{color:#C0261D}
     .dChip.cash{background:#FFF2D6;color:#8A5A00}
     .dChip:disabled{cursor:default;opacity:.8}
-    .dPl{text-align:right;color:#27325A;font-weight:600}
-    .dIn{width:100%;height:34px;border-radius:10px;border:1px solid #C6D2F0;background:#F6F9FF;text-align:center;padding:0 6px;font-size:13px;font-weight:700;color:#101B45;font-family:inherit;min-width:0}
+    .dPl{text-align:right;color:#27325A;font-weight:600;font-size:12px}
+    .dIn{width:100%;height:34px;border-radius:10px;border:1px solid #C6D2F0;background:#F6F9FF;text-align:center;padding:0 2px;font-size:12px;font-weight:600;color:#101B45;font-family:inherit;min-width:0}
+    .dIn[data-k="oth"]{border-color:#BFDCC9;background:#F3FAF5}
     .dIn:disabled{background:#EEF1F8;color:#5B6A90;border-color:#DDE4F3}
-    .dDf{text-align:right;font-weight:800;font-size:12.5px;border-radius:8px;padding:5px 4px}
-    .dDf.z{color:#9AA7C7;text-decoration:line-through;font-weight:700}
+    .dDf{text-align:center;font-weight:600;font-size:12px;border-radius:10px;padding:8px 2px}
+    .dDf.z{color:#9AA7C7;text-decoration:line-through;font-weight:600}
     .dDf.y{background:#FFF6C2;color:#101B45}
     .dDf.n{background:#FFE1DF;color:#C0261D}
-    .dTt{background:#E6EDFA;font-weight:800;font-size:12.5px;border-top:2px solid #1F3A68;text-align:right}
+    .dTt{background:#E6EDFA;font-weight:800;font-size:12px;border-top:2px solid #1F3A68;text-align:right}
     .dTt span:first-child{text-align:left;color:#1F3A68}
     .distLegend{margin-top:10px;font-size:11.5px;color:#5B6A90;line-height:1.45}
     .distBottom{position:sticky;bottom:calc(-12px - env(safe-area-inset-bottom));background:#fff;padding:10px 0 calc(14px + env(safe-area-inset-bottom));margin-top:12px}
@@ -6057,7 +6065,7 @@
   <div class="sheetOverlay" id="distOverlay">
     <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="distTitle">
       <div class="sheetHeader">
-        <div class="sheetTitle" id="distTitle">Аванс и зарплата</div>
+        <div class="sheetTitle" id="distTitle">Аванс, зарплата и другое</div>
         <div class="xbtn" id="distClose" role="button" tabindex="0" aria-label="Закрыть">×</div>
       </div>
       <div class="muted" id="distMeta">—</div>
@@ -6069,10 +6077,13 @@
         <div class="distSrc"><b>Зарплата</b>
           <input class="distSrcIn" id="distSal" type="number" min="0" step="100" inputmode="decimal" placeholder="0">
           <div class="distBar"><i id="distSalBar"></i></div><small id="distSalSub"></small></div>
+        <div class="distSrc auto"><b>Другое <span class="distAuto">авто</span></b>
+          <div class="distSrcVal" id="distOth">0</div>
+          <div class="distBar"><i id="distOthBar"></i></div><small id="distOthSub"></small></div>
       </div>
 
       <div class="distTbl">
-        <div class="dTh"><span>Категория</span><span>План</span><span>Аванс</span><span>Зарплата</span><span>Разница</span></div>
+        <div class="dTh"><span>Категория</span><span>План</span><span>Аванс</span><span>Зарпл.</span><span>Другое</span><span>Разница</span></div>
         <div id="distBody"></div>
         <div class="dTt" id="distTotal"></div>
       </div>
@@ -8336,14 +8347,33 @@
     // ---------------------------------------------------------------
     // Аванс и зарплата: распределение плана по категориям и переводы из кэша
     // ---------------------------------------------------------------
-    var dist = { rows: [], adv: 0, sal: 0, batches: [], undoTimer: null, busy: false, dirty: false, saveTimer: null, armTimer: null, armed: false, pick: null };
+    var dist = { rows: [], adv: 0, sal: 0, oth: 0, otherReady: true, batches: [], undoTimer: null, busy: false, dirty: false, saveTimer: null, armTimer: null, armed: false, pick: null };
 
     function fmt0(v) { return new Intl.NumberFormat('ru-RU', { maximumFractionDigits: 2 }).format(Number(v || 0)); }
     function r2(x) { return Math.round(Number(x || 0) * 100) / 100; }
     function distNum(v) { var n = Number(String(v).replace(',', '.')); return isFinite(n) && n > 0 ? r2(n) : 0; }
     function distSrc() { return refs.accounts.filter(function (a) { return a.is_budget_source; })[0] || null; }
-    function distMissing(err) { return /budget_distribution|does not exist|relation|schema cache/i.test(String(err && err.message || '')); }
+    // Нет только колонки «Другое» (budget_distribution.other): остальное продолжает работать
+    function distNeedsOther(err) {
+      var t = String(err && err.message || '');
+      return /\bother\b/i.test(t) && /column|schema cache|does not exist/i.test(t);
+    }
+    function distMissing(err) {
+      if (distNeedsOther(err)) return false;
+      return /budget_distribution|does not exist|relation|schema cache/i.test(String(err && err.message || ''));
+    }
     var DIST_SQL_MSG = 'В базе нет нужных таблиц. Запусти файл budget_distribution.sql в Supabase (SQL Editor), потом повтори.';
+    var DIST_OTHER_MSG = 'В базе нет колонки для «Другое». Запусти файл budget_distribution_other.sql в Supabase (SQL Editor), потом открой окно заново.';
+
+    // «Другое» = все доходы месяца, кроме Advance и Salary (факт, считается сам)
+    function distOtherTotal() {
+      var total = Number(bud.totals && bud.totals.income || 0);
+      var main = 0;
+      categoriesOfType('INCOME').forEach(function (c) {
+        if (/^\s*(advance|salary)/i.test(c.name)) main += Number((bud.actual[c.id] || {}).income || 0);
+      });
+      return Math.max(0, r2(total - main));
+    }
 
     // Плановая сумма дохода по названию категории (Advance, Salary)
     function distIncomePlan(re) {
@@ -8361,9 +8391,9 @@
     function distFormedOf(row) { return distFormedMap(dist.batches)[row.cat.id] || 0; }
 
     function distSums() {
-      var a = 0, s2 = 0;
-      dist.rows.forEach(function (r) { a += r.adv; s2 += r.sal; });
-      return { a: r2(a), s: r2(s2) };
+      var a = 0, s2 = 0, o = 0;
+      dist.rows.forEach(function (r) { a += r.adv; s2 += r.sal; o += r.oth; });
+      return { a: r2(a), s: r2(s2), o: r2(o) };
     }
 
     function distChipHtml(cat) {
@@ -8378,9 +8408,15 @@
     async function distLoad() {
       var month = budMonthKey();
       var res = await Promise.all([
-        sb.from('budget_distribution').select('category_id,advance,salary').eq('month', month),
+        sb.from('budget_distribution').select('category_id,advance,salary,other').eq('month', month),
         sb.from('budget_distribution_month').select('month,advance_total,salary_total,batches').eq('month', month)
       ]);
+      if (res[0].error && distNeedsOther(res[0].error)) {
+        dist.otherReady = false;
+        res[0] = await sb.from('budget_distribution').select('category_id,advance,salary').eq('month', month);
+      } else if (!res[0].error) {
+        dist.otherReady = true;
+      }
       if (res[0].error) throw res[0].error;
       if (res[1].error) throw res[1].error;
       return { rows: res[0].data || [], month: (res[1].data || [])[0] || null };
@@ -8403,8 +8439,9 @@
           var plan = Number(bud.budgets[c.id] || 0);
           var sv = saved[c.id];
           if (!(plan > 0) && !sv) return;
-          dist.rows.push({ cat: c, plan: plan, adv: sv ? Number(sv.advance || 0) : 0, sal: sv ? Number(sv.salary || 0) : 0 });
+          dist.rows.push({ cat: c, plan: plan, adv: sv ? Number(sv.advance || 0) : 0, sal: sv ? Number(sv.salary || 0) : 0, oth: sv && dist.otherReady ? Number(sv.other || 0) : 0 });
         });
+        dist.oth = dist.otherReady ? distOtherTotal() : 0;
         dist.adv = data.month ? Number(data.month.advance_total || 0) : 0;
         dist.sal = data.month ? Number(data.month.salary_total || 0) : 0;
         // База: плановые доходы «Advance» (аванс) и «Salary» (зарплата), пока сумма не сохранена вручную
@@ -8421,7 +8458,7 @@
         if (dist.fromPlan) distScheduleSave();
       } catch (err) {
         console.error('[ACCOUNTING][DIST_OPEN]', err);
-        qs('budError').textContent = distMissing(err) ? DIST_SQL_MSG : 'Не удалось открыть: ' + budError(err);
+        qs('budError').textContent = distNeedsOther(err) ? DIST_OTHER_MSG : (distMissing(err) ? DIST_SQL_MSG : 'Не удалось открыть: ' + budError(err));
       } finally {
         btn.disabled = false;
       }
@@ -8430,12 +8467,13 @@
     function renderDist() {
       var src = distSrc();
       qs('distMeta').textContent = budLabel() + ' · план расходов ' + money(dist.rows.reduce(function (t, r) { return t + r.plan; }, 0)) +
-        '. Распределяй аванс и зарплату целиком или по частям: приложение помнит, что уже распределено и переведено. «Сформировать» создаёт переводы на то, что ещё не переведено.' +
+        '. Распределяй аванс, зарплату и другие доходы целиком или по частям: приложение помнит, что уже распределено и переведено. «Другое» считается само из всех остальных доходов месяца. «Сформировать» создаёт переводы на то, что ещё не переведено.' +
         (dist.fromPlan ? ' Суммы аванса и зарплаты взяты из плана доходов (Advance, Salary), их можно поправить.' : '');
       qs('distAdv').placeholder = dist.planAdv > 0 ? 'по плану ' + dist.planAdv : '0';
       qs('distSal').placeholder = dist.planSal > 0 ? 'по плану ' + dist.planSal : '0';
       qs('distAdv').value = dist.adv > 0 ? String(dist.adv) : '';
       qs('distSal').value = dist.sal > 0 ? String(dist.sal) : '';
+      qs('distOth').textContent = fmt0(dist.oth);
       var fm = distFormedMap(dist.batches);
       qs('distBody').innerHTML = dist.rows.map(function (r) {
         var id = r.cat.id;
@@ -8443,11 +8481,13 @@
           '<div class="dPl">' + fmt0(r.plan) + '</div>' +
           '<input class="dIn" type="number" min="0" step="100" inputmode="decimal" placeholder="0" data-c="' + id + '" data-k="adv" value="' + (r.adv > 0 ? r.adv : '') + '">' +
           '<input class="dIn" type="number" min="0" step="100" inputmode="decimal" placeholder="0" data-c="' + id + '" data-k="sal" value="' + (r.sal > 0 ? r.sal : '') + '">' +
+          '<input class="dIn" type="number" min="0" step="100" inputmode="decimal" placeholder="0" data-c="' + id + '" data-k="oth" value="' + (r.oth > 0 ? r.oth : '') + '"' + (dist.otherReady ? '' : ' disabled') + '>' +
           '<div class="dDf" data-df="' + id + '"></div></div>';
       }).join('');
       distUndoTick();
       qs('distError').textContent = '';
       if (!src) qs('distError').textContent = 'Не выбран счёт для распределения бюджета. Открой «Счета», нажми на Cash, карандаш и поставь галочку «Счёт для распределения бюджета».';
+      else if (!dist.otherReady) qs('distError').textContent = DIST_OTHER_MSG;
       distRecalc();
     }
 
@@ -8487,10 +8527,10 @@
 
     function distRecalc() {
       var t = distSums();
-      var remA = r2(dist.adv - t.a), remS = r2(dist.sal - t.s);
-      function sub(tot, rem, got, elSub, elBar) {
+      var remA = r2(dist.adv - t.a), remS = r2(dist.sal - t.s), remO = r2(dist.oth - t.o);
+      function sub(tot, rem, got, elSub, elBar, empty) {
         var html;
-        if (!(tot > 0)) html = 'Впиши сумму';
+        if (!(tot > 0)) html = empty || 'Впиши сумму';
         else if (rem === 0) html = '<span class="ok">Распределено полностью</span>';
         else if (rem > 0) html = 'Распределено ' + fmt0(got) + ', <span class="warn">осталось ' + fmt0(rem) + ' ₴</span>';
         else html = '<span class="bad">Больше на ' + fmt0(-rem) + ' ₴</span>';
@@ -8501,12 +8541,13 @@
       }
       sub(dist.adv, remA, t.a, 'distAdvSub', 'distAdvBar');
       sub(dist.sal, remS, t.s, 'distSalSub', 'distSalBar');
+      sub(dist.oth, remO, t.o, 'distOthSub', 'distOthBar', dist.otherReady ? 'Других доходов нет' : '<span class="warn">Нужна настройка базы</span>');
 
       var fm = distFormedMap(dist.batches);
       var planTotal = 0, dfTotal = 0, newTotal = 0, doneTotal = 0, below = null;
       dist.rows.forEach(function (r) {
-        var df = r2(r.plan - r.adv - r.sal);
-        var total = r2(r.adv + r.sal);
+        var df = r2(r.plan - r.adv - r.sal - r.oth);
+        var total = r2(r.adv + r.sal + r.oth);
         var done = fm[r.cat.id] || 0;
         planTotal += r.plan; dfTotal += df; doneTotal += done;
         if (total < done) below = below || r.cat.name;
@@ -8523,18 +8564,19 @@
         }
       });
       newTotal = r2(newTotal);
-      qs('distTotal').innerHTML = '<span>Итого</span><span>' + fmt0(planTotal) + '</span><span>' + fmt0(t.a) + '</span><span>' + fmt0(t.s) + '</span><span>' + fmt0(r2(dfTotal)) + '</span>';
+      qs('distTotal').innerHTML = '<span>Итого</span><span>' + fmt0(planTotal) + '</span><span>' + fmt0(t.a) + '</span><span>' + fmt0(t.s) + '</span><span>' + fmt0(t.o) + '</span><span>' + fmt0(r2(dfTotal)) + '</span>';
 
-      var over = remA < 0 || remS < 0;
+      var over = remA < 0 || remS < 0 || remO < 0;
+      var rest = [remA > 0 ? 'аванс ' + fmt0(remA) + ' ₴' : '', remS > 0 ? 'зарплата ' + fmt0(remS) + ' ₴' : '', remO > 0 ? 'другое ' + fmt0(remO) + ' ₴' : ''].filter(Boolean);
       var ok = newTotal > 0 && !below && !over && Boolean(distSrc());
       qs('distForm').disabled = !ok;
       qs('distForm').textContent = newTotal > 0 ? 'Сформировать ' + fmt0(newTotal) + ' ₴' : 'Сформировать';
       var note;
       if (over) note = 'Распределено больше, чем есть. Поправь суммы.';
       else if (below) note = 'В категории «' + below + '» распределено меньше, чем уже переведено. Верни сумму или отмени последнее формирование.';
-      else if (newTotal > 0) note = 'К формированию ' + fmt0(newTotal) + ' ₴ (распределено, но ещё не переведено).' + (doneTotal > 0 ? ' Уже переведено: ' + fmt0(r2(doneTotal)) + ' ₴.' : '') + ((remA > 0 || remS > 0) ? ' Не распределено: ' + [remA > 0 ? 'аванс ' + fmt0(remA) + ' ₴' : '', remS > 0 ? 'зарплата ' + fmt0(remS) + ' ₴' : ''].filter(Boolean).join(', ') + '.' : '');
-      else if (t.a > 0 || t.s > 0) note = (doneTotal > 0 ? 'Всё распределённое уже переведено (' + fmt0(r2(doneTotal)) + ' ₴). ' : '') + ((remA > 0 || remS > 0) ? 'Не распределено: ' + [remA > 0 ? 'аванс ' + fmt0(remA) + ' ₴' : '', remS > 0 ? 'зарплата ' + fmt0(remS) + ' ₴' : ''].filter(Boolean).join(', ') + '.' : 'Всё распределено и переведено.');
-      else note = 'Впиши суммы аванса и зарплаты, затем распредели их по категориям.';
+      else if (newTotal > 0) note = 'К формированию ' + fmt0(newTotal) + ' ₴ (распределено, но ещё не переведено).' + (doneTotal > 0 ? ' Уже переведено: ' + fmt0(r2(doneTotal)) + ' ₴.' : '') + (rest.length ? ' Не распределено: ' + rest.join(', ') + '.' : '');
+      else if (t.a > 0 || t.s > 0 || t.o > 0) note = (doneTotal > 0 ? 'Всё распределённое уже переведено (' + fmt0(r2(doneTotal)) + ' ₴). ' : '') + (rest.length ? 'Не распределено: ' + rest.join(', ') + '.' : 'Всё распределено и переведено.');
+      else note = 'Впиши суммы аванса и зарплаты, затем распредели их и другие доходы по категориям.';
       qs('distNote').textContent = note;
     }
 
@@ -8550,8 +8592,11 @@
       try {
         var up = [], del = [];
         dist.rows.forEach(function (r) {
-          if (r.adv > 0 || r.sal > 0) up.push({ category_id: r.cat.id, month: month, advance: r.adv, salary: r.sal });
-          else del.push(r.cat.id);
+          if (r.adv > 0 || r.sal > 0 || r.oth > 0) {
+            var item = { category_id: r.cat.id, month: month, advance: r.adv, salary: r.sal };
+            if (dist.otherReady) item.other = r.oth;
+            up.push(item);
+          } else del.push(r.cat.id);
         });
         if (up.length) {
           var u = await sb.from('budget_distribution').upsert(up, { onConflict: 'category_id,month' });
@@ -8568,7 +8613,7 @@
         return true;
       } catch (err) {
         console.error('[ACCOUNTING][DIST_SAVE]', err);
-        qs('distError').textContent = distMissing(err) ? DIST_SQL_MSG : 'Не удалось сохранить: ' + budError(err);
+        qs('distError').textContent = distNeedsOther(err) ? DIST_OTHER_MSG : (distMissing(err) ? DIST_SQL_MSG : 'Не удалось сохранить: ' + budError(err));
         return false;
       }
     }
@@ -8646,7 +8691,7 @@
       var fm = distFormedMap(dist.batches);
       var by = {}, stay = [], stayTotal = 0, total = 0, items = [];
       dist.rows.forEach(function (r) {
-        var amt = r2(r.adv + r.sal - (fm[r.cat.id] || 0));
+        var amt = r2(r.adv + r.sal + r.oth - (fm[r.cat.id] || 0));
         if (!(amt > 0)) return;
         total += amt;
         items.push({ c: r.cat.id, a: amt });
@@ -8781,8 +8826,8 @@
         var d = await distLoad();
         if (req !== distTileReq) return;
         var m = d.month;
-        var tot = m ? Number(m.advance_total || 0) + Number(m.salary_total || 0) : 0;
-        var got = d.rows.reduce(function (t, r) { return t + Number(r.advance || 0) + Number(r.salary || 0); }, 0);
+        var tot = (m ? Number(m.advance_total || 0) + Number(m.salary_total || 0) : 0) + (dist.otherReady ? distOtherTotal() : 0);
+        var got = d.rows.reduce(function (t, r) { return t + Number(r.advance || 0) + Number(r.salary || 0) + (dist.otherReady ? Number(r.other || 0) : 0); }, 0);
         var done = (m && Array.isArray(m.batches) ? m.batches : []).reduce(function (t, b2) { return t + Number(b2.total || 0); }, 0);
         if (!(tot > 0) && !(got > 0)) { el.textContent = 'Не начато'; return; }
         var rem = r2(tot - got);
