@@ -5271,7 +5271,6 @@
   #dashRecent .dmRow{margin-bottom:4px}
   .dmEmpty{background:#fff;border:1px dashed #DAD6CF;border-radius:22px;padding:18px;text-align:center;font-size:14px;color:var(--dm-muted)}
   #dashCfgDone{background:#C2410C!important;border-color:#C2410C!important;box-shadow:none!important}
-  .dmCfgHint{font-size:13px;color:#68645E;margin:2px 0 8px}
   .dmCfgRow{min-height:52px;display:flex;align-items:center;gap:8px;padding:4px 0;border-top:1px solid #E8E5E0;font-size:15px;font-weight:600;color:#1F1E1C}
   .dmCfgName{flex:1;min-width:0}
   .dmGrip{width:44px;height:44px;flex:none;border:0;background:transparent;color:#68645E;display:flex;align-items:center;justify-content:center;border-radius:12px;cursor:grab;touch-action:none;-webkit-tap-highlight-color:transparent}
@@ -5289,6 +5288,9 @@
   .dmGrip{position:relative}
   .dmGrip.pulse::after{content:"";position:absolute;left:50%;top:50%;width:10px;height:10px;margin:-5px 0 0 -5px;border-radius:50%;background:#C2410C;animation:dmPulse 1.4s ease-out infinite}
   @keyframes dmPulse{0%{box-shadow:0 0 0 0 rgba(194,65,12,.55)}100%{box-shadow:0 0 0 16px rgba(194,65,12,0)}}
+  /* обучение: всё затемнено, кроме первой строки и подсказки */
+  #dashCfgOverlay .sheet.dmTour .sheetTitle,#dashCfgOverlay .sheet.dmTour .dmCfgRow:not(:first-child),#dashCfgOverlay .sheet.dmTour .dmCfgRow:first-child .dmCfgName,#dashCfgOverlay .sheet.dmTour .dmCfgRow:first-child .dmSwitch,#dashCfgOverlay .sheet.dmTour #dashCfgDone{opacity:.22;transition:opacity .2s}
+  #dashCfgOverlay .sheet.dmTour .dmCfgRow:first-child{background:#FDE9DC;border-radius:12px;border-top-color:transparent}
   /* закрытие окон свайпом вниз: кнопки-крестики скрыты */
   .sheetOverlay .xbtn,.mTxClose,#accTxClose{display:none!important}
 </style>
@@ -6228,7 +6230,6 @@
         <div class="sheetTitle" id="dashCfgTitle">Блоки главной</div>
         <div class="xbtn" id="dashCfgClose" role="button" tabindex="0" aria-label="Закрыть">×</div>
       </div>
-      <div class="dmCfgHint">Тяни за значок ☰, чтобы поменять порядок. Переключатель скрывает или возвращает блок.</div>
       <div class="dmCoach" id="dashCfgCoach" hidden><b>Как переставить блок</b>Нажми на точку у значка ☰ и тяни вниз или вверх.</div>
       <div id="dashCfgList"></div>
       <button class="btnPrimary btnFull" id="dashCfgDone" type="button" style="margin-top:14px;">Готово</button>
@@ -10905,6 +10906,7 @@
       qs('dashCfgCoach').hidden = seen;
       var firstGrip = box.querySelector('.dmGrip');
       if (firstGrip && !seen) firstGrip.classList.add('pulse');
+      qs('dashCfgOverlay').querySelector('.sheet').classList.toggle('dmTour', !seen);
       qs('dashCfgOverlay').classList.add('open');
     }
 
@@ -10912,6 +10914,7 @@
     function dmHintSeen() {
       try { localStorage.setItem('acc_dash_hint', '1'); } catch (e) { /* без хранилища подсказка покажется снова */ }
       qs('dashCfgCoach').hidden = true;
+      qs('dashCfgOverlay').querySelector('.sheet').classList.remove('dmTour');
       var pulsing = qs('dashCfgList').querySelectorAll('.dmGrip.pulse');
       for (var i = 0; i < pulsing.length; i++) pulsing[i].classList.remove('pulse');
     }
@@ -11365,8 +11368,8 @@
     // ---------------------------------------------------------------
     // «Ещё»: сводка и переходы
     // ---------------------------------------------------------------
-    var APP_VERSION = '2.9.3';
-    var APP_BUILD = '20261106-1730';
+    var APP_VERSION = '2.9.4';
+    var APP_BUILD = '20261106-1800';
 
     // Проверка новой версии: читаем свежий index.html с сервера и сравниваем номер сборки.
     // Если сборка новее, на главном экране появляется уведомление с кнопкой «обновить».
