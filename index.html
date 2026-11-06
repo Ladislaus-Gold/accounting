@@ -5220,46 +5220,54 @@
   
   /* ===== Главная в стиле Monarch ===== */
   #page-dashboard.active{background:#F6F5F3!important}
-  #page-dashboard{--dm-ink:#1F1E1C;--dm-muted:#68645E;--dm-line:#E8E5E0;--dm-pri:#C2410C;--dm-soft:#FDE9DC;--dm-grn:#2F7D4A;--dm-red:#B93A2A;font-family:Inter,system-ui,sans-serif;color:var(--dm-ink)}
-  #page-dashboard .saldoDashShell{display:flex;flex-direction:column;gap:10px}
-  #page-dashboard .saldoPageTitle{color:var(--dm-ink)}
-  #page-dashboard .saldoOverline{color:var(--dm-muted)}
-  .dmLabel{font-size:11px;letter-spacing:.06em;color:var(--dm-muted)}
-  .dmBalance,.dmCard{background:#fff;border:1px solid var(--dm-line);border-radius:14px;padding:14px}
-  .dmBalHead,.dmRow{display:flex;justify-content:space-between;align-items:center;gap:8px}
-  .dmFresh,.dmMuted{font-size:12px;color:var(--dm-muted)}
-  .dmBig{font-size:30px;font-weight:500;line-height:1.1;margin-top:4px;font-variant-numeric:tabular-nums}
-  .dmDelta{font-size:12px;margin-top:2px;min-height:15px;color:var(--dm-muted)}
+  #page-dashboard{--dm-ink:#1F1E1C;--dm-muted:#68645E;--dm-line:#E8E5E0;--dm-pri:#C2410C;--dm-link:#0E7490;--dm-grn:#2F7D4A;--dm-red:#B93A2A;font-family:Inter,system-ui,sans-serif;color:var(--dm-ink)}
+  #page-dashboard .saldoDashShell{display:flex;flex-direction:column;gap:14px}
+  .dmHeader{display:flex;align-items:center;justify-content:space-between;gap:8px;height:44px}
+  .dmHeadSide{width:84px;display:flex}.dmHeadSide.right{justify-content:flex-end}
+  .dmHeadTitle{flex:1;text-align:center;font-size:17px;font-weight:600}
+  .dmIconBtn{width:40px;height:40px;border:0;background:transparent;color:var(--dm-ink);display:flex;align-items:center;justify-content:center;cursor:pointer}
+  .dmIconBtn svg{width:20px;height:20px}
+  .dmCard{background:#fff;border:1px solid var(--dm-line);border-radius:22px;padding:16px;box-shadow:0 1px 2px rgba(31,30,28,.06)}
+  .dmRow{display:flex;justify-content:space-between;align-items:center;gap:8px}
+  .dmTitle{font-size:16px;font-weight:700}
+  .dmLink{background:none;border:0;padding:0;font:inherit;font-size:13px;font-weight:600;color:var(--dm-link);cursor:pointer;white-space:nowrap}
+  .dmBig{font-size:30px;font-weight:600;letter-spacing:-.01em;line-height:1.15;margin-top:6px;font-variant-numeric:tabular-nums}
+  .dmDelta{font-size:13px;font-weight:600;margin-top:2px;min-height:17px;color:var(--dm-muted);font-variant-numeric:tabular-nums}
   .dmDelta.up{color:var(--dm-grn)}.dmDelta.down{color:var(--dm-red)}
-  .dmChart{margin-top:8px;height:90px}
+  .dmFresh{display:none}
+  .dmChart{margin-top:10px;height:130px}
   .dmChart svg{display:block;width:100%;height:100%}
-  .dmAxis{display:flex;justify-content:space-between;font-size:12px;color:var(--dm-muted)}
-  .dmTiles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
-  .dmTile{background:#fff;border:1px solid var(--dm-line);border-radius:14px;padding:12px;min-width:0}
-  .dmTile span{display:block;font-size:12px;color:var(--dm-muted)}
-  .dmTile strong{display:block;font-size:14px;font-weight:500;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-variant-numeric:tabular-nums}
-  .dmTile strong.inc{color:var(--dm-grn)}.dmTile strong.exp{color:var(--dm-red)}
-  .dmTitle{font-size:14px;font-weight:500}
-  .dmBar{height:8px;border-radius:4px;background:#F1EEEA;overflow:hidden;margin:10px 0}
-  .dmBar i{display:block;height:100%;width:0;border-radius:4px;background:var(--dm-pri);transition:width .3s}
+  .dmRange{display:flex;justify-content:space-between;margin-top:12px}
+  .dmRange button{flex:1;border:0;background:transparent;font:inherit;font-size:12.5px;font-weight:700;color:var(--dm-muted);padding:9px 0;border-radius:999px;cursor:pointer}
+  .dmRange button.on{background:#ECEAE6;color:var(--dm-ink)}
+  .dmBudgetBig{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 8px;margin-top:8px}
+  .dmBudgetBig strong,.dmBudgetBig span{white-space:nowrap}
+  .dmBudgetBig strong{font-size:28px;font-weight:600;font-variant-numeric:tabular-nums}
+  .dmBudgetBig span{font-size:13px;color:var(--dm-muted);font-variant-numeric:tabular-nums}
+  .dmBar{height:8px;border-radius:8px;background:#ECEAE6;overflow:hidden;margin:10px 0 6px}
+  .dmBar i{display:block;height:100%;width:0;border-radius:8px;background:var(--dm-pri);transition:width .3s}
   .dmBar i.over{background:var(--dm-red)}
-  .dmStats{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-  .dmStats span{display:block;font-size:12px;color:var(--dm-muted)}
-  .dmStats strong{display:block;font-size:14px;font-weight:500;font-variant-numeric:tabular-nums}
-  .dmSecHead{margin:6px 2px 0}
-  .dmLink{background:none;border:0;padding:0;font:inherit;font-size:12px;color:#9A3412;cursor:pointer}
-  .dmStrip{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
-  .dmStrip::-webkit-scrollbar{display:none}
-  .dmAcc{flex:none;min-width:128px;text-align:left;background:#fff;border:1px solid var(--dm-line);border-radius:14px;padding:12px;font:inherit;color:inherit;cursor:pointer}
-  .dmAccIc{width:34px;height:34px;border-radius:10px;background:var(--dm-soft);display:flex;align-items:center;justify-content:center;font-size:15px}
-  .dmAcc.mono .dmAccIc{background:#DDF1F5}
-  .dmAccName{font-size:12px;color:var(--dm-muted);margin-top:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:150px}
-  .dmAccBal{font-size:14px;font-weight:500;font-variant-numeric:tabular-nums}
-  #dashRecent .dmRow{margin-bottom:4px}
-  .dmCat{margin-bottom:10px}.dmCat:last-child{margin-bottom:0}
-  .dmCatTop{display:flex;justify-content:space-between;font-size:12px;color:var(--dm-muted);margin-bottom:4px;gap:8px}
+  .dmDaily{font-size:12.5px;color:var(--dm-muted);margin-bottom:4px}
+  .dmDaily strong{color:var(--dm-ink);font-weight:600;font-variant-numeric:tabular-nums}
+  .dmCat{padding:8px 0}
+  .dmCatTop{display:flex;justify-content:space-between;gap:8px;font-size:14px;font-weight:600;margin-bottom:6px}
+  .dmCatTop span:last-child{font-weight:500;color:var(--dm-muted);font-variant-numeric:tabular-nums;white-space:nowrap}
   .dmCatTop span:first-child{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .dmCat .dmBar{margin:0}
+  .dmFlowBars{display:flex;gap:6px;margin-top:12px}
+  .dmFlowCol{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;min-width:0}
+  .dmFlowStack{height:120px;width:100%;display:flex;flex-direction:column;justify-content:flex-end;gap:2px}
+  .dmFlowStack i{display:block;width:100%}
+  .dmFlowStack i:first-child{border-radius:6px 6px 2px 2px}.dmFlowStack i:last-child{border-radius:2px 2px 6px 6px}
+  .dmFlowCol em{font-style:normal;font-size:10.5px;font-weight:600;letter-spacing:.04em;color:var(--dm-muted)}
+  .dmFlowCol.now em{color:var(--dm-ink);font-weight:800}
+  .dmLegend{margin-top:10px}
+  .dmLegend>div{display:flex;align-items:center;gap:10px;padding:11px 0;border-top:1px solid var(--dm-line);font-size:15px;font-weight:600}
+  .dmLegend i{width:9px;height:9px;border-radius:50%;flex:none}
+  .dmLegend span{flex:1}
+  .dmLegend strong{font-weight:700;font-variant-numeric:tabular-nums}
+  .dmLegend strong.inc{color:var(--dm-grn)}.dmLegend strong.exp{color:var(--dm-red)}
+  #dashRecent .dmRow{margin-bottom:4px}
 </style>
 </head>
 
@@ -5291,64 +5299,69 @@
             </button>
           </div>
 
-          <div class="saldoDashTop">
-            <div>
-              <div class="saldoOverline">ОБЗОР ФИНАНСОВ</div>
-              <div class="saldoPageTitle">Мои финансы</div>
-            </div>
-            <button class="saldoMonthBtn" id="dashMonthBtn" type="button" aria-label="Текущий месяц">
-              <span id="dashMonth">—</span>
-            </button>
+          <div class="dmHeader">
+            <span class="dmHeadSide"></span>
+            <div class="dmHeadTitle">Главная</div>
+            <span class="dmHeadSide right">
+              <button class="dmIconBtn" id="dashRefresh" type="button" aria-label="Обновить данные">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.6-5.9"/><path d="M20 4v5h-5"/></svg>
+              </button>
+            </span>
           </div>
 
-          <section class="dmBalance" aria-label="Общий баланс">
-            <div class="dmBalHead">
-              <span class="dmLabel">ОБЩИЙ БАЛАНС</span>
-              <span class="dmFresh" id="dashFresh">обновление…</span>
+          <section class="dmCard" aria-label="Общий баланс">
+            <div class="dmRow">
+              <span class="dmTitle">Общий баланс</span>
+              <button class="dmLink" id="dashAllAccounts" type="button">Счета →</button>
             </div>
             <div class="dmBig" id="dashTotalBalance">—</div>
             <div class="dmDelta" id="dashDelta"></div>
+            <span class="dmFresh" id="dashFresh">обновление…</span>
             <div class="dmChart" id="dashChart"></div>
-            <div class="dmAxis"><span id="dashChartFrom"></span><span>сегодня</span></div>
+            <div class="dmRange" id="dashRange" role="tablist" aria-label="Период графика">
+              <button type="button" class="on" data-r="1M">1М</button>
+              <button type="button" data-r="3M">3М</button>
+              <button type="button" data-r="6M">6М</button>
+              <button type="button" data-r="1Y">1Г</button>
+              <button type="button" data-r="ALL">ВСЁ</button>
+            </div>
           </section>
-
-          <div class="dmTiles">
-            <div class="dmTile"><span>Доходы</span><strong class="inc" id="dashIncome">—</strong></div>
-            <div class="dmTile"><span>Расходы</span><strong class="exp" id="dashExpense">—</strong></div>
-            <div class="dmTile"><span>Результат</span><strong id="dashProfit">—</strong></div>
-          </div>
 
           <section class="dmCard">
             <div class="dmRow">
-              <span class="dmTitle">Бюджет</span>
-              <span class="dmMuted" id="dashBudgetPercent">0%</span>
+              <span class="dmTitle" id="dashBudgetTitle">Бюджет</span>
+              <button class="dmLink" id="dashBudgetLink" type="button">Бюджет →</button>
+            </div>
+            <div class="dmBudgetBig">
+              <strong id="dashBudgetRemaining">—</strong>
+              <span id="dashBudgetOf"></span>
             </div>
             <div class="dmBar"><i id="dashBudgetFill"></i></div>
-            <div class="dmStats">
-              <div><span>Осталось</span><strong id="dashBudgetRemaining">—</strong></div>
-              <div><span id="dashDailyLabel">Можно тратить / день</span><strong id="dashDailyAllowance">—</strong></div>
-            </div>
+            <div class="dmDaily"><span id="dashDailyLabel">Можно тратить / день</span> <strong id="dashDailyAllowance">—</strong></div>
+            <div id="dashBudgetCats"></div>
           </section>
 
-          <div class="dmRow dmSecHead">
-            <span class="dmLabel">СЧЕТА</span>
-            <button class="dmLink" id="dashAllAccounts" type="button">Все ›</button>
-          </div>
-          <div class="dmStrip" id="dashAccountsStrip"></div>
+          <section class="dmCard">
+            <div class="dmRow">
+              <span class="dmTitle">Денежный поток</span>
+              <button class="dmLink" id="dashFlowLink" type="button">Аналитика →</button>
+            </div>
+            <div class="dmFlowBars" id="dashFlowBars"></div>
+            <div class="dmLegend">
+              <div><i style="background:#3F9461"></i><span>Доходы</span><strong class="inc" id="dashFlowIn">—</strong></div>
+              <div><i style="background:#C9503F"></i><span>Расходы</span><strong class="exp" id="dashFlowOut">—</strong></div>
+              <div><i style="background:#CFCAC2"></i><span>Накопления</span><strong id="dashFlowSave">—</strong></div>
+            </div>
+          </section>
 
           <section class="dmCard" id="dashRecent">
             <div class="dmRow">
               <span class="dmTitle">Последние операции</span>
-              <button class="dmLink" id="dashAllTx" type="button">Все ›</button>
+              <button class="dmLink" id="dashAllTx" type="button">Все операции →</button>
             </div>
             <div id="dashTxList" class="txList saldoTxList"></div>
             <div id="dashTxEmpty" class="saldoEmpty" hidden>Операций пока нет</div>
             <div class="authError" id="dashTxError" role="alert"></div>
-          </section>
-
-          <section class="dmCard">
-            <div class="dmTitle" style="margin-bottom:12px;">Топ расходов</div>
-            <div id="dashTopCats"></div>
           </section>
 
           <div class="authError" id="dashError" role="alert"></div>
@@ -6498,47 +6511,8 @@
         .trim() || 'Счёт';
     }
 
-    function renderAccounts(accounts) {
-      var box = qs('dashAccountsStrip');
-      box.innerHTML = '';
-
-      var rows = accounts
-        .filter(function (a) { return String(a.currency || 'UAH').toUpperCase() === 'UAH'; })
-        .sort(function (a, b) {
-          if (a.is_monobank !== b.is_monobank) return a.is_monobank ? -1 : 1;
-          return Math.abs(Number(b.balance || 0)) - Math.abs(Number(a.balance || 0));
-        })
-        .slice(0, 6);
-
-      rows.forEach(function (a) {
-        var card = document.createElement('button');
-        card.type = 'button';
-        card.className = 'dmAcc' + (a.is_monobank ? ' mono' : '');
-        card.addEventListener('click', function () {
-          acc.list = accounts.slice().sort(function (x, y) { return x.id - y.id; });
-          openAccountById(a.id);
-        });
-
-        var icon = document.createElement('div');
-        icon.className = 'dmAccIc';
-        icon.textContent = accountIcon(a.name);
-
-        var name = document.createElement('div');
-        name.className = 'dmAccName';
-        name.textContent = accountLabel(a.name);
-
-        var balance = document.createElement('div');
-        balance.className = 'dmAccBal';
-        balance.textContent = money(a.balance);
-
-        card.append(icon, name, balance);
-        box.appendChild(card);
-      });
-
-      if (!box.children.length) {
-        box.innerHTML = '<div class="dmMuted">Нет счетов</div>';
-      }
-    }
+    var MONTHS_GEN = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'];
+    var MONTHS_ACC = ['январь', 'февраль', 'март', 'апрель', 'май', 'июнь', 'июль', 'август', 'сентябрь', 'октябрь', 'ноябрь', 'декабрь'];
 
     function renderSummary(summary, now) {
       var income  = Number(summary.income  || 0);
@@ -6549,23 +6523,18 @@
       var netExpense = expense - returns;
       var profit = income - netExpense;
 
-      var monthName = MONTHS[now.getMonth()] + ' ' + now.getFullYear();
-      qs('dashMonth').textContent = monthName;
+      qs('dashFlowIn').textContent = '+' + moneyShort(income);
+      qs('dashFlowOut').textContent = moneyShort(netExpense);
+      qs('dashFlowSave').textContent = moneyShort(profit);
 
-      qs('dashIncome').textContent  = money(income);
-      qs('dashExpense').textContent = money(netExpense);
-
-      var profitEl = qs('dashProfit');
-      profitEl.textContent = signedMoney(profit);
-      profitEl.classList.toggle('positive', profit >= 0);
-      profitEl.classList.toggle('negative', profit < 0);
+      qs('dashBudgetTitle').textContent = 'Бюджет на ' + MONTHS_ACC[now.getMonth()];
 
       var remaining = budget - netExpense;
       var pct = budget > 0 ? (netExpense / budget) * 100 : 0;
       if (!isFinite(pct)) pct = 0;
 
-      qs('dashBudgetRemaining').textContent = money(remaining);
-      qs('dashBudgetPercent').textContent = (Math.round(pct)) + '% потрачено';
+      qs('dashBudgetRemaining').textContent = moneyShort(remaining);
+      qs('dashBudgetOf').textContent = 'осталось из ' + moneyShort(budget);
 
       var fill = qs('dashBudgetFill');
       fill.style.width = Math.max(0, Math.min(100, pct)) + '%';
@@ -6574,7 +6543,7 @@
       var daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
       var daysLeft = Math.max(1, daysInMonth - now.getDate() + 1);
       qs('dashDailyLabel').textContent = 'Можно тратить / день';
-      qs('dashDailyAllowance').textContent = money(Math.max(0, remaining) / daysLeft);
+      qs('dashDailyAllowance').textContent = moneyShort(Math.round(Math.max(0, remaining) / daysLeft));
     }
 
     async function loadDashboard() {
@@ -6606,8 +6575,7 @@
 
         qs('dashTotalBalance').textContent = money(total);
 
-        renderAccounts(accounts);
-        loadBalanceChart(accounts, total);
+        loadDashHistory(accounts, total);
         renderSummary(summaryRes.data || {}, now);
 
         lastLoadAt = Date.now();
@@ -10580,7 +10548,7 @@
       var reqId = ++dash.req;
       qs('dashTxError').textContent = '';
 
-      loadTopCats();
+      loadBudgetCats();
 
       try {
         if (!refs.loaded) await loadRefs();
@@ -10645,88 +10613,75 @@
       return '<svg width="' + size + '" height="' + size + '" viewBox="0 0 ' + size + ' ' + size + '">' + base + segs + '</svg>';
     }
 
-    var DM_COLORS = ['#C2410C', '#0E7490', '#A8325E', '#8A5A00'];
+    var DM_COLORS = ['#C2410C', '#0E7490', '#8A5A00'];
 
-    // Топ-4 категорий расходов за текущий месяц (с учётом разделённых операций)
-    async function loadTopCats() {
+    // Бюджет: 3 категории расходов с самым большим планом на этот месяц
+    async function loadBudgetCats() {
       var reqId = ++dash.donutReq;
-      var box = qs('dashTopCats');
+      var box = qs('dashBudgetCats');
       try {
         if (!refs.loaded) await loadRefs();
         if (reqId !== dash.donutReq) return;
 
         var now = new Date();
         var first = now.getFullYear() + '-' + pad2(now.getMonth() + 1) + '-01';
-        var res = await sb.rpc('month_category_totals', { p_month: first });
+        var res = await Promise.all([
+          sb.from('budgets').select('category_id,amount').eq('month', first),
+          sb.rpc('month_category_totals', { p_month: first })
+        ]);
         if (reqId !== dash.donutReq) return;
-        if (res.error) throw res.error;
+        if (res[0].error) throw res[0].error;
+        if (res[1].error) throw res[1].error;
 
-        var sum = {};
-        (res.data || []).forEach(function (r) {
-          var key = r.category_id === null || r.category_id === undefined ? 'none' : String(r.category_id);
+        var spent = {};
+        (res[1].data || []).forEach(function (r) {
+          var key = String(r.category_id);
           var n = Math.abs(Number(r.total || 0));
-          if (r.action === 'EXPENSE') sum[key] = (sum[key] || 0) + n;
-          else if (r.action === 'RETURN') sum[key] = (sum[key] || 0) - n;
+          if (r.action === 'EXPENSE') spent[key] = (spent[key] || 0) + n;
+          else if (r.action === 'RETURN') spent[key] = (spent[key] || 0) - n;
         });
 
-        var items = Object.keys(sum).map(function (key) {
-          var c = refs.catById[key];
-          return {
-            category: key === 'none' ? 'Без категории' : (c ? c.name : 'Категория удалена'),
-            amount: Math.round(Math.max(0, sum[key]) * 100) / 100
-          };
-        }).filter(function (it) { return it.amount > 0; })
-          .sort(function (a, b) { return b.amount - a.amount; })
-          .slice(0, 4);
+        var items = (res[0].data || []).map(function (b) {
+          var c = refs.catById[b.category_id];
+          return { type: c ? c.type : '', name: c ? c.name : '', plan: Number(b.amount || 0), spent: Math.max(0, spent[String(b.category_id)] || 0) };
+        }).filter(function (it) { return it.type === 'EXPENSE' && it.plan > 0; })
+          .sort(function (a, b) { return b.plan - a.plan; })
+          .slice(0, 3);
 
         box.innerHTML = '';
-        if (!items.length) {
-          var empty = document.createElement('div');
-          empty.className = 'dmMuted';
-          empty.textContent = 'Расходов в этом месяце пока нет';
-          box.appendChild(empty);
-          return;
-        }
-        var max = items[0].amount;
         items.forEach(function (it, idx) {
           var row = document.createElement('div'); row.className = 'dmCat';
           var top = document.createElement('div'); top.className = 'dmCatTop';
-          var n = document.createElement('span'); n.textContent = it.category;
-          var v = document.createElement('span'); v.textContent = moneyShort(it.amount);
+          var n = document.createElement('span');
+          n.textContent = it.name.replace(/\s*\p{Extended_Pictographic}️?\s*/gu, ' ').trim();
+          var v = document.createElement('span'); v.textContent = moneyShort(it.spent) + ' из ' + moneyShort(it.plan);
           top.append(n, v);
           var bar = document.createElement('div'); bar.className = 'dmBar';
           var fill = document.createElement('i');
-          fill.style.width = Math.max(3, it.amount / max * 100) + '%';
-          fill.style.background = DM_COLORS[idx % DM_COLORS.length];
+          fill.style.width = Math.min(100, it.spent / it.plan * 100) + '%';
+          fill.style.background = it.spent > it.plan ? '#B93A2A' : DM_COLORS[idx % DM_COLORS.length];
           bar.appendChild(fill);
           row.append(top, bar);
           box.appendChild(row);
         });
       } catch (err) {
         if (reqId !== dash.donutReq) return;
-        console.error('[ACCOUNTING][TOPCATS]', err);
+        console.error('[ACCOUNTING][BUDGET_CATS]', err);
       }
     }
 
-    // График баланса за 30 дней: идём назад от текущего баланса по движению денег на счетах UAH
-    var dmChartReq = 0;
-    async function loadBalanceChart(accounts, total) {
-      var reqId = ++dmChartReq;
-      var chart = qs('dashChart');
-      try {
-        var uah = {};
-        accounts.forEach(function (a) {
-          if (String(a.currency || 'UAH').toUpperCase() === 'UAH') uah[a.id] = true;
-        });
-        var DAYS = 30;
-        var today = new Date(); today.setHours(0, 0, 0, 0);
-        var start = new Date(today.getFullYear(), today.getMonth(), today.getDate() - (DAYS - 1));
+    // История операций для графика баланса и денежного потока
+    var dmHist = { rows: null, accounts: null, total: 0, req: 0, range: '1M' };
+    var DM_MON = ['ЯНВ', 'ФЕВ', 'МАР', 'АПР', 'МАЙ', 'ИЮН', 'ИЮЛ', 'АВГ', 'СЕН', 'ОКТ', 'НОЯ', 'ДЕК'];
+    var DM_RANGE = { '1M': [30, 'за месяц'], '3M': [90, 'за 3 месяца'], '6M': [180, 'за 6 месяцев'], '1Y': [365, 'за год'], 'ALL': [0, 'за всё время'] };
 
+    async function loadDashHistory(accounts, total) {
+      var reqId = ++dmHist.req;
+      try {
         var rows = [], from = 0, size = 1000;
-        for (var page = 0; page < 10; page++) {
+        for (var page = 0; page < 30; page++) {
           var res = await sb.from('transactions')
             .select('date,action,amount,account_id,from_account_id,to_account_id')
-            .gte('date', start.toISOString())
             .order('date', { ascending: true })
             .range(from, from + size - 1);
           if (res.error) throw res.error;
@@ -10734,53 +10689,127 @@
           if (!res.data || res.data.length < size) break;
           from += size;
         }
-        if (reqId !== dmChartReq) return;
-
-        var flow = [];
-        for (var i = 0; i < DAYS; i++) flow.push(0);
-        rows.forEach(function (t) {
-          var d = new Date(t.date); d.setHours(0, 0, 0, 0);
-          var idx = Math.round((d - start) / 86400000);
-          if (idx < 0 || idx >= DAYS) return;
-          var amt = Number(t.amount || 0);
-          if (t.action === 'INCOME' || t.action === 'RETURN') { if (uah[t.account_id]) flow[idx] += amt; }
-          else if (t.action === 'EXPENSE') { if (uah[t.account_id]) flow[idx] -= amt; }
-          else if (t.action === 'TRANSFER') {
-            if (uah[t.to_account_id]) flow[idx] += amt;
-            if (uah[t.from_account_id]) flow[idx] -= amt;
-          }
+        if (reqId !== dmHist.req) return;
+        dmHist.rows = rows;
+        dmHist.total = total;
+        dmHist.uah = {};
+        accounts.forEach(function (a) {
+          if (String(a.currency || 'UAH').toUpperCase() === 'UAH') dmHist.uah[a.id] = true;
         });
-
-        var series = new Array(DAYS);
-        var bal = total;
-        for (var k = DAYS - 1; k >= 0; k--) { series[k] = bal; bal -= flow[k]; }
-        var change = total - bal; // изменение за 30 дней
-
-        var delta = qs('dashDelta');
-        delta.className = 'dmDelta ' + (change > 0.005 ? 'up' : change < -0.005 ? 'down' : '');
-        delta.textContent = (change > 0.005 ? '▲ ' : change < -0.005 ? '▼ ' : '') + signedMoney(change) + ' за 30 дней';
-        qs('dashChartFrom').textContent = start.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' }).replace('.', '');
-
-        var W = 320, H = 90, padT = 8, padB = 6;
-        var min = Math.min.apply(null, series), max = Math.max.apply(null, series);
-        var span = max - min || 1;
-        var pts = series.map(function (v, i) {
-          return [Math.round(i / (DAYS - 1) * W * 10) / 10, Math.round((padT + (1 - (v - min) / span) * (H - padT - padB)) * 10) / 10];
-        });
-        var line = pts.map(function (p, i) { return (i ? 'L' : 'M') + p[0] + ' ' + p[1]; }).join(' ');
-        var last = pts[pts.length - 1];
-        chart.innerHTML = '<svg viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="none" role="img" aria-label="График баланса за 30 дней">' +
-          '<path d="' + line + ' L' + W + ' ' + H + ' L0 ' + H + ' Z" fill="#FDE9DC"/>' +
-          '<path d="' + line + '" fill="none" stroke="#C2410C" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>' +
-          '</svg>';
-        void last;
+        renderBalanceChart();
+        renderFlowBars();
       } catch (err) {
-        if (reqId !== dmChartReq) return;
-        console.error('[ACCOUNTING][CHART]', err);
-        chart.innerHTML = '';
+        if (reqId !== dmHist.req) return;
+        console.error('[ACCOUNTING][HISTORY]', err);
+        qs('dashChart').innerHTML = '';
+        qs('dashDelta').textContent = '';
       }
     }
 
+    function renderBalanceChart() {
+      if (!dmHist.rows) return;
+      var today = new Date(); today.setHours(0, 0, 0, 0);
+      var def = DM_RANGE[dmHist.range];
+      var days = def[0];
+      if (!days) {
+        var first = dmHist.rows.length ? new Date(dmHist.rows[0].date) : today;
+        first.setHours(0, 0, 0, 0);
+        days = Math.max(2, Math.min(3650, Math.round((today - first) / 86400000) + 1));
+      }
+      var start = new Date(today.getFullYear(), today.getMonth(), today.getDate() - (days - 1));
+
+      var flow = [];
+      for (var i = 0; i < days; i++) flow.push(0);
+      var uah = dmHist.uah || {};
+      dmHist.rows.forEach(function (t) {
+        var d = new Date(t.date); d.setHours(0, 0, 0, 0);
+        var idx = Math.round((d - start) / 86400000);
+        if (idx < 0 || idx >= days) return;
+        var amt = Number(t.amount || 0);
+        if (t.action === 'INCOME' || t.action === 'RETURN') { if (uah[t.account_id]) flow[idx] += amt; }
+        else if (t.action === 'EXPENSE') { if (uah[t.account_id]) flow[idx] -= amt; }
+        else if (t.action === 'TRANSFER') {
+          if (uah[t.to_account_id]) flow[idx] += amt;
+          if (uah[t.from_account_id]) flow[idx] -= amt;
+        }
+      });
+
+      var series = new Array(days), bal = dmHist.total;
+      for (var k = days - 1; k >= 0; k--) { series[k] = bal; bal -= flow[k]; }
+      var change = dmHist.total - bal;
+
+      var delta = qs('dashDelta');
+      var up = change > 0.005, down = change < -0.005;
+      var pct = bal > 0 ? change / bal * 100 : null;
+      delta.className = 'dmDelta ' + (up ? 'up' : down ? 'down' : '');
+      delta.textContent = (up ? '↑ +' : down ? '↓ ' : '') + moneyShort(Math.abs(change) < 0.005 ? 0 : change) +
+        (pct !== null && isFinite(pct) ? ' (' + (Math.round(Math.abs(pct) * 10) / 10).toString().replace('.', ',') + '%)' : '') + ' ' + def[1];
+
+      var W = 320, H = 130, padT = 10, padB = 4;
+      var min = Math.min.apply(null, series), max = Math.max.apply(null, series);
+      var span = max - min || 1;
+      var pts = series.map(function (v, i) {
+        return (Math.round(i / (days - 1) * W * 10) / 10) + ' ' + (Math.round((padT + (1 - (v - min) / span) * (H - padT - padB)) * 10) / 10);
+      });
+      var line = 'M' + pts.join(' L');
+      qs('dashChart').innerHTML = '<svg viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="none" role="img" aria-label="График общего баланса">' +
+        '<defs><linearGradient id="dmGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1F1E1C" stop-opacity=".16"/><stop offset="1" stop-color="#1F1E1C" stop-opacity="0"/></linearGradient></defs>' +
+        '<path d="' + line + ' L' + W + ' ' + H + ' L0 ' + H + ' Z" fill="url(#dmGrad)"/>' +
+        '<path d="' + line + '" fill="none" stroke="#1F1E1C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"/></svg>';
+    }
+
+    // Денежный поток: 8 последних месяцев, доход и расход в долях от суммы
+    function renderFlowBars() {
+      if (!dmHist.rows) return;
+      var now = new Date();
+      var months = [];
+      for (var i = 7; i >= 0; i--) {
+        var d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+        months.push({ y: d.getFullYear(), m: d.getMonth(), inc: 0, exp: 0 });
+      }
+      dmHist.rows.forEach(function (t) {
+        var d = new Date(t.date);
+        for (var j = 0; j < months.length; j++) {
+          if (months[j].y === d.getFullYear() && months[j].m === d.getMonth()) {
+            var amt = Number(t.amount || 0);
+            if (t.action === 'INCOME') months[j].inc += amt;
+            else if (t.action === 'EXPENSE') months[j].exp += amt;
+            else if (t.action === 'RETURN') months[j].exp -= amt;
+            break;
+          }
+        }
+      });
+      var box = qs('dashFlowBars');
+      box.innerHTML = '';
+      months.forEach(function (mo, idx) {
+        var last = idx === months.length - 1;
+        var inc = Math.max(0, mo.inc), exp = Math.max(0, mo.exp), sum = inc + exp;
+        var col = document.createElement('div'); col.className = 'dmFlowCol' + (last ? ' now' : '');
+        var stack = document.createElement('div'); stack.className = 'dmFlowStack';
+        if (sum > 0) {
+          var a = document.createElement('i'); a.style.height = (inc / sum * 100) + '%'; a.style.background = last ? '#3F9461' : '#CFE6D7';
+          var b = document.createElement('i'); b.style.height = (exp / sum * 100) + '%'; b.style.background = last ? '#C9503F' : '#F0CBC5';
+          stack.append(a, b);
+        } else {
+          var e = document.createElement('i'); e.style.height = '100%'; e.style.background = '#F1EEEA'; e.style.borderRadius = '6px';
+          stack.appendChild(e);
+        }
+        var lab = document.createElement('em'); lab.textContent = DM_MON[mo.m];
+        col.append(stack, lab);
+        box.appendChild(col);
+      });
+    }
+
+    qs('dashRange').addEventListener('click', function (e) {
+      var btn = e.target.closest('button[data-r]');
+      if (!btn) return;
+      dmHist.range = btn.getAttribute('data-r');
+      qs('dashRange').querySelectorAll('button').forEach(function (x) { x.classList.toggle('on', x === btn); });
+      renderBalanceChart();
+    });
+    qs('dashRefresh').addEventListener('click', function () { loadDashboard(); });
+    qs('dashBudgetLink').addEventListener('click', function () { setPage('budget'); });
+    qs('dashFlowLink').addEventListener('click', function () { setPage('analytics'); });
     qs('dashAllTx').addEventListener('click', function () { setPage('transactions'); });
 
     // ---------------------------------------------------------------
