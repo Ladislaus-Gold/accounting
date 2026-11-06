@@ -5657,6 +5657,11 @@
               <span class="moreItemText"><span class="moreItemTitle">Импорт из CSV</span><span class="moreItemSub">Перенос операций из листа Transactions 🔄</span></span>
               <span class="moreItemEnd"><span class="chev">›</span></span>
             </button>
+            <button class="moreItem" id="openBackup" type="button">
+              <span class="moreIco violet"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11"/><path d="m7.5 11 4.5 4.5 4.5-4.5"/><path d="M5 19h14"/></svg></span>
+              <span class="moreItemText"><span class="moreItemTitle">Резервная копия</span><span class="moreItemSub">Выгрузка всех данных в файл 💾</span></span>
+              <span class="moreItemEnd"><span class="chev">›</span></span>
+            </button>
           </div>
 
           <div class="moreSection">АККАУНТ</div>
@@ -5747,6 +5752,39 @@
       </section>
 
       <!-- Импорт из CSV -->
+      <!-- Резервная копия -->
+      <section class="page" id="page-backup">
+        <div class="budgetShell" style="display:grid;gap:14px;width:100%;">
+          <section class="card" style="padding:14px 16px;">
+            <div style="display:grid;grid-template-columns:40px minmax(0,1fr) 40px;align-items:center;gap:8px;">
+              <button class="repNav" id="bkBack" type="button" aria-label="Назад">‹</button>
+              <div style="text-align:center;min-width:0;">
+                <div class="dashEyebrow">ДАННЫЕ</div>
+                <div class="pgTitle">Резервная копия</div>
+              </div>
+              <span></span>
+            </div>
+            <div class="muted" style="margin-top:10px;text-align:center;">
+              Все твои данные одним файлом. Файл остаётся у тебя, в базе ничего не меняется. Токен Monobank в файл не попадает.
+            </div>
+          </section>
+
+          <section class="card">
+            <div class="cardTitle">Что будет выгружено</div>
+            <div id="bkList" style="margin-top:8px;"></div>
+          </section>
+
+          <section class="card">
+            <div style="display:grid;gap:10px;">
+              <button class="btnPrimary btnFull" id="bkJson" type="button">Скачать всё (JSON)</button>
+              <button class="btnTint btnFull" id="bkCsv" type="button">CSV по таблицам (ZIP)</button>
+              <button class="btnTint btnFull" id="bkSchema" type="button">Схема базы (SQL)</button>
+            </div>
+            <div class="muted" id="bkMsg" style="margin-top:10px;text-align:center;"></div>
+          </section>
+        </div>
+      </section>
+
       <section class="page" id="page-import">
         <div class="budgetShell" style="display:grid;gap:14px;width:100%;">
 
@@ -6414,7 +6452,7 @@
       document.querySelectorAll('.page').forEach(function (p) {
         p.classList.toggle('active', p.id === 'page-' + name);
       });
-      var tabName = ['rules', 'import', 'mono', 'analytics', 'status'].indexOf(name) >= 0 ? 'more' : name;
+      var tabName = ['rules', 'import', 'backup', 'mono', 'analytics', 'status'].indexOf(name) >= 0 ? 'more' : name;
       document.querySelectorAll('.tab').forEach(function (t) {
         t.classList.toggle('active', t.getAttribute('data-page') === tabName);
       });
@@ -6432,6 +6470,7 @@
       if (name === 'status') loadStatusPage();
       if (name === 'accounts') loadAccounts();
       if (name === 'mono') loadMonoStatus();
+      if (name === 'backup') loadBackupPage();
     }
 
     // Перезагрузить то, что видно на экране, после изменения операции
@@ -10412,6 +10451,163 @@
       }
     }
 
+
+    // ---------- Резервная копия ----------
+    var BK_TABLES = [
+      ['transactions', 'Операции', 'date'],
+      ['transaction_splits', 'Разделение операций', 'id'],
+      ['accounts', 'Счета', 'id'],
+      ['account_balances', 'Остатки по счетам', 'id'],
+      ['categories', 'Категории', 'id'],
+      ['budgets', 'Бюджеты', 'id'],
+      ['budget_distribution', 'Распределение по категориям', 'month'],
+      ['budget_distribution_month', 'Распределение по месяцам', 'month'],
+      ['rules', 'Правила', 'id'],
+      ['mono_state', 'Состояние Monobank', 'id']
+    ];
+    var bkBusy = false;
+
+    function bkSetMsg(t) { qs('bkMsg').textContent = t || ''; }
+
+    async function bkFetchTable(name, orderCol) {
+      var out = [];
+      var step = 1000;
+      for (var from = 0; ; from += step) {
+        var res = await sb.from(name).select('*').order(orderCol, { ascending: true }).range(from, from + step - 1);
+        if (res.error) throw new Error(name + ': ' + res.error.message);
+        out = out.concat(res.data || []);
+        if (!res.data || res.data.length < step) break;
+      }
+      return out;
+    }
+
+    async function bkLoadAll() {
+      var data = {};
+      for (var i = 0; i < BK_TABLES.length; i++) {
+        bkSetMsg('Читаю: ' + BK_TABLES[i][1] + '…');
+        data[BK_TABLES[i][0]] = await bkFetchTable(BK_TABLES[i][0], BK_TABLES[i][2]);
+      }
+      return data;
+    }
+
+    function bkStamp() {
+      var d = new Date();
+      var p = function (n) { return String(n).padStart(2, '0'); };
+      return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate());
+    }
+
+    function bkDownload(blob, filename) {
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.href = url; a.download = filename;
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(function () { URL.revokeObjectURL(url); }, 4000);
+    }
+
+    function bkCsvCell(v) {
+      if (v === null || v === undefined) return '';
+      if (typeof v === 'object') v = JSON.stringify(v);
+      v = String(v);
+      return /[",\r\n;]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v;
+    }
+
+    function bkCsv(rows) {
+      if (!rows.length) return '';
+      var cols = Object.keys(rows[0]);
+      var lines = [cols.join(',')];
+      rows.forEach(function (r) { lines.push(cols.map(function (c) { return bkCsvCell(r[c]); }).join(',')); });
+      return '﻿' + lines.join('\r\n');
+    }
+
+    // Простой ZIP без сжатия (хватает для CSV, библиотеки не нужны)
+    var bkCrcTable = null;
+    function bkCrc32(bytes) {
+      if (!bkCrcTable) {
+        bkCrcTable = [];
+        for (var n = 0; n < 256; n++) {
+          var c = n;
+          for (var k = 0; k < 8; k++) c = (c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1);
+          bkCrcTable[n] = c >>> 0;
+        }
+      }
+      var crc = 0xFFFFFFFF;
+      for (var i = 0; i < bytes.length; i++) crc = bkCrcTable[(crc ^ bytes[i]) & 0xFF] ^ (crc >>> 8);
+      return (crc ^ 0xFFFFFFFF) >>> 0;
+    }
+
+    function bkZip(files) {
+      var enc = new TextEncoder();
+      var parts = [], central = [], offset = 0;
+      files.forEach(function (f) {
+        var name = enc.encode(f.name), data = enc.encode(f.text), crc = bkCrc32(data);
+        var h = new DataView(new ArrayBuffer(30));
+        h.setUint32(0, 0x04034b50, true); h.setUint16(4, 20, true); h.setUint16(6, 0x0800, true);
+        h.setUint16(8, 0, true); h.setUint16(10, 0, true); h.setUint16(12, 0x21, true);
+        h.setUint32(14, crc, true); h.setUint32(18, data.length, true); h.setUint32(22, data.length, true);
+        h.setUint16(26, name.length, true); h.setUint16(28, 0, true);
+        parts.push(new Uint8Array(h.buffer), name, data);
+        var c = new DataView(new ArrayBuffer(46));
+        c.setUint32(0, 0x02014b50, true); c.setUint16(4, 20, true); c.setUint16(6, 20, true); c.setUint16(8, 0x0800, true);
+        c.setUint16(10, 0, true); c.setUint16(12, 0, true); c.setUint16(14, 0x21, true);
+        c.setUint32(16, crc, true); c.setUint32(20, data.length, true); c.setUint32(24, data.length, true);
+        c.setUint16(28, name.length, true); c.setUint32(42, offset, true);
+        central.push(new Uint8Array(c.buffer), name);
+        offset += 30 + name.length + data.length;
+      });
+      var cSize = central.reduce(function (a, b) { return a + b.length; }, 0);
+      var end = new DataView(new ArrayBuffer(22));
+      end.setUint32(0, 0x06054b50, true); end.setUint16(8, files.length, true); end.setUint16(10, files.length, true);
+      end.setUint32(12, cSize, true); end.setUint32(16, offset, true);
+      return new Blob(parts.concat(central, [new Uint8Array(end.buffer)]), { type: 'application/zip' });
+    }
+
+    async function loadBackupPage() {
+      var box = qs('bkList');
+      box.innerHTML = BK_TABLES.map(function (t) {
+        return '<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--t-line,rgba(0,0,0,.08));">' +
+          '<span>' + t[1] + '</span><span class="muted" data-bk="' + t[0] + '">…</span></div>';
+      }).join('');
+      bkSetMsg('');
+      BK_TABLES.forEach(function (t) {
+        sb.from(t[0]).select('*', { count: 'exact', head: true }).then(function (r) {
+          var el = box.querySelector('[data-bk="' + t[0] + '"]');
+          if (el) el.textContent = r.error ? '—' : fmtInt(r.count);
+        });
+      });
+    }
+
+    async function bkRun(kind) {
+      if (bkBusy) return;
+      bkBusy = true;
+      ['bkJson', 'bkCsv', 'bkSchema'].forEach(function (id) { qs(id).disabled = true; });
+      try {
+        var data = await bkLoadAll();
+        var stamp = bkStamp();
+        var total = 0;
+        Object.keys(data).forEach(function (k) { total += data[k].length; });
+        if (kind === 'json') {
+          var pack = { app: 'accounting', version: APP_VERSION, exported_at: new Date().toISOString(), tables: data };
+          bkDownload(new Blob([JSON.stringify(pack, null, 1)], { type: 'application/json' }), 'accounting-backup-' + stamp + '.json');
+        } else {
+          var files = Object.keys(data).map(function (k) { return { name: k + '.csv', text: bkCsv(data[k]) }; });
+          bkDownload(bkZip(files), 'accounting-backup-' + stamp + '-csv.zip');
+        }
+        bkSetMsg('Готово: выгружено строк ' + fmtInt(total) + '. Файл сохранён в загрузки.');
+      } catch (err) {
+        bkSetMsg('Не получилось: ' + (err && err.message ? err.message : 'неизвестная ошибка'));
+      } finally {
+        bkBusy = false;
+        ['bkJson', 'bkCsv', 'bkSchema'].forEach(function (id) { qs(id).disabled = false; });
+      }
+    }
+
+    qs('openBackup').addEventListener('click', function () { setPage('backup'); });
+    qs('bkBack').addEventListener('click', function () { setPage('more'); });
+    qs('bkJson').addEventListener('click', function () { bkRun('json'); });
+    qs('bkCsv').addEventListener('click', function () { bkRun('csv'); });
+    qs('bkSchema').addEventListener('click', function () {
+      window.open('https://github.com/Ladislaus-Gold/accounting/tree/main/backup', '_blank', 'noopener');
+    });
     qs('openImport').addEventListener('click', function () { setPage('import'); });
     qs('impBack').addEventListener('click', function () { setPage('more'); });
     qs('impChoose').addEventListener('click', function () { qs('impFile').value = ''; qs('impFile').click(); });
@@ -10945,8 +11141,8 @@
     // ---------------------------------------------------------------
     // «Ещё»: сводка и переходы
     // ---------------------------------------------------------------
-    var APP_VERSION = '2.7.1';
-    var APP_BUILD = '20261102-1545';
+    var APP_VERSION = '2.8.0';
+    var APP_BUILD = '20261106-1400';
 
     // Проверка новой версии: читаем свежий index.html с сервера и сравниваем номер сборки.
     // Если сборка новее, на главном экране появляется уведомление с кнопкой «обновить».
