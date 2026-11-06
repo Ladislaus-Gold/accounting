@@ -5272,7 +5272,12 @@
   .dmEmpty{background:#fff;border:1px dashed #DAD6CF;border-radius:22px;padding:18px;text-align:center;font-size:14px;color:var(--dm-muted)}
   #dashCfgDone{background:#C2410C!important;border-color:#C2410C!important;box-shadow:none!important}
   .dmCfgHint{font-size:13px;color:#68645E;margin:2px 0 8px}
-  .dmCfgRow{min-height:44px;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:13px 0;border-top:1px solid #E8E5E0;font-size:15px;font-weight:600;color:#1F1E1C;cursor:pointer}
+  .dmCfgRow{min-height:52px;display:flex;align-items:center;gap:8px;padding:4px 0;border-top:1px solid #E8E5E0;font-size:15px;font-weight:600;color:#1F1E1C}
+  .dmCfgName{flex:1;min-width:0}
+  .dmMove{display:flex;gap:2px}
+  .dmMove button{width:44px;height:44px;border:0;background:transparent;font:inherit;font-size:20px;color:#1F1E1C;border-radius:12px;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+  .dmMove button:disabled{color:#CFCAC2;cursor:default}
+  .dmMove button:not(:disabled):active{background:#ECEAE6}
   .dmSwitch{position:relative;width:46px;height:28px;flex:none}
   .dmSwitch input{position:absolute;inset:0;opacity:0;margin:0;cursor:pointer}
   .dmSwitch span{position:absolute;inset:0;border-radius:999px;background:#D9D5CE;transition:background .15s}
@@ -6216,7 +6221,7 @@
         <div class="sheetTitle" id="dashCfgTitle">Блоки главной</div>
         <div class="xbtn" id="dashCfgClose" role="button" tabindex="0" aria-label="Закрыть">×</div>
       </div>
-      <div class="dmCfgHint">Включай и отключай блоки. Отключённые можно вернуть здесь же.</div>
+      <div class="dmCfgHint">Стрелками меняй порядок, переключателем скрывай или возвращай блок.</div>
       <div id="dashCfgList"></div>
       <button class="btnPrimary btnFull" id="dashCfgDone" type="button" style="margin-top:14px;">Готово</button>
     </div>
@@ -10840,32 +10845,67 @@
       } catch (e) { return {}; }
     }
     function dmShown(id) { return dmBlocksLoad()[id] !== false; }
+    function dmOrderLoad() {
+      var ids = DM_BLOCKS.map(function (b) { return b[0]; });
+      var saved = [];
+      try { saved = JSON.parse(localStorage.getItem('acc_dash_order') || '[]'); } catch (e) { saved = []; }
+      if (!Array.isArray(saved)) saved = [];
+      var order = saved.filter(function (id) { return ids.indexOf(id) >= 0; });
+      ids.forEach(function (id) { if (order.indexOf(id) < 0) order.push(id); });
+      return order;
+    }
     function dmApplyBlocks() {
       var any = false;
-      DM_BLOCKS.forEach(function (b) {
-        var el = document.querySelector('[data-dmblock="' + b[0] + '"]');
-        var on = dmShown(b[0]);
-        if (el) el.hidden = !on;
+      var anchor = qs('dashEmpty');
+      dmOrderLoad().forEach(function (id) {
+        var el = document.querySelector('[data-dmblock="' + id + '"]');
+        if (!el) return;
+        anchor.parentNode.insertBefore(el, anchor);
+        var on = dmShown(id);
+        el.hidden = !on;
         if (on) any = true;
       });
-      qs('dashEmpty').hidden = any;
+      anchor.hidden = any;
+    }
+    function dmMove(id, dir) {
+      var order = dmOrderLoad();
+      var i = order.indexOf(id), j = i + dir;
+      if (i < 0 || j < 0 || j >= order.length) return;
+      order.splice(j, 0, order.splice(i, 1)[0]);
+      try { localStorage.setItem('acc_dash_order', JSON.stringify(order)); } catch (e) { /* без хранилища порядок действует до перезагрузки */ }
+      dmApplyBlocks();
+      dmOpenCfg();
     }
     function dmOpenCfg() {
       var box = qs('dashCfgList');
       box.innerHTML = '';
-      DM_BLOCKS.forEach(function (b) {
-        var row = document.createElement('label'); row.className = 'dmCfgRow';
-        var name = document.createElement('span'); name.textContent = b[1];
-        var sw = document.createElement('span'); sw.className = 'dmSwitch';
-        var input = document.createElement('input'); input.type = 'checkbox'; input.checked = dmShown(b[0]);
+      var names = {};
+      DM_BLOCKS.forEach(function (b) { names[b[0]] = b[1]; });
+      var order = dmOrderLoad();
+      order.forEach(function (id, idx) {
+        var row = document.createElement('div'); row.className = 'dmCfgRow';
+        var name = document.createElement('span'); name.className = 'dmCfgName'; name.textContent = names[id];
+
+        var mv = document.createElement('span'); mv.className = 'dmMove';
+        [['up', -1, '↑', 'Выше'], ['down', 1, '↓', 'Ниже']].forEach(function (d) {
+          var btn = document.createElement('button'); btn.type = 'button'; btn.textContent = d[2];
+          btn.setAttribute('aria-label', d[3] + ': ' + names[id]);
+          btn.disabled = (d[1] < 0 && idx === 0) || (d[1] > 0 && idx === order.length - 1);
+          btn.addEventListener('click', function () { dmMove(id, d[1]); });
+          mv.appendChild(btn);
+        });
+
+        var sw = document.createElement('label'); sw.className = 'dmSwitch';
+        var input = document.createElement('input'); input.type = 'checkbox'; input.checked = dmShown(id);
+        input.setAttribute('aria-label', names[id]);
         input.addEventListener('change', function () {
-          var st = dmBlocksLoad(); st[b[0]] = input.checked;
+          var st = dmBlocksLoad(); st[id] = input.checked;
           try { localStorage.setItem('acc_dash_blocks', JSON.stringify(st)); } catch (e) { /* без хранилища настройка действует до перезагрузки */ }
           dmApplyBlocks();
           if (input.checked) loadDashboard();
         });
         sw.append(input, document.createElement('span'));
-        row.append(name, sw);
+        row.append(name, mv, sw);
         box.appendChild(row);
       });
       qs('dashCfgOverlay').classList.add('open');
@@ -11247,8 +11287,8 @@
     // ---------------------------------------------------------------
     // «Ещё»: сводка и переходы
     // ---------------------------------------------------------------
-    var APP_VERSION = '2.9.1';
-    var APP_BUILD = '20261106-1600';
+    var APP_VERSION = '2.9.2';
+    var APP_BUILD = '20261106-1630';
 
     // Проверка новой версии: читаем свежий index.html с сервера и сравниваем номер сборки.
     // Если сборка новее, на главном экране появляется уведомление с кнопкой «обновить».
