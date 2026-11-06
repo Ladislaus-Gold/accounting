@@ -5220,12 +5220,13 @@
   
   /* ===== Главная в стиле Monarch ===== */
   #page-dashboard.active{background:#F6F5F3!important}
-  #page-dashboard{--dm-ink:#1F1E1C;--dm-muted:#68645E;--dm-line:#E8E5E0;--dm-pri:#C2410C;--dm-link:#0E7490;--dm-grn:#2F7D4A;--dm-red:#B93A2A;font-family:Inter,system-ui,sans-serif;color:var(--dm-ink)}
+  #page-dashboard{--dm-ink:#1F1E1C;--dm-muted:#68645E;--dm-line:#E8E5E0;--dm-pri:#C2410C;--dm-link:#0E7490;--dm-grn:#2F7D4A;--dm-red:#B93A2A;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","SF Pro Display","Helvetica Neue",Arial,sans-serif;-webkit-font-smoothing:antialiased;color:var(--dm-ink)}
+  #page-dashboard button{-webkit-tap-highlight-color:transparent;touch-action:manipulation}
   #page-dashboard .saldoDashShell{display:flex;flex-direction:column;gap:14px}
   .dmHeader{display:flex;align-items:center;justify-content:space-between;gap:8px;height:44px}
-  .dmHeadSide{width:84px;display:flex}.dmHeadSide.right{justify-content:flex-end}
+  .dmHeadSide{width:92px;display:flex}.dmHeadSide.right{justify-content:flex-end}
   .dmHeadTitle{flex:1;text-align:center;font-size:17px;font-weight:600}
-  .dmIconBtn{width:40px;height:40px;border:0;background:transparent;color:var(--dm-ink);display:flex;align-items:center;justify-content:center;cursor:pointer}
+  .dmIconBtn{width:44px;height:44px;border:0;background:transparent;color:var(--dm-ink);display:flex;align-items:center;justify-content:center;cursor:pointer}
   .dmIconBtn svg{width:20px;height:20px}
   .dmCard{background:#fff;border:1px solid var(--dm-line);border-radius:22px;padding:16px;box-shadow:0 1px 2px rgba(31,30,28,.06)}
   .dmRow{display:flex;justify-content:space-between;align-items:center;gap:8px}
@@ -5238,7 +5239,7 @@
   .dmChart{margin-top:10px;height:130px}
   .dmChart svg{display:block;width:100%;height:100%}
   .dmRange{display:flex;justify-content:space-between;margin-top:12px}
-  .dmRange button{flex:1;border:0;background:transparent;font:inherit;font-size:12.5px;font-weight:700;color:var(--dm-muted);padding:9px 0;border-radius:999px;cursor:pointer}
+  .dmRange button{flex:1;border:0;background:transparent;font:inherit;font-size:12.5px;font-weight:700;color:var(--dm-muted);padding:12px 0;border-radius:999px;cursor:pointer}
   .dmRange button.on{background:#ECEAE6;color:var(--dm-ink)}
   .dmBudgetBig{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 8px;margin-top:8px}
   .dmBudgetBig strong,.dmBudgetBig span{white-space:nowrap}
@@ -5271,7 +5272,7 @@
   .dmEmpty{background:#fff;border:1px dashed #DAD6CF;border-radius:22px;padding:18px;text-align:center;font-size:14px;color:var(--dm-muted)}
   #dashCfgDone{background:#C2410C!important;border-color:#C2410C!important;box-shadow:none!important}
   .dmCfgHint{font-size:13px;color:#68645E;margin:2px 0 8px}
-  .dmCfgRow{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:13px 0;border-top:1px solid #E8E5E0;font-size:15px;font-weight:600;color:#1F1E1C;cursor:pointer}
+  .dmCfgRow{min-height:44px;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:13px 0;border-top:1px solid #E8E5E0;font-size:15px;font-weight:600;color:#1F1E1C;cursor:pointer}
   .dmSwitch{position:relative;width:46px;height:28px;flex:none}
   .dmSwitch input{position:absolute;inset:0;opacity:0;margin:0;cursor:pointer}
   .dmSwitch span{position:absolute;inset:0;border-radius:999px;background:#D9D5CE;transition:background .15s}
@@ -11246,8 +11247,8 @@
     // ---------------------------------------------------------------
     // «Ещё»: сводка и переходы
     // ---------------------------------------------------------------
-    var APP_VERSION = '2.9.0';
-    var APP_BUILD = '20261106-1520';
+    var APP_VERSION = '2.9.1';
+    var APP_BUILD = '20261106-1600';
 
     // Проверка новой версии: читаем свежий index.html с сервера и сравниваем номер сборки.
     // Если сборка новее, на главном экране появляется уведомление с кнопкой «обновить».
