@@ -5210,6 +5210,13 @@
     @media (prefers-reduced-motion:reduce){
       .page.active,.page.active > *,.page.active > .saldoDashShell > *{animation:none!important}
     }
+
+    /* ===== Тёмные кнопки ✎ / × и значок в шапках окон (выделяются на фоне) ===== */
+    :root{--t-ctl-dark:#A9BFEA;--t-ctl-dark-edge:#8FA9DD;--t-ctl-dark-ink:#14308F}
+    .xbtn,.mTxClose,.saldoAccountHistoryClose,#editOverlay .xbtn,.saldoAccountHistoryIcon{
+      background:var(--t-ctl-dark)!important;border:1px solid var(--t-ctl-dark-edge)!important;
+      box-shadow:0 3px 8px rgba(31,63,196,.18)!important}
+    .xbtn,.mTxClose,.saldoAccountHistoryClose,#editOverlay .xbtn{color:var(--t-ctl-dark-ink)!important;font-weight:600}
   </style>
 </head>
 
