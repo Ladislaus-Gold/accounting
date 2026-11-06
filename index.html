@@ -5337,6 +5337,8 @@
   #editOverlay .splitTotal.bad{background:#FBE5E1;color:#B93A2A}
   #editOverlay .splitSumLabel,#editOverlay .splitSum b{color:inherit;font-size:inherit}
   /* --- окно операции: страница как в референсе --- */
+  #editOverlay,#editOverlay input,#editOverlay select,#editOverlay textarea,#editOverlay button{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","SF Pro Display","Helvetica Neue",Arial,sans-serif}
+  .opName.empty{color:#B5B0A8}
   #editOverlay{background:linear-gradient(180deg,#F4B38F 0%,#FADCC8 34%,#FCF1E8 70%,#FBF7F3 100%)!important;align-items:stretch!important}
   #editOverlay .sheet{max-width:none!important;width:100%!important;height:100%!important;max-height:none!important;min-height:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important;padding:0 12px calc(24px + env(safe-area-inset-bottom))!important;display:block!important;overflow:auto!important}
   #editOverlay .sheet::before,#editOverlay .sheet::after{display:none!important}
@@ -7343,7 +7345,9 @@
       qs('opAv').className = 'opAv' + (inc ? ' inc' : '');
       var note = qs('editNote').value.trim().split('\n')[0];
       var catPlain = cat.replace(/\p{Extended_Pictographic}\uFE0F?/gu, '').trim();
-      qs('opName').textContent = note || (form.action === 'TRANSFER' ? 'Перевод' : catPlain) || 'Без названия';
+      var nameText = note || (form.action === 'TRANSFER' ? 'Перевод' : catPlain);
+      qs('opName').textContent = nameText || 'Выбери категорию';
+      qs('opName').classList.toggle('empty', !nameText);
       var a = qs('txAccount');
       qs('opAccName').textContent = a.value && a.options[a.selectedIndex] ? a.options[a.selectedIndex].textContent : 'выбрать';
       qs('opAccLbl').textContent = inc ? 'На счёт:' : 'Со счёта:';
@@ -11559,8 +11563,8 @@
     // ---------------------------------------------------------------
     // «Ещё»: сводка и переходы
     // ---------------------------------------------------------------
-    var APP_VERSION = '2.10.1';
-    var APP_BUILD = '20261106-1930';
+    var APP_VERSION = '2.10.2';
+    var APP_BUILD = '20261106-1950';
 
     // Проверка новой версии: читаем свежий index.html с сервера и сравниваем номер сборки.
     // Если сборка новее, на главном экране появляется уведомление с кнопкой «обновить».
