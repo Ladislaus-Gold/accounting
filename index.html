@@ -5274,10 +5274,10 @@
   .dmCfgHint{font-size:13px;color:#68645E;margin:2px 0 8px}
   .dmCfgRow{min-height:52px;display:flex;align-items:center;gap:8px;padding:4px 0;border-top:1px solid #E8E5E0;font-size:15px;font-weight:600;color:#1F1E1C}
   .dmCfgName{flex:1;min-width:0}
-  .dmMove{display:flex;gap:2px}
-  .dmMove button{width:44px;height:44px;border:0;background:transparent;font:inherit;font-size:20px;color:#1F1E1C;border-radius:12px;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
-  .dmMove button:disabled{color:#CFCAC2;cursor:default}
-  .dmMove button:not(:disabled):active{background:#ECEAE6}
+  .dmGrip{width:44px;height:44px;flex:none;border:0;background:transparent;color:#68645E;display:flex;align-items:center;justify-content:center;border-radius:12px;cursor:grab;touch-action:none;-webkit-tap-highlight-color:transparent}
+  .dmGrip svg{width:22px;height:22px}
+  .dmCfgRow.drag{background:#FDE9DC;border-radius:12px}
+  .dmCfgRow.drag .dmGrip{color:#C2410C}
   .dmSwitch{position:relative;width:46px;height:28px;flex:none}
   .dmSwitch input{position:absolute;inset:0;opacity:0;margin:0;cursor:pointer}
   .dmSwitch span{position:absolute;inset:0;border-radius:999px;background:#D9D5CE;transition:background .15s}
@@ -6221,7 +6221,7 @@
         <div class="sheetTitle" id="dashCfgTitle">Блоки главной</div>
         <div class="xbtn" id="dashCfgClose" role="button" tabindex="0" aria-label="Закрыть">×</div>
       </div>
-      <div class="dmCfgHint">Стрелками меняй порядок, переключателем скрывай или возвращай блок.</div>
+      <div class="dmCfgHint">Тяни за значок ☰, чтобы поменять порядок. Переключатель скрывает или возвращает блок.</div>
       <div id="dashCfgList"></div>
       <button class="btnPrimary btnFull" id="dashCfgDone" type="button" style="margin-top:14px;">Готово</button>
     </div>
@@ -10876,24 +10876,56 @@
       dmApplyBlocks();
       dmOpenCfg();
     }
+    // Перетаскивание строки за значок-бургер: строка меняется местами с соседями, пока палец движется
+    function dmBindDrag(handle, row, box) {
+      handle.addEventListener('pointerdown', function (e) {
+        e.preventDefault();
+        try { handle.setPointerCapture(e.pointerId); } catch (err) { /* не критично */ }
+        row.classList.add('drag');
+        function move(ev) {
+          var y = ev.clientY, prev, next, r;
+          while ((prev = row.previousElementSibling)) {
+            r = prev.getBoundingClientRect();
+            if (y < r.top + r.height / 2) box.insertBefore(row, prev); else break;
+          }
+          while ((next = row.nextElementSibling)) {
+            r = next.getBoundingClientRect();
+            if (y > r.top + r.height / 2) box.insertBefore(next, row); else break;
+          }
+        }
+        function up() {
+          handle.removeEventListener('pointermove', move);
+          handle.removeEventListener('pointerup', up);
+          handle.removeEventListener('pointercancel', up);
+          row.classList.remove('drag');
+          var order = [].map.call(box.children, function (c) { return c.getAttribute('data-id'); });
+          try { localStorage.setItem('acc_dash_order', JSON.stringify(order)); } catch (err) { /* без хранилища порядок действует до перезагрузки */ }
+          dmApplyBlocks();
+        }
+        handle.addEventListener('pointermove', move);
+        handle.addEventListener('pointerup', up);
+        handle.addEventListener('pointercancel', up);
+      });
+    }
+
     function dmOpenCfg() {
       var box = qs('dashCfgList');
       box.innerHTML = '';
       var names = {};
       DM_BLOCKS.forEach(function (b) { names[b[0]] = b[1]; });
-      var order = dmOrderLoad();
-      order.forEach(function (id, idx) {
-        var row = document.createElement('div'); row.className = 'dmCfgRow';
-        var name = document.createElement('span'); name.className = 'dmCfgName'; name.textContent = names[id];
+      dmOrderLoad().forEach(function (id) {
+        var row = document.createElement('div'); row.className = 'dmCfgRow'; row.setAttribute('data-id', id);
 
-        var mv = document.createElement('span'); mv.className = 'dmMove';
-        [['up', -1, '↑', 'Выше'], ['down', 1, '↓', 'Ниже']].forEach(function (d) {
-          var btn = document.createElement('button'); btn.type = 'button'; btn.textContent = d[2];
-          btn.setAttribute('aria-label', d[3] + ': ' + names[id]);
-          btn.disabled = (d[1] < 0 && idx === 0) || (d[1] > 0 && idx === order.length - 1);
-          btn.addEventListener('click', function () { dmMove(id, d[1]); });
-          mv.appendChild(btn);
+        var handle = document.createElement('button'); handle.type = 'button'; handle.className = 'dmGrip';
+        handle.setAttribute('aria-label', 'Переместить: ' + names[id] + ' (стрелки вверх и вниз)');
+        handle.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M5 8h14"/><path d="M5 12h14"/><path d="M5 16h14"/></svg>';
+        handle.addEventListener('keydown', function (e) {
+          if (e.key === 'ArrowUp') { e.preventDefault(); dmMove(id, -1); }
+          if (e.key === 'ArrowDown') { e.preventDefault(); dmMove(id, 1); }
         });
+        dmBindDrag(handle, row, box);
+
+        var name = document.createElement('span'); name.className = 'dmCfgName'; name.textContent = names[id];
 
         var sw = document.createElement('label'); sw.className = 'dmSwitch';
         var input = document.createElement('input'); input.type = 'checkbox'; input.checked = dmShown(id);
@@ -10905,7 +10937,7 @@
           if (input.checked) loadDashboard();
         });
         sw.append(input, document.createElement('span'));
-        row.append(name, mv, sw);
+        row.append(handle, name, sw);
         box.appendChild(row);
       });
       qs('dashCfgOverlay').classList.add('open');
@@ -11288,7 +11320,7 @@
     // «Ещё»: сводка и переходы
     // ---------------------------------------------------------------
     var APP_VERSION = '2.9.2';
-    var APP_BUILD = '20261106-1630';
+    var APP_BUILD = '20261106-1700';
 
     // Проверка новой версии: читаем свежий index.html с сервера и сравниваем номер сборки.
     // Если сборка новее, на главном экране появляется уведомление с кнопкой «обновить».
