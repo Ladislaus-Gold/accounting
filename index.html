@@ -5268,6 +5268,16 @@
   .dmLegend strong{font-weight:700;font-variant-numeric:tabular-nums}
   .dmLegend strong.inc{color:var(--dm-grn)}.dmLegend strong.exp{color:var(--dm-red)}
   #dashRecent .dmRow{margin-bottom:4px}
+  .dmEmpty{background:#fff;border:1px dashed #DAD6CF;border-radius:22px;padding:18px;text-align:center;font-size:14px;color:var(--dm-muted)}
+  #dashCfgDone{background:#C2410C!important;border-color:#C2410C!important;box-shadow:none!important}
+  .dmCfgHint{font-size:13px;color:#68645E;margin:2px 0 8px}
+  .dmCfgRow{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:13px 0;border-top:1px solid #E8E5E0;font-size:15px;font-weight:600;color:#1F1E1C;cursor:pointer}
+  .dmSwitch{position:relative;width:46px;height:28px;flex:none}
+  .dmSwitch input{position:absolute;inset:0;opacity:0;margin:0;cursor:pointer}
+  .dmSwitch span{position:absolute;inset:0;border-radius:999px;background:#D9D5CE;transition:background .15s}
+  .dmSwitch span::after{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.25);transition:transform .15s}
+  .dmSwitch input:checked+span{background:#C2410C}
+  .dmSwitch input:checked+span::after{transform:translateX(18px)}
 </style>
 </head>
 
@@ -5303,13 +5313,16 @@
             <span class="dmHeadSide"></span>
             <div class="dmHeadTitle">Главная</div>
             <span class="dmHeadSide right">
+              <button class="dmIconBtn" id="dashCfgBtn" type="button" aria-label="Настроить блоки">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h10"/><path d="M18 7h2"/><circle cx="16" cy="7" r="2"/><path d="M4 17h2"/><path d="M10 17h10"/><circle cx="8" cy="17" r="2"/></svg>
+              </button>
               <button class="dmIconBtn" id="dashRefresh" type="button" aria-label="Обновить данные">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.6-5.9"/><path d="M20 4v5h-5"/></svg>
               </button>
             </span>
           </div>
 
-          <section class="dmCard" aria-label="Общий баланс">
+          <section class="dmCard" data-dmblock="balance" aria-label="Общий баланс">
             <div class="dmRow">
               <span class="dmTitle">Общий баланс</span>
               <button class="dmLink" id="dashAllAccounts" type="button">Счета →</button>
@@ -5327,7 +5340,7 @@
             </div>
           </section>
 
-          <section class="dmCard">
+          <section class="dmCard" data-dmblock="budget">
             <div class="dmRow">
               <span class="dmTitle" id="dashBudgetTitle">Бюджет</span>
               <button class="dmLink" id="dashBudgetLink" type="button">Бюджет →</button>
@@ -5341,7 +5354,7 @@
             <div id="dashBudgetCats"></div>
           </section>
 
-          <section class="dmCard">
+          <section class="dmCard" data-dmblock="flow">
             <div class="dmRow">
               <span class="dmTitle">Денежный поток</span>
               <button class="dmLink" id="dashFlowLink" type="button">Аналитика →</button>
@@ -5354,7 +5367,7 @@
             </div>
           </section>
 
-          <section class="dmCard" id="dashRecent">
+          <section class="dmCard" id="dashRecent" data-dmblock="recent">
             <div class="dmRow">
               <span class="dmTitle">Последние операции</span>
               <button class="dmLink" id="dashAllTx" type="button">Все операции →</button>
@@ -5363,6 +5376,8 @@
             <div id="dashTxEmpty" class="saldoEmpty" hidden>Операций пока нет</div>
             <div class="authError" id="dashTxError" role="alert"></div>
           </section>
+
+          <div class="dmEmpty" id="dashEmpty" hidden>Все блоки скрыты. Включи нужные в настройках (значок вверху справа).</div>
 
           <div class="authError" id="dashError" role="alert"></div>
         </div>
@@ -6190,6 +6205,19 @@
         <div class="xbtn" id="distPickClose" role="button" tabindex="0" aria-label="Закрыть">×</div>
       </div>
       <div id="distPickList"></div>
+    </div>
+  </div>
+
+  <!-- ===================== БЛОКИ ГЛАВНОЙ ===================== -->
+  <div class="sheetOverlay" id="dashCfgOverlay">
+    <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="dashCfgTitle">
+      <div class="sheetHeader">
+        <div class="sheetTitle" id="dashCfgTitle">Блоки главной</div>
+        <div class="xbtn" id="dashCfgClose" role="button" tabindex="0" aria-label="Закрыть">×</div>
+      </div>
+      <div class="dmCfgHint">Включай и отключай блоки. Отключённые можно вернуть здесь же.</div>
+      <div id="dashCfgList"></div>
+      <button class="btnPrimary btnFull" id="dashCfgDone" type="button" style="margin-top:14px;">Готово</button>
     </div>
   </div>
 
@@ -10548,7 +10576,8 @@
       var reqId = ++dash.req;
       qs('dashTxError').textContent = '';
 
-      loadBudgetCats();
+      if (dmShown('budget')) loadBudgetCats();
+      if (!dmShown('recent')) return;
 
       try {
         if (!refs.loaded) await loadRefs();
@@ -10677,6 +10706,7 @@
 
     async function loadDashHistory(accounts, total) {
       var reqId = ++dmHist.req;
+      if (!dmShown('balance') && !dmShown('flow')) return;
       try {
         var rows = [], from = 0, size = 1000;
         for (var page = 0; page < 30; page++) {
@@ -10799,6 +10829,52 @@
         box.appendChild(col);
       });
     }
+
+    // Какие блоки показывать на главной (хранится на этом устройстве)
+    var DM_BLOCKS = [['balance', 'Общий баланс'], ['budget', 'Бюджет'], ['flow', 'Денежный поток'], ['recent', 'Последние операции']];
+    function dmBlocksLoad() {
+      try {
+        var v = JSON.parse(localStorage.getItem('acc_dash_blocks') || '{}');
+        return v && typeof v === 'object' ? v : {};
+      } catch (e) { return {}; }
+    }
+    function dmShown(id) { return dmBlocksLoad()[id] !== false; }
+    function dmApplyBlocks() {
+      var any = false;
+      DM_BLOCKS.forEach(function (b) {
+        var el = document.querySelector('[data-dmblock="' + b[0] + '"]');
+        var on = dmShown(b[0]);
+        if (el) el.hidden = !on;
+        if (on) any = true;
+      });
+      qs('dashEmpty').hidden = any;
+    }
+    function dmOpenCfg() {
+      var box = qs('dashCfgList');
+      box.innerHTML = '';
+      DM_BLOCKS.forEach(function (b) {
+        var row = document.createElement('label'); row.className = 'dmCfgRow';
+        var name = document.createElement('span'); name.textContent = b[1];
+        var sw = document.createElement('span'); sw.className = 'dmSwitch';
+        var input = document.createElement('input'); input.type = 'checkbox'; input.checked = dmShown(b[0]);
+        input.addEventListener('change', function () {
+          var st = dmBlocksLoad(); st[b[0]] = input.checked;
+          try { localStorage.setItem('acc_dash_blocks', JSON.stringify(st)); } catch (e) { /* без хранилища настройка действует до перезагрузки */ }
+          dmApplyBlocks();
+          if (input.checked) loadDashboard();
+        });
+        sw.append(input, document.createElement('span'));
+        row.append(name, sw);
+        box.appendChild(row);
+      });
+      qs('dashCfgOverlay').classList.add('open');
+    }
+    function dmCloseCfg() { qs('dashCfgOverlay').classList.remove('open'); }
+    qs('dashCfgBtn').addEventListener('click', dmOpenCfg);
+    qs('dashCfgClose').addEventListener('click', dmCloseCfg);
+    qs('dashCfgDone').addEventListener('click', dmCloseCfg);
+    qs('dashCfgOverlay').addEventListener('click', function (e) { if (e.target === qs('dashCfgOverlay')) dmCloseCfg(); });
+    dmApplyBlocks();
 
     qs('dashRange').addEventListener('click', function (e) {
       var btn = e.target.closest('button[data-r]');
@@ -11171,7 +11247,7 @@
     // «Ещё»: сводка и переходы
     // ---------------------------------------------------------------
     var APP_VERSION = '2.9.0';
-    var APP_BUILD = '20261106-1500';
+    var APP_BUILD = '20261106-1520';
 
     // Проверка новой версии: читаем свежий index.html с сервера и сравниваем номер сборки.
     // Если сборка новее, на главном экране появляется уведомление с кнопкой «обновить».
