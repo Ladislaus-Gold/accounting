@@ -5217,7 +5217,50 @@
       background:var(--t-ctl-dark)!important;border:1px solid var(--t-ctl-dark-edge)!important;
       box-shadow:0 3px 8px rgba(31,63,196,.18)!important}
     .xbtn,.mTxClose,.saldoAccountHistoryClose,#editOverlay .xbtn{color:var(--t-ctl-dark-ink)!important;font-weight:600}
-  </style>
+  
+  /* ===== Главная в стиле Monarch ===== */
+  #page-dashboard.active{background:#F6F5F3!important}
+  #page-dashboard{--dm-ink:#1F1E1C;--dm-muted:#68645E;--dm-line:#E8E5E0;--dm-pri:#C2410C;--dm-soft:#FDE9DC;--dm-grn:#2F7D4A;--dm-red:#B93A2A;font-family:Inter,system-ui,sans-serif;color:var(--dm-ink)}
+  #page-dashboard .saldoDashShell{display:flex;flex-direction:column;gap:10px}
+  #page-dashboard .saldoPageTitle{color:var(--dm-ink)}
+  #page-dashboard .saldoOverline{color:var(--dm-muted)}
+  .dmLabel{font-size:11px;letter-spacing:.06em;color:var(--dm-muted)}
+  .dmBalance,.dmCard{background:#fff;border:1px solid var(--dm-line);border-radius:14px;padding:14px}
+  .dmBalHead,.dmRow{display:flex;justify-content:space-between;align-items:center;gap:8px}
+  .dmFresh,.dmMuted{font-size:12px;color:var(--dm-muted)}
+  .dmBig{font-size:30px;font-weight:500;line-height:1.1;margin-top:4px;font-variant-numeric:tabular-nums}
+  .dmDelta{font-size:12px;margin-top:2px;min-height:15px;color:var(--dm-muted)}
+  .dmDelta.up{color:var(--dm-grn)}.dmDelta.down{color:var(--dm-red)}
+  .dmChart{margin-top:8px;height:90px}
+  .dmChart svg{display:block;width:100%;height:100%}
+  .dmAxis{display:flex;justify-content:space-between;font-size:12px;color:var(--dm-muted)}
+  .dmTiles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+  .dmTile{background:#fff;border:1px solid var(--dm-line);border-radius:14px;padding:12px;min-width:0}
+  .dmTile span{display:block;font-size:12px;color:var(--dm-muted)}
+  .dmTile strong{display:block;font-size:14px;font-weight:500;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-variant-numeric:tabular-nums}
+  .dmTile strong.inc{color:var(--dm-grn)}.dmTile strong.exp{color:var(--dm-red)}
+  .dmTitle{font-size:14px;font-weight:500}
+  .dmBar{height:8px;border-radius:4px;background:#F1EEEA;overflow:hidden;margin:10px 0}
+  .dmBar i{display:block;height:100%;width:0;border-radius:4px;background:var(--dm-pri);transition:width .3s}
+  .dmBar i.over{background:var(--dm-red)}
+  .dmStats{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .dmStats span{display:block;font-size:12px;color:var(--dm-muted)}
+  .dmStats strong{display:block;font-size:14px;font-weight:500;font-variant-numeric:tabular-nums}
+  .dmSecHead{margin:6px 2px 0}
+  .dmLink{background:none;border:0;padding:0;font:inherit;font-size:12px;color:#9A3412;cursor:pointer}
+  .dmStrip{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
+  .dmStrip::-webkit-scrollbar{display:none}
+  .dmAcc{flex:none;min-width:128px;text-align:left;background:#fff;border:1px solid var(--dm-line);border-radius:14px;padding:12px;font:inherit;color:inherit;cursor:pointer}
+  .dmAccIc{width:34px;height:34px;border-radius:10px;background:var(--dm-soft);display:flex;align-items:center;justify-content:center;font-size:15px}
+  .dmAcc.mono .dmAccIc{background:#DDF1F5}
+  .dmAccName{font-size:12px;color:var(--dm-muted);margin-top:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:150px}
+  .dmAccBal{font-size:14px;font-weight:500;font-variant-numeric:tabular-nums}
+  #dashRecent .dmRow{margin-bottom:4px}
+  .dmCat{margin-bottom:10px}.dmCat:last-child{margin-bottom:0}
+  .dmCatTop{display:flex;justify-content:space-between;font-size:12px;color:var(--dm-muted);margin-bottom:4px;gap:8px}
+  .dmCatTop span:first-child{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .dmCat .dmBar{margin:0}
+</style>
 </head>
 
 <body>
@@ -5258,137 +5301,54 @@
             </button>
           </div>
 
-          <section class="saldoBalanceCard" aria-label="Общий баланс">
-            <div class="saldoBalanceHead">
-              <span>Общий баланс</span>
-              <span class="saldoLiveStamp" id="dashFresh">обновление…</span>
+          <section class="dmBalance" aria-label="Общий баланс">
+            <div class="dmBalHead">
+              <span class="dmLabel">ОБЩИЙ БАЛАНС</span>
+              <span class="dmFresh" id="dashFresh">обновление…</span>
             </div>
-            <div class="saldoBalanceValue" id="dashTotalBalance">—</div>
-            <div class="saldoBalanceCaption" id="dashTotalCaption">Счета UAH</div>
+            <div class="dmBig" id="dashTotalBalance">—</div>
+            <div class="dmDelta" id="dashDelta"></div>
+            <div class="dmChart" id="dashChart"></div>
+            <div class="dmAxis"><span id="dashChartFrom"></span><span>сегодня</span></div>
           </section>
 
-          <section class="saldoSection saldoAccountsSection">
-            <div class="saldoSectionHead">
-              <div>
-                <div class="saldoSectionTitle">Счета</div>
-                <div class="saldoSectionSub">Баланс по всем кошелькам</div>
-              </div>
-              <button class="saldoLinkBtn" id="dashAllAccounts" type="button">Все</button>
-            </div>
-            <div class="saldoAccountStrip" id="dashAccountsStrip"></div>
-          </section>
-
-          <div class="saldoDashGrid">
-            <section class="saldoPanel saldoMonthPanel">
-              <div class="saldoPanelHead">
-                <div>
-                  <div class="saldoPanelEyebrow">ЭТОТ МЕСЯЦ</div>
-                  <div class="saldoPanelTitle" id="dashMonthTitle">—</div>
-                </div>
-                <div class="saldoResultPill" id="dashResultPill">—</div>
-              </div>
-
-              <div class="saldoFlowRow">
-                <div class="saldoFlowItem">
-                  <span class="saldoFlowDot income"></span>
-                  <div>
-                    <div class="saldoFlowLabel">Доходы</div>
-                    <div class="saldoFlowValue income" id="dashIncome">—</div>
-                  </div>
-                </div>
-                <div class="saldoFlowItem">
-                  <span class="saldoFlowDot expense"></span>
-                  <div>
-                    <div class="saldoFlowLabel">Расходы</div>
-                    <div class="saldoFlowValue" id="dashExpense">—</div>
-                  </div>
-                </div>
-              </div>
-
-              <div class="saldoResultBlock">
-                <div class="saldoResultLabel">Результат месяца</div>
-                <div class="saldoResultValue" id="dashProfit">—</div>
-                <div class="saldoReturnLine">Возвраты <strong id="dashReturns">—</strong></div>
-              </div>
-            </section>
-
-            <section class="saldoPanel saldoBudgetPanel">
-              <div class="saldoPanelHead">
-                <div>
-                  <div class="saldoPanelEyebrow">БЮДЖЕТ</div>
-                  <div class="saldoPanelTitle">Расходы</div>
-                </div>
-                <div class="saldoBudgetPercent" id="dashBudgetPercent">0%</div>
-              </div>
-
-              <div class="saldoBudgetText" id="dashBudgetText">—</div>
-              <div class="saldoProgress"><div class="saldoProgressFill" id="dashBudgetFill"></div></div>
-
-              <div class="saldoBudgetStats">
-                <div class="saldoBudgetStat">
-                  <span>Осталось</span>
-                  <strong id="dashBudgetRemaining">—</strong>
-                </div>
-                <div class="saldoBudgetStat">
-                  <span id="dashDailyLabel">Можно тратить / день</span>
-                  <strong id="dashDailyAllowance">—</strong>
-                </div>
-              </div>
-            </section>
+          <div class="dmTiles">
+            <div class="dmTile"><span>Доходы</span><strong class="inc" id="dashIncome">—</strong></div>
+            <div class="dmTile"><span>Расходы</span><strong class="exp" id="dashExpense">—</strong></div>
+            <div class="dmTile"><span>Результат</span><strong id="dashProfit">—</strong></div>
           </div>
 
-          <!-- Последние операции -->
-          <section class="saldoSection saldoTransactionsSection" id="dashRecent">
-            <div class="saldoSectionHead">
-              <div>
-                <div class="saldoSectionTitle">Последние операции</div>
-                <div class="saldoSectionSub">Нажмите на операцию для действий</div>
-              </div>
-              <button class="saldoLinkBtn" id="dashAllTx" type="button">Все</button>
+          <section class="dmCard">
+            <div class="dmRow">
+              <span class="dmTitle">Бюджет</span>
+              <span class="dmMuted" id="dashBudgetPercent">0%</span>
             </div>
-
-            <div class="saldoFilters">
-              <select class="saldoSelect" id="dPeriod" aria-label="Период">
-                <option value="TODAY">Сегодня</option>
-                <option value="7D">7 дней</option>
-                <option value="MONTH">Месяц</option>
-                <option value="ALL">Все</option>
-              </select>
-              <select class="saldoSelect" id="dAction" aria-label="Тип операции">
-                <option value="ALL">Все типы</option>
-                <option value="EXPENSE">Расходы</option>
-                <option value="INCOME">Доходы</option>
-                <option value="RETURN">Возвраты</option>
-                <option value="TRANSFER">Переводы</option>
-              </select>
-              <select class="saldoSelect saldoSelectWide" id="dCategory" aria-label="Категория">
-                <option value="ALL">Все категории</option>
-              </select>
+            <div class="dmBar"><i id="dashBudgetFill"></i></div>
+            <div class="dmStats">
+              <div><span>Осталось</span><strong id="dashBudgetRemaining">—</strong></div>
+              <div><span id="dashDailyLabel">Можно тратить / день</span><strong id="dashDailyAllowance">—</strong></div>
             </div>
+          </section>
 
+          <div class="dmRow dmSecHead">
+            <span class="dmLabel">СЧЕТА</span>
+            <button class="dmLink" id="dashAllAccounts" type="button">Все ›</button>
+          </div>
+          <div class="dmStrip" id="dashAccountsStrip"></div>
+
+          <section class="dmCard" id="dashRecent">
+            <div class="dmRow">
+              <span class="dmTitle">Последние операции</span>
+              <button class="dmLink" id="dashAllTx" type="button">Все ›</button>
+            </div>
             <div id="dashTxList" class="txList saldoTxList"></div>
             <div id="dashTxEmpty" class="saldoEmpty" hidden>Операций пока нет</div>
             <div class="authError" id="dashTxError" role="alert"></div>
           </section>
 
-          <!-- Топ категорий расходов -->
-          <section class="saldoPanel saldoInsightsPanel">
-            <div class="saldoSectionHead compact">
-              <div>
-                <div class="saldoSectionTitle" id="dashDonutTitle">Топ категорий расходов</div>
-                <div class="saldoSectionSub">Структура расходов за период</div>
-              </div>
-            </div>
-            <div class="donutWrap saldoDonutWrap">
-              <div class="donutBox">
-                <div id="dashDonutSvg"></div>
-                <div class="donutCenter">
-                  <div class="donutSum" id="dashDonutTotal">0 ₴</div>
-                  <div class="donutSub">расходы</div>
-                </div>
-              </div>
-              <div class="donutLegend" id="dashDonutLegend"></div>
-            </div>
+          <section class="dmCard">
+            <div class="dmTitle" style="margin-bottom:12px;">Топ расходов</div>
+            <div id="dashTopCats"></div>
           </section>
 
           <div class="authError" id="dashError" role="alert"></div>
@@ -6461,7 +6421,7 @@
       window.scrollTo(0, 0);
       currentPage = name;
       qs('fab').hidden = !(name === 'dashboard' || name === 'transactions' || name === 'accounts');
-      if (name === 'dashboard') { qs('dPeriod').value = 'TODAY'; loadDashboard(); }
+      if (name === 'dashboard') loadDashboard();
       if (name === 'transactions') loadTransactions(false);
       if (name === 'budget') loadBudget();
       if (name === 'rules') loadRules();
@@ -6553,36 +6513,30 @@
       rows.forEach(function (a) {
         var card = document.createElement('button');
         card.type = 'button';
-        card.className = 'saldoAccountCard' + (a.is_monobank ? ' mono' : '');
+        card.className = 'dmAcc' + (a.is_monobank ? ' mono' : '');
         card.addEventListener('click', function () {
           acc.list = accounts.slice().sort(function (x, y) { return x.id - y.id; });
           openAccountById(a.id);
         });
 
-        var top = document.createElement('div');
-        top.className = 'saldoAccountTop';
-        var icon = document.createElement('span');
-        icon.className = 'saldoAccountIcon';
+        var icon = document.createElement('div');
+        icon.className = 'dmAccIc';
         icon.textContent = accountIcon(a.name);
-        var source = document.createElement('span');
-        source.className = 'saldoAccountSource';
-        source.textContent = monoStatus(a);
-        top.append(icon, source);
 
         var name = document.createElement('div');
-        name.className = 'saldoAccountName';
+        name.className = 'dmAccName';
         name.textContent = accountLabel(a.name);
 
         var balance = document.createElement('div');
-        balance.className = 'saldoAccountBalance';
+        balance.className = 'dmAccBal';
         balance.textContent = money(a.balance);
 
-        card.append(top, name, balance);
+        card.append(icon, name, balance);
         box.appendChild(card);
       });
 
       if (!box.children.length) {
-        box.innerHTML = '<div class="saldoEmpty compact">Нет счетов</div>';
+        box.innerHTML = '<div class="dmMuted">Нет счетов</div>';
       }
     }
 
@@ -6597,29 +6551,21 @@
 
       var monthName = MONTHS[now.getMonth()] + ' ' + now.getFullYear();
       qs('dashMonth').textContent = monthName;
-      qs('dashMonthTitle').textContent = monthName;
 
       qs('dashIncome').textContent  = money(income);
       qs('dashExpense').textContent = money(netExpense);
-      qs('dashReturns').textContent = money(returns);
 
       var profitEl = qs('dashProfit');
       profitEl.textContent = signedMoney(profit);
       profitEl.classList.toggle('positive', profit >= 0);
       profitEl.classList.toggle('negative', profit < 0);
 
-      var pill = qs('dashResultPill');
-      pill.textContent = profit >= 0 ? 'плюс' : 'минус';
-      pill.classList.toggle('positive', profit >= 0);
-      pill.classList.toggle('negative', profit < 0);
-
       var remaining = budget - netExpense;
       var pct = budget > 0 ? (netExpense / budget) * 100 : 0;
       if (!isFinite(pct)) pct = 0;
 
-      qs('dashBudgetText').textContent = money(netExpense) + ' из ' + money(budget);
       qs('dashBudgetRemaining').textContent = money(remaining);
-      qs('dashBudgetPercent').textContent = (Math.round(pct * 10) / 10) + '%';
+      qs('dashBudgetPercent').textContent = (Math.round(pct)) + '% потрачено';
 
       var fill = qs('dashBudgetFill');
       fill.style.width = Math.max(0, Math.min(100, pct)) + '%';
@@ -6659,11 +6605,9 @@
           .reduce(function (sum, a) { return sum + Number(a.balance || 0); }, 0);
 
         qs('dashTotalBalance').textContent = money(total);
-        var monoRow = accounts.filter(function (a) { return a.is_monobank; })[0];
-        qs('dashTotalCaption').textContent = accounts.length + ' счетов UAH · ' +
-          (monoRow && monoRow.live ? 'Monobank ' + monoStatus(monoRow) : 'баланс по операциям');
 
         renderAccounts(accounts);
+        loadBalanceChart(accounts, total);
         renderSummary(summaryRes.data || {}, now);
 
         lastLoadAt = Date.now();
@@ -6783,7 +6727,7 @@
     }
 
     function fillCategoryFilter() {
-      ['fCategory', 'dCategory'].forEach(function (id) {
+      ['fCategory'].forEach(function (id) {
         var select = qs(id);
         var current = select.value;
         select.innerHTML = '<option value="ALL">Все категории</option>';
@@ -10635,36 +10579,24 @@
     async function loadDashRecent() {
       var reqId = ++dash.req;
       qs('dashTxError').textContent = '';
-      var period = qs('dPeriod').value;
 
-      loadDonut(period);
+      loadTopCats();
 
       try {
         if (!refs.loaded) await loadRefs();
         if (reqId !== dash.req) return;
 
-        var query = sb.from('transactions')
+        var res = await sb.from('transactions')
           .select('id,date,action,amount,currency,note,mono_op_id,category_id,account_id,from_account_id,to_account_id')
           .order('date', { ascending: false })
           .order('created_at', { ascending: false })
-          .limit(50);
-
-        var start = periodStart(period);
-        if (start) query = query.gte('date', start.toISOString());
-        var action = qs('dAction').value;
-        if (action !== 'ALL') query = query.eq('action', action);
-        var category = qs('dCategory').value;
-        if (category !== 'ALL') query = query.eq('category_id', Number(category));
-
-        var res = await query;
+          .limit(5);
         if (reqId !== dash.req) return;
         if (res.error) throw res.error;
 
         dash.rows = res.data || [];
         var box = qs('dashTxList');
         box.innerHTML = '';
-        qs('dashTxEmpty').textContent = period === 'TODAY' && action === 'ALL' && category === 'ALL'
-          ? 'Сегодня операций пока нет' : 'Операций пока нет';
         qs('dashTxEmpty').hidden = dash.rows.length > 0;
         renderTxGroups(dash.rows, box, null);
       } catch (err) {
@@ -10713,74 +10645,142 @@
       return '<svg width="' + size + '" height="' + size + '" viewBox="0 0 ' + size + ' ' + size + '">' + base + segs + '</svg>';
     }
 
-    function legendRow(color, label, value) {
-      var row = document.createElement('div'); row.className = 'legRow';
-      var left = document.createElement('div'); left.className = 'legLeft';
-      var dot = document.createElement('div'); dot.className = 'legDot'; dot.style.background = color;
-      var name = document.createElement('div'); name.className = 'legName'; name.textContent = label;
-      var val = document.createElement('div'); val.className = 'legValue'; val.textContent = value;
-      left.append(dot, name);
-      row.append(left, val);
-      return row;
-    }
+    var DM_COLORS = ['#C2410C', '#0E7490', '#A8325E', '#8A5A00'];
 
-    async function loadDonut(period) {
+    // Топ-4 категорий расходов за текущий месяц (с учётом разделённых операций)
+    async function loadTopCats() {
       var reqId = ++dash.donutReq;
-      qs('dashDonutTitle').textContent = donutTitle(period);
-
+      var box = qs('dashTopCats');
       try {
         if (!refs.loaded) await loadRefs();
         if (reqId !== dash.donutReq) return;
 
-        var rows = await fetchBreakdownRows(period);
+        var now = new Date();
+        var first = now.getFullYear() + '-' + pad2(now.getMonth() + 1) + '-01';
+        var res = await sb.rpc('month_category_totals', { p_month: first });
         if (reqId !== dash.donutReq) return;
+        if (res.error) throw res.error;
 
-        var expense = {}, returned = {};
-        rows.forEach(function (r) {
+        var sum = {};
+        (res.data || []).forEach(function (r) {
           var key = r.category_id === null || r.category_id === undefined ? 'none' : String(r.category_id);
-          var n = Math.abs(Number(r.amount || 0));
-          if (r.action === 'EXPENSE') expense[key] = (expense[key] || 0) + n;
-          else if (r.action === 'RETURN') returned[key] = (returned[key] || 0) + n;
+          var n = Math.abs(Number(r.total || 0));
+          if (r.action === 'EXPENSE') sum[key] = (sum[key] || 0) + n;
+          else if (r.action === 'RETURN') sum[key] = (sum[key] || 0) - n;
         });
 
-        var items = Object.keys(expense).map(function (key) {
+        var items = Object.keys(sum).map(function (key) {
           var c = refs.catById[key];
           return {
             category: key === 'none' ? 'Без категории' : (c ? c.name : 'Категория удалена'),
-            amount: Math.round(Math.max(0, expense[key] - (returned[key] || 0)) * 100) / 100
+            amount: Math.round(Math.max(0, sum[key]) * 100) / 100
           };
         }).filter(function (it) { return it.amount > 0; })
-          .sort(function (a, b) { return b.amount - a.amount; });
+          .sort(function (a, b) { return b.amount - a.amount; })
+          .slice(0, 4);
 
-        var total = items.reduce(function (sum, it) { return sum + it.amount; }, 0);
-        qs('dashDonutTotal').textContent = moneyShort(total);
-        qs('dashDonutSvg').innerHTML = donutSvgMarkup(items, total);
-
-        var legend = qs('dashDonutLegend');
-        legend.innerHTML = '';
-        items.slice(0, 4).forEach(function (it, idx) {
-          legend.appendChild(legendRow(DONUT_COLORS[idx % DONUT_COLORS.length], it.category, moneyShort(it.amount)));
-        });
-        var rest = items.slice(4);
-        if (rest.length) {
-          var restSum = rest.reduce(function (sum, it) { return sum + it.amount; }, 0);
-          legend.appendChild(legendRow('rgba(185,168,160,.9)', 'ещё ' + rest.length, moneyShort(restSum)));
-        }
+        box.innerHTML = '';
         if (!items.length) {
           var empty = document.createElement('div');
-          empty.className = 'muted';
-          empty.textContent = 'Расходов за этот период нет';
-          legend.appendChild(empty);
+          empty.className = 'dmMuted';
+          empty.textContent = 'Расходов в этом месяце пока нет';
+          box.appendChild(empty);
+          return;
         }
+        var max = items[0].amount;
+        items.forEach(function (it, idx) {
+          var row = document.createElement('div'); row.className = 'dmCat';
+          var top = document.createElement('div'); top.className = 'dmCatTop';
+          var n = document.createElement('span'); n.textContent = it.category;
+          var v = document.createElement('span'); v.textContent = moneyShort(it.amount);
+          top.append(n, v);
+          var bar = document.createElement('div'); bar.className = 'dmBar';
+          var fill = document.createElement('i');
+          fill.style.width = Math.max(3, it.amount / max * 100) + '%';
+          fill.style.background = DM_COLORS[idx % DM_COLORS.length];
+          bar.appendChild(fill);
+          row.append(top, bar);
+          box.appendChild(row);
+        });
       } catch (err) {
         if (reqId !== dash.donutReq) return;
-        console.error('[ACCOUNTING][DONUT]', err);
+        console.error('[ACCOUNTING][TOPCATS]', err);
       }
     }
 
-    ['dPeriod', 'dAction', 'dCategory'].forEach(function (id) {
-      qs(id).addEventListener('change', function () { loadDashRecent(); });
-    });
+    // График баланса за 30 дней: идём назад от текущего баланса по движению денег на счетах UAH
+    var dmChartReq = 0;
+    async function loadBalanceChart(accounts, total) {
+      var reqId = ++dmChartReq;
+      var chart = qs('dashChart');
+      try {
+        var uah = {};
+        accounts.forEach(function (a) {
+          if (String(a.currency || 'UAH').toUpperCase() === 'UAH') uah[a.id] = true;
+        });
+        var DAYS = 30;
+        var today = new Date(); today.setHours(0, 0, 0, 0);
+        var start = new Date(today.getFullYear(), today.getMonth(), today.getDate() - (DAYS - 1));
+
+        var rows = [], from = 0, size = 1000;
+        for (var page = 0; page < 10; page++) {
+          var res = await sb.from('transactions')
+            .select('date,action,amount,account_id,from_account_id,to_account_id')
+            .gte('date', start.toISOString())
+            .order('date', { ascending: true })
+            .range(from, from + size - 1);
+          if (res.error) throw res.error;
+          rows = rows.concat(res.data || []);
+          if (!res.data || res.data.length < size) break;
+          from += size;
+        }
+        if (reqId !== dmChartReq) return;
+
+        var flow = [];
+        for (var i = 0; i < DAYS; i++) flow.push(0);
+        rows.forEach(function (t) {
+          var d = new Date(t.date); d.setHours(0, 0, 0, 0);
+          var idx = Math.round((d - start) / 86400000);
+          if (idx < 0 || idx >= DAYS) return;
+          var amt = Number(t.amount || 0);
+          if (t.action === 'INCOME' || t.action === 'RETURN') { if (uah[t.account_id]) flow[idx] += amt; }
+          else if (t.action === 'EXPENSE') { if (uah[t.account_id]) flow[idx] -= amt; }
+          else if (t.action === 'TRANSFER') {
+            if (uah[t.to_account_id]) flow[idx] += amt;
+            if (uah[t.from_account_id]) flow[idx] -= amt;
+          }
+        });
+
+        var series = new Array(DAYS);
+        var bal = total;
+        for (var k = DAYS - 1; k >= 0; k--) { series[k] = bal; bal -= flow[k]; }
+        var change = total - bal; // изменение за 30 дней
+
+        var delta = qs('dashDelta');
+        delta.className = 'dmDelta ' + (change > 0.005 ? 'up' : change < -0.005 ? 'down' : '');
+        delta.textContent = (change > 0.005 ? '▲ ' : change < -0.005 ? '▼ ' : '') + signedMoney(change) + ' за 30 дней';
+        qs('dashChartFrom').textContent = start.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' }).replace('.', '');
+
+        var W = 320, H = 90, padT = 8, padB = 6;
+        var min = Math.min.apply(null, series), max = Math.max.apply(null, series);
+        var span = max - min || 1;
+        var pts = series.map(function (v, i) {
+          return [Math.round(i / (DAYS - 1) * W * 10) / 10, Math.round((padT + (1 - (v - min) / span) * (H - padT - padB)) * 10) / 10];
+        });
+        var line = pts.map(function (p, i) { return (i ? 'L' : 'M') + p[0] + ' ' + p[1]; }).join(' ');
+        var last = pts[pts.length - 1];
+        chart.innerHTML = '<svg viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="none" role="img" aria-label="График баланса за 30 дней">' +
+          '<path d="' + line + ' L' + W + ' ' + H + ' L0 ' + H + ' Z" fill="#FDE9DC"/>' +
+          '<path d="' + line + '" fill="none" stroke="#C2410C" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>' +
+          '</svg>';
+        void last;
+      } catch (err) {
+        if (reqId !== dmChartReq) return;
+        console.error('[ACCOUNTING][CHART]', err);
+        chart.innerHTML = '';
+      }
+    }
+
     qs('dashAllTx').addEventListener('click', function () { setPage('transactions'); });
 
     // ---------------------------------------------------------------
@@ -11141,8 +11141,8 @@
     // ---------------------------------------------------------------
     // «Ещё»: сводка и переходы
     // ---------------------------------------------------------------
-    var APP_VERSION = '2.8.0';
-    var APP_BUILD = '20261106-1400';
+    var APP_VERSION = '2.9.0';
+    var APP_BUILD = '20261106-1500';
 
     // Проверка новой версии: читаем свежий index.html с сервера и сравниваем номер сборки.
     // Если сборка новее, на главном экране появляется уведомление с кнопкой «обновить».
