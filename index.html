@@ -5292,6 +5292,86 @@
   .dmFinger::after{content:"👆";position:absolute;left:-4px;top:2px;font-size:30px;line-height:1}
   @keyframes dmFing{0%{transform:translateY(0) scale(1.35);opacity:0}14%{transform:translateY(0) scale(1);opacity:1}28%{transform:translateY(0) scale(.88);opacity:1}72%{transform:translateY(54px) scale(.88);opacity:1}88%{transform:translateY(54px) scale(1);opacity:1}100%{transform:translateY(54px) scale(1);opacity:0}}
   @keyframes dmPulse{0%{box-shadow:0 0 0 0 rgba(194,65,12,.55)}100%{box-shadow:0 0 0 16px rgba(194,65,12,0)}}
+
+  /* ===== Окно «Новая операция» в стиле Monarch ===== */
+  #editOverlay [hidden]{display:none!important}
+  #editOverlay .sheetHeader{justify-content:center}
+  #editOverlay .sheetTitle{flex:1;text-align:center!important;font-size:17px;font-weight:700;color:#1F1E1C}
+  #editOverlay .sheetTitle::before{display:none!important}
+  #editOverlay .seg{background:#EFEDE9!important;border:0!important;border-radius:12px;padding:3px}
+  #editOverlay .seg button{color:#68645E!important;background:transparent!important;box-shadow:none!important;font-size:14px!important}
+  #editOverlay .seg button.active,#editOverlay #txSeg.txCrudSeg button.active{background:#fff!important;color:#1F1E1C!important;box-shadow:0 1px 2px rgba(0,0,0,.12)!important}
+  #editOverlay .label{color:#68645E!important;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase}
+  #editOverlay .input,#editOverlay .select,#editOverlay .textarea{background:#fff!important;border:1px solid #E8E5E0!important;border-radius:14px;box-shadow:none!important}
+  #editOverlay .input:focus,#editOverlay .select:focus,#editOverlay .textarea:focus{border-color:#C2410C!important;box-shadow:none!important}
+  #editOverlay #txAmount{font-size:22px;font-weight:700}
+  #editOverlay .editSummary{background:transparent;padding:4px 2px}
+  #editOverlay .editAmount{font-size:26px;font-weight:700}
+  #editOverlay #fieldCategory .select,#editOverlay #fieldCurrency .select{display:none}
+  .opChips{display:flex;flex-wrap:wrap;gap:8px}
+  .opChip{border:1px solid #DAD6CF;background:#fff;color:#1F1E1C;border-radius:999px;min-height:40px;padding:0 14px;font:inherit;font-size:14px;font-weight:600;cursor:pointer}
+  .opChip.on{background:#FDE9DC;border-color:#C2410C;color:#9A3412}
+  .opChip:disabled{opacity:.5}
+  .opChipMore{color:#0E7490;border-style:dashed}
+  .opSwitchRow{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:48px;margin:10px 0 2px;font-size:15px;font-weight:600;cursor:pointer;position:relative}
+  .opSwitchTxt{flex:1}
+  .opSwitchRow input,.opRow input{position:absolute;opacity:0;width:1px;height:1px}
+  .opSw{position:relative;width:46px;height:28px;flex:none;border-radius:999px;background:#D9D5CE;transition:background .15s}
+  .opSw::after{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.25);transition:transform .15s}
+  input:checked+.opSw{background:#C2410C}
+  input:checked+.opSw::after{transform:translateX(18px)}
+  .opRow{display:flex;align-items:center;gap:12px;width:100%;box-sizing:border-box;min-height:56px;margin:10px 0 0;padding:8px 14px;background:#fff;border:1px solid #E8E5E0;border-radius:16px;box-shadow:0 1px 2px rgba(31,30,28,.06);font:inherit;text-align:left;color:#1F1E1C;cursor:pointer;position:relative}
+  .opRowIc{width:34px;height:34px;border-radius:50%;background:#FDE9DC;color:#C2410C;display:flex;align-items:center;justify-content:center;flex:none;font-size:17px}
+  .opRowTxt{flex:1;min-width:0;display:flex;flex-direction:column}
+  .opRowTxt b{font-size:15px;font-weight:600}
+  .opRowTxt span{font-size:12px;color:#68645E;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .opRowChev{color:#B5B0A8;font-size:22px}
+  #editOverlay .splitNum{display:none}
+  #editOverlay .splitRow{border:0!important;background:transparent!important;padding:0;gap:10px;margin-bottom:10px}
+  #editOverlay .splitRow select{flex:1;min-width:0;height:46px;border:1px solid #C2410C;border-radius:999px;background:#FDE9DC;color:#9A3412;padding:0 14px;font-size:15px;font-weight:600;-webkit-appearance:none;appearance:none}
+  #editOverlay .splitRow input{width:120px;height:46px;border:1px solid #DAD6CF;border-radius:12px;background:#fff;color:#1F1E1C;font-size:17px;font-weight:700}
+  #editOverlay .splitRow .splitDel{color:#68645E}
+  #editOverlay .splitAdd{background:transparent;color:#0E7490;text-align:left;padding:0 2px;font-size:15px;font-weight:600}
+  #editOverlay .splitTotal{display:flex;gap:18px;margin:6px 0 4px;padding:12px 14px;border-radius:12px;font-size:14px;font-weight:700}
+  #editOverlay .splitTotal.ok{background:#E3F1E7;color:#2F7D4A}
+  #editOverlay .splitTotal.bad{background:#FBE5E1;color:#B93A2A}
+  #editOverlay .splitSumLabel,#editOverlay .splitSum b{color:inherit;font-size:inherit}
+  /* --- окно операции: страница как в референсе --- */
+  #editOverlay,#editOverlay input,#editOverlay select,#editOverlay textarea,#editOverlay button{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","SF Pro Display","Helvetica Neue",Arial,sans-serif}
+  .opName.empty{color:#B5B0A8}
+  #editOverlay{background:linear-gradient(180deg,#F4B38F 0%,#FADCC8 34%,#FCF1E8 70%,#FBF7F3 100%)!important;align-items:stretch!important}
+  #editOverlay .sheet{max-width:none!important;width:100%!important;height:100%!important;max-height:none!important;min-height:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important;padding:0 12px calc(24px + env(safe-area-inset-bottom))!important;display:block!important;overflow:auto!important}
+  #editOverlay .sheet::before,#editOverlay .sheet::after{display:none!important}
+  #editOverlay .sheet>*{flex-shrink:initial}
+  .opTop{display:flex;align-items:center;justify-content:center;position:relative;height:52px}
+  #editOverlay .opTop .sheetTitle{position:absolute;left:44px;right:44px;width:auto;text-align:center!important;pointer-events:none;flex:none}
+  .opBack{position:absolute;left:-4px;top:4px;width:44px;height:44px;border:0;background:transparent;font-size:34px;line-height:1;color:#1F1E1C;cursor:pointer;padding:0 0 4px}
+  .opTop .xbtn{display:none!important}
+  .opCard{background:#fff;border-radius:22px;padding:14px;box-shadow:0 1px 2px rgba(31,30,28,.06)}
+  .opHead{display:flex;align-items:center;gap:12px;margin-top:4px}
+  .opAv{width:56px;height:56px;border-radius:50%;background:#FDE9DC;display:flex;align-items:center;justify-content:center;font-size:28px;flex:none}
+  .opAv.inc{background:#E3F1E7}
+  .opHeadMain{flex:1;min-width:0;display:flex;flex-direction:column;align-items:flex-end}
+  .opAmt{display:flex;align-items:center;justify-content:flex-end;gap:2px;font-size:26px;font-weight:700;max-width:100%}
+  .opSign.exp{color:#1F1E1C}.opSign.inc{color:#2F7D4A}
+  #editOverlay .opAmt #txAmount{width:5ch;max-width:55vw;height:40px;padding:0 4px;border:0!important;background:transparent!important;box-shadow:none!important;font-size:26px!important;font-weight:700!important;text-align:right;color:#1F1E1C!important;border-radius:8px}
+  #editOverlay .opAmt #txAmount::placeholder{color:#C9C4BC!important}
+  #editOverlay .opAmt #txAmount.amtOk{color:#1F1E1C!important}
+  .opCurSym{font-size:26px;font-weight:700}
+  .opAcc{position:relative;display:block;font-size:13px;color:#68645E;margin-top:2px}
+  .opAcc b{font-weight:600;color:#1F1E1C}
+  .opAcc select{position:absolute;inset:0;width:100%;height:100%;opacity:0;font-size:16px}
+  #editOverlay #editSummary{text-align:right;padding:0}
+  .opName{font-size:24px;font-weight:700;margin:10px 0 8px;letter-spacing:-.01em;word-break:break-word}
+  #editOverlay #fieldCurrency{padding-bottom:14px;margin:0 -14px 4px;padding-left:14px;padding-right:14px;border-bottom:1px solid #E8E5E0}
+  #editOverlay #fieldCurrency .label{display:none}
+  #editOverlay .opCardField{border:1px solid #E8E5E0;border-radius:14px;padding:8px 14px;margin-top:10px}
+  #editOverlay .opCardField .label{text-transform:none;letter-spacing:0;font-size:12px;font-weight:500;margin:0}
+  #editOverlay .opCardField .input,#editOverlay .opCardField .textarea{border:0!important;padding:2px 0 0!important;font-size:16px;font-weight:600;min-height:0;box-shadow:none!important;background:transparent!important}
+  #editOverlay #fieldNote .textarea{min-height:28px;height:auto;resize:none}
+  #editOverlay #editCancel{display:none}
+  #editOverlay #editButtons{display:block}
+  #editOverlay #editSave{width:100%;background:#C2410C!important;border-color:#C2410C!important;box-shadow:none!important;border-radius:14px;height:50px}
   /* обучение: всё затемнено, кроме первой строки и подсказки */
   #dashCfgOverlay .sheet.dmTour .sheetTitle,#dashCfgOverlay .sheet.dmTour .dmCfgRow:not(:first-child),#dashCfgOverlay .sheet.dmTour .dmCfgRow:first-child .dmCfgName,#dashCfgOverlay .sheet.dmTour .dmCfgRow:first-child .dmSwitch,#dashCfgOverlay .sheet.dmTour #dashCfgDone{opacity:.22;transition:opacity .2s}
   #dashCfgOverlay .sheet.dmTour .dmCfgRow:first-child{background:#FDE9DC;border-radius:12px;border-top-color:transparent}
@@ -5983,16 +6063,13 @@
   <!-- ===================== ОПЕРАЦИЯ: НОВАЯ / ИЗМЕНИТЬ ===================== -->
   <div class="sheetOverlay" id="editOverlay">
     <div class="sheet txCrudSheet" role="dialog" aria-modal="true" aria-labelledby="editTitle">
-      <div class="sheetHeader">
+      <div class="opTop">
+        <button type="button" class="opBack" id="opBack" aria-label="Назад">‹</button>
         <div class="sheetTitle" id="editTitle">Новая операция</div>
         <div class="xbtn" id="editClose" role="button" tabindex="0" aria-label="Закрыть">×</div>
       </div>
 
-      <div class="editSummary" id="editSummary" hidden>
-        <div class="editAmount" id="editAmount">—</div>
-        <div class="editMeta" id="editMeta">—</div>
-      </div>
-
+      <div class="opCard">
       <div class="seg txCrudSeg" id="txSeg">
         <button type="button" data-action="EXPENSE" class="active">Расход</button>
         <button type="button" data-action="INCOME">Доход</button>
@@ -6000,20 +6077,33 @@
         <button type="button" data-action="TRANSFER">Перевод</button>
       </div>
 
-      <div class="row2" id="fieldAmountDate">
-        <div class="field">
-          <div class="label">Сумма</div>
-          <input class="input amtInput amtBad" id="txAmount" type="number" min="0" step="0.01" inputmode="decimal" placeholder="0,00">
-        </div>
-        <div class="field">
-          <div class="label">Дата</div>
-          <input class="input" id="txDate" type="date">
+      <div class="opHead">
+        <div class="opAv" id="opAv">🧾</div>
+        <div class="opHeadMain">
+          <div class="editSummary" id="editSummary" hidden>
+            <div class="editAmount" id="editAmount">—</div>
+            <div class="editMeta" id="editMeta">—</div>
+          </div>
+          <div class="opAmt" id="fieldAmountDate">
+            <span class="opSign" id="opSign"></span>
+            <input class="input amtInput amtBad" id="txAmount" type="number" min="0" step="0.01" inputmode="decimal" placeholder="0,00" aria-label="Сумма">
+            <span class="opCurSym" id="opCurSym">₴</span>
+          </div>
+          <label class="opAcc" id="fieldAccount">
+            <span><span id="opAccLbl">Со счёта:</span> <b id="opAccName">выбрать</b> ▾</span>
+            <select id="txAccount" aria-label="Счёт"></select>
+          </label>
         </div>
       </div>
+      <div class="opName" id="opName">Без названия</div>
 
-      <div class="field" id="fieldAccount">
-        <div class="label">Счёт</div>
-        <select class="select" id="txAccount"></select>
+      <div class="field" id="fieldCurrency">
+        <div class="opChips" id="curChips"></div>
+        <select class="select" id="txCurrency">
+          <option value="UAH">UAH</option>
+          <option value="USD">USD</option>
+          <option value="EUR">EUR</option>
+        </select>
       </div>
 
       <div class="row2" id="fieldTransfer" hidden>
@@ -6029,45 +6119,49 @@
 
       <div class="field" id="fieldCategory">
         <div class="label">Категория</div>
+        <div class="opChips" id="catChips"></div>
         <select class="select" id="editCategory"></select>
       </div>
 
-      <button type="button" class="splitLink" id="splitLink" hidden>
-        <span class="splitPlus">+</span>Разделить на несколько категорий
-      </button>
       <div id="splitBox" hidden>
         <div class="splitHead">
           <div class="label" id="splitTitle">Категории операции</div>
-          <button type="button" class="splitOff" id="splitOff">Не делить</button>
         </div>
         <div id="splitRows"></div>
         <button type="button" class="splitAdd" id="splitAdd">+ Добавить категорию</button>
-        <div class="splitTotal">
-          <div class="splitBar" id="splitBar"></div>
-          <div class="splitSum">
-            <div><span class="splitSumLabel">Итого</span> <b id="splitSumText"></b></div>
-            <span class="splitState" id="splitSumState"></span>
-          </div>
+        <div class="splitTotal" id="splitTotal">
+          <span class="splitSumLabel">Итого</span>
+          <span><b id="splitSumText"></b> · <span id="splitSumState"></span></span>
         </div>
       </div>
 
-      <div class="field" id="fieldCurrency">
-        <div class="label">Валюта</div>
-        <select class="select" id="txCurrency">
-          <option value="UAH">UAH</option>
-          <option value="USD">USD</option>
-          <option value="EUR">EUR</option>
-        </select>
+      <label class="opSwitchRow" id="splitSwitchRow" hidden>
+        <span class="opSwitchTxt">Разделить на несколько категорий</span>
+        <input type="checkbox" id="splitSwitch">
+        <span class="opSw"></span>
+      </label>
+
+      <div class="field opCardField" id="fieldDate">
+        <div class="label">Дата</div>
+        <input class="input" id="txDate" type="date">
       </div>
 
-      <div class="field">
+      <div class="field opCardField" id="fieldNote">
         <div class="label">Заметка</div>
         <textarea class="textarea" id="editNote" maxlength="500" placeholder="Необязательно"></textarea>
       </div>
 
-      <label class="checkRow" id="editRuleRow">
+      <button type="button" class="opRow" id="opDistRow" hidden>
+        <span class="opRowIc">💰</span>
+        <span class="opRowTxt"><b>Распределить доход</b><span>По тратам и копилкам</span></span>
+        <span class="opRowChev">›</span>
+      </button>
+
+      <label class="opRow" id="editRuleRow">
+        <span class="opRowIc"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 12l-8 8-9-9V4h7z"/><circle cx="8" cy="8" r="1.2"/></svg></span>
+        <span class="opRowTxt"><b>Запомнить правило</b><span id="ruleSub">Для такой заметки ставить эту категорию</span></span>
         <input type="checkbox" id="editRule">
-        <span>Запомнить: для такой заметки сразу ставить эту категорию</span>
+        <span class="opSw"></span>
       </label>
 
       <div class="muted" id="editHint"></div>
@@ -6076,6 +6170,8 @@
       <div class="btnRow" id="editButtons">
         <button class="btnGhost" id="editCancel" type="button">Отмена</button>
         <button class="btnPrimary" id="editSave" type="button">Сохранить</button>
+      </div>
+
       </div>
 
       <div class="field" id="editDeleteWrap" hidden>
@@ -7078,6 +7174,8 @@
       var want = selectedId ? String(selectedId) : '';
       select.value = want;
       if (select.value !== want) select.value = '';
+      renderCatChips();
+      updateRuleSub();
     }
 
     // ---- разделение на категории в окне операции
@@ -7116,20 +7214,11 @@
       var sums = form.split.map(splitPartCents);
       var sum = sums.reduce(function (a, b) { return a + b; }, 0);
       var left = total - sum;
-      qs('splitTitle').textContent = 'Категории операции · ' + form.split.length;
-      var bar = qs('splitBar');
-      bar.innerHTML = '';
-      sums.forEach(function (c, i) {
-        var seg = document.createElement('div');
-        seg.style.width = (total > 0 ? Math.min(100, c / total * 100) : 0) + '%';
-        seg.style.background = SPLIT_COLORS[i % SPLIT_COLORS.length][0];
-        bar.appendChild(seg);
-      });
-      qs('splitSumText').textContent = splitFmt(total) + ' ₴';
-      var st = qs('splitSumState');
-      if (left === 0) { st.textContent = '✓ Сумма сходится'; st.className = 'splitState ok'; }
-      else if (left > 0) { st.textContent = 'Не хватает ' + splitFmt(left) + ' ₴'; st.className = 'splitState bad'; }
-      else { st.textContent = 'Лишние ' + splitFmt(-left) + ' ₴'; st.className = 'splitState bad'; }
+      qs('splitTitle').textContent = 'Категории операции';
+      qs('splitSumText').textContent = splitFmt(sum) + ' ₴';
+      qs('splitSumState').textContent = left === 0 ? 'совпадает с суммой'
+        : (left > 0 ? 'не хватает ' + splitFmt(left) + ' ₴' : 'больше на ' + splitFmt(-left) + ' ₴');
+      qs('splitTotal').className = 'splitTotal ' + (left === 0 ? 'ok' : 'bad');
     }
 
     // Меняешь сумму части: другая часть сама подстраивается, чтобы итог остался равен сумме операции.
@@ -7199,12 +7288,91 @@
       splitSync();
     }
 
+    // ---- чипы категорий и валют в окне операции (select остаётся источником значения)
+    var catOpen = false;
+    function renderCatChips() {
+      var box = qs('catChips');
+      var sel = qs('editCategory');
+      box.innerHTML = '';
+      var items = [].slice.call(sel.options).filter(function (o) { return o.value; });
+      var LIMIT = 6;
+      var shown = catOpen ? items : items.slice(0, LIMIT);
+      var cur = sel.value;
+      if (cur && !shown.some(function (o) { return o.value === cur; })) {
+        var chosen = items.filter(function (o) { return o.value === cur; })[0];
+        if (chosen) shown = shown.concat([chosen]);
+      }
+      shown.forEach(function (o) {
+        var b = document.createElement('button');
+        b.type = 'button'; b.className = 'opChip' + (o.value === cur ? ' on' : '');
+        b.textContent = o.textContent; b.disabled = sel.disabled;
+        b.addEventListener('click', function () {
+          sel.value = o.value;
+          sel.dispatchEvent(new Event('change'));
+        });
+        box.appendChild(b);
+      });
+      if (items.length > LIMIT) {
+        var more = document.createElement('button');
+        more.type = 'button'; more.className = 'opChip opChipMore';
+        more.textContent = catOpen ? 'Свернуть' : 'Ещё ' + (items.length - LIMIT);
+        more.addEventListener('click', function () { catOpen = !catOpen; renderCatChips(); });
+        box.appendChild(more);
+      }
+    }
+    function renderCurChips() {
+      var box = qs('curChips');
+      box.innerHTML = '';
+      var cur = qs('txCurrency').value || 'UAH';
+      ['UAH', 'USD', 'EUR'].forEach(function (c) {
+        var b = document.createElement('button');
+        b.type = 'button'; b.className = 'opChip' + (c === cur ? ' on' : ''); b.textContent = c;
+        b.addEventListener('click', function () { qs('txCurrency').value = c; renderCurChips(); updateOpHead(); });
+        box.appendChild(b);
+      });
+    }
+    function fitAmt() {
+      var el = qs('txAmount');
+      el.style.width = Math.max(4, String(el.value || '0,00').length + 1) + 'ch';
+    }
+    function updateOpHead() {
+      fitAmt();
+      var sel = qs('editCategory');
+      var cat = sel.value && sel.options[sel.selectedIndex] ? sel.options[sel.selectedIndex].textContent : '';
+      var m = cat.match(/\p{Extended_Pictographic}\uFE0F?/u);
+      var inc = form.action === 'INCOME' || form.action === 'RETURN';
+      qs('opAv').textContent = m ? m[0] : (form.action === 'INCOME' ? '↗' : (form.action === 'RETURN' ? '↩' : (form.action === 'TRANSFER' ? '⇄' : '🧾')));
+      qs('opAv').className = 'opAv' + (inc ? ' inc' : '');
+      var note = qs('editNote').value.trim().split('\n')[0];
+      var catPlain = cat.replace(/\p{Extended_Pictographic}\uFE0F?/gu, '').trim();
+      var nameText = note || (form.action === 'TRANSFER' ? 'Перевод' : catPlain);
+      qs('opName').textContent = nameText || 'Выбери категорию';
+      qs('opName').classList.toggle('empty', !nameText);
+      var a = qs('txAccount');
+      qs('opAccName').textContent = a.value && a.options[a.selectedIndex] ? a.options[a.selectedIndex].textContent : 'выбрать';
+      qs('opAccLbl').textContent = inc ? 'На счёт:' : 'Со счёта:';
+      var sign = form.action === 'EXPENSE' ? '−' : (inc ? '+' : '');
+      qs('opSign').textContent = sign;
+      qs('opSign').className = 'opSign ' + (sign === '−' ? 'exp' : (sign ? 'inc' : ''));
+      var cur = qs('txCurrency').value || 'UAH';
+      qs('opCurSym').textContent = cur === 'UAH' ? '₴' : (cur === 'USD' ? '$' : '€');
+    }
+    function updateRuleSub() {
+      updateOpHead();
+      var note = qs('editNote').value.trim();
+      var sel = qs('editCategory');
+      var cat = sel.value && sel.options[sel.selectedIndex] ? sel.options[sel.selectedIndex].textContent : '';
+      if (note.length > 22) note = note.slice(0, 22) + '…';
+      qs('ruleSub').textContent = note && cat ? '«' + note + '» → ' + cat : 'Для такой заметки ставить эту категорию';
+    }
+
     function splitApply() {
       var isTransfer = form.action === 'TRANSFER';
       var can = splits.ready && form.mode !== 'create' && !isTransfer;
       if (!can) form.split = null;
       var on = !!form.split;
-      qs('splitLink').hidden = !can || on;
+      qs('splitSwitchRow').hidden = !can;
+      qs('splitSwitch').checked = on;
       qs('splitBox').hidden = !on;
       qs('fieldCategory').hidden = isTransfer || on;
       qs('editRuleRow').hidden = isTransfer || on;
@@ -7247,6 +7415,8 @@
       qs('fieldTransfer').hidden = !full || !isTransfer;
       qs('fieldCategory').hidden = isTransfer;
       qs('editRuleRow').hidden = isTransfer;
+      qs('opDistRow').hidden = action !== 'INCOME';
+      updateOpHead();
       splitApply();
     }
 
@@ -7290,6 +7460,7 @@
 
       qs('txSeg').hidden = isBank;
       qs('fieldAmountDate').hidden = isBank;
+      qs('fieldDate').hidden = isBank;
       qs('fieldCurrency').hidden = isBank;
 
       // Значения полей
@@ -7318,6 +7489,10 @@
 
       // Банковский перевод: категория не меняется
       qs('editCategory').disabled = isBank && action === 'TRANSFER';
+      catOpen = false;
+      renderCatChips();
+      renderCurChips();
+      updateRuleSub();
 
       qs('editHint').textContent = isBank
         ? 'Банковская операция: сумма, дата и счёт защищены. Меняются только категория и заметка.'
@@ -7556,8 +7731,22 @@
 
     qs('txMore').addEventListener('click', function () { loadTransactions(true); });
 
-    qs('splitLink').addEventListener('click', splitStart);
-    qs('splitOff').addEventListener('click', function () { form.split = null; splitApply(); });
+    qs('splitSwitch').addEventListener('change', function () {
+      if (qs('splitSwitch').checked) splitStart(); else { form.split = null; splitApply(); }
+    });
+    qs('opDistRow').addEventListener('click', async function () {
+      qs('editError').textContent = '';
+      try { if (!bud.budgets || !Object.keys(bud.budgets).length) await loadBudget(); } catch (err) { /* ниже покажем причину */ }
+      await openDist();
+      if (!qs('distOverlay').classList.contains('open')) {
+        qs('editError').textContent = qs('budError').textContent || qs('budMsg').textContent || 'Не удалось открыть распределение.';
+      }
+    });
+    qs('editNote').addEventListener('input', updateRuleSub);
+    qs('txAmount').addEventListener('input', fitAmt);
+    qs('txAccount').addEventListener('change', updateOpHead);
+    qs('opBack').addEventListener('click', closeEdit);
+    qs('editCategory').addEventListener('change', function () { renderCatChips(); updateRuleSub(); });
     qs('splitAdd').addEventListener('click', function () {
       if (!form.split) return;
       form.split.push({ cat: '', amt: '' });
@@ -11374,8 +11563,8 @@
     // ---------------------------------------------------------------
     // «Ещё»: сводка и переходы
     // ---------------------------------------------------------------
-    var APP_VERSION = '2.9.5';
-    var APP_BUILD = '20261106-1830';
+    var APP_VERSION = '2.10.2';
+    var APP_BUILD = '20261106-1950';
 
     // Проверка новой версии: читаем свежий index.html с сервера и сравниваем номер сборки.
     // Если сборка новее, на главном экране появляется уведомление с кнопкой «обновить».
