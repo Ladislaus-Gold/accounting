@@ -5284,6 +5284,13 @@
   .dmSwitch span::after{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.25);transition:transform .15s}
   .dmSwitch input:checked+span{background:#C2410C}
   .dmSwitch input:checked+span::after{transform:translateX(18px)}
+  .dmCoach{background:#FDE9DC;border-radius:14px;padding:10px 12px;margin:2px 0 6px;font-size:13px;line-height:1.35;color:#9A3412}
+  .dmCoach b{display:block;font-size:14px;color:#7C2D12;margin-bottom:2px}
+  .dmGrip{position:relative}
+  .dmGrip.pulse::after{content:"";position:absolute;left:50%;top:50%;width:10px;height:10px;margin:-5px 0 0 -5px;border-radius:50%;background:#C2410C;animation:dmPulse 1.4s ease-out infinite}
+  @keyframes dmPulse{0%{box-shadow:0 0 0 0 rgba(194,65,12,.55)}100%{box-shadow:0 0 0 16px rgba(194,65,12,0)}}
+  /* закрытие окон свайпом вниз: кнопки-крестики скрыты */
+  .sheetOverlay .xbtn,.mTxClose,#accTxClose{display:none!important}
 </style>
 </head>
 
@@ -6222,6 +6229,7 @@
         <div class="xbtn" id="dashCfgClose" role="button" tabindex="0" aria-label="Закрыть">×</div>
       </div>
       <div class="dmCfgHint">Тяни за значок ☰, чтобы поменять порядок. Переключатель скрывает или возвращает блок.</div>
+      <div class="dmCoach" id="dashCfgCoach" hidden><b>Как переставить блок</b>Нажми на точку у значка ☰ и тяни вниз или вверх.</div>
       <div id="dashCfgList"></div>
       <button class="btnPrimary btnFull" id="dashCfgDone" type="button" style="margin-top:14px;">Готово</button>
     </div>
@@ -8975,55 +8983,6 @@
     qs('distClose').addEventListener('click', closeDist);
     qs('distOverlay').addEventListener('click', function (e) { if (e.target === qs('distOverlay')) closeDist(); });
 
-    // Закрытие свайпом вниз: потяни за ручку, заголовок или вводный текст
-    (function () {
-      var overlay = qs('distOverlay');
-      var sheet = overlay.querySelector('.sheet');
-      var st = null;
-      function reset() { sheet.style.transition = ''; sheet.style.transform = ''; overlay.style.background = ''; }
-      sheet.addEventListener('touchstart', function (e) {
-        if (e.touches.length !== 1 || dist.busy) return;
-        var t = e.touches[0];
-        var inHandle = sheet.scrollTop <= 0 && t.clientY - sheet.getBoundingClientRect().top < 28;
-        if (!inHandle && !e.target.closest('.sheetHeader, #distMeta')) return;
-        st = { x: t.clientX, y: t.clientY, t: Date.now(), dy: 0, drag: false };
-      }, { passive: true });
-      sheet.addEventListener('touchmove', function (e) {
-        if (!st) return;
-        var t = e.touches[0];
-        var dx = t.clientX - st.x, dy = t.clientY - st.y;
-        if (!st.drag) {
-          if (Math.abs(dx) > 10 && Math.abs(dx) > Math.abs(dy)) { st = null; return; }
-          if (dy < 0 && Math.abs(dy) > 10) { st = null; return; }
-          if (dy < 8) return;
-          st.drag = true;
-          sheet.style.transition = 'none';
-        }
-        e.preventDefault();
-        st.dy = Math.max(0, dy);
-        sheet.style.transform = 'translateY(' + st.dy + 'px)';
-        overlay.style.background = 'rgba(0,0,0,' + (0.35 * (1 - Math.min(1, st.dy / Math.max(1, sheet.offsetHeight)))) + ')';
-      }, { passive: false });
-      function end() {
-        if (!st) return;
-        var s = st;
-        st = null;
-        if (!s.drag) return;
-        var v = s.dy / Math.max(1, Date.now() - s.t);
-        sheet.style.transition = 'transform .2s ease';
-        if (s.dy > 110 || (s.dy > 40 && v > 0.5)) {
-          sheet.style.transform = 'translateY(' + sheet.offsetHeight + 'px)';
-          setTimeout(function () { closeDist().then(reset, reset); }, 200);
-        } else {
-          sheet.style.transform = '';
-          overlay.style.background = '';
-          setTimeout(function () { sheet.style.transition = ''; }, 220);
-        }
-      }
-      sheet.addEventListener('touchend', end);
-      sheet.addEventListener('touchcancel', end);
-    })();
-
     // ----- окно «Сформировать»: переводы на то, что распределено, но ещё не переведено
     function distGroups() {
       var src = distSrc();
@@ -10882,6 +10841,7 @@
         e.preventDefault();
         try { handle.setPointerCapture(e.pointerId); } catch (err) { /* не критично */ }
         row.classList.add('drag');
+        dmHintSeen();
         function move(ev) {
           var y = ev.clientY, prev, next, r;
           while ((prev = row.previousElementSibling)) {
@@ -10940,15 +10900,101 @@
         row.append(handle, name, sw);
         box.appendChild(row);
       });
+      var seen = false;
+      try { seen = localStorage.getItem('acc_dash_hint') === '1'; } catch (e) { seen = false; }
+      qs('dashCfgCoach').hidden = seen;
+      var firstGrip = box.querySelector('.dmGrip');
+      if (firstGrip && !seen) firstGrip.classList.add('pulse');
       qs('dashCfgOverlay').classList.add('open');
     }
-    function dmCloseCfg() { qs('dashCfgOverlay').classList.remove('open'); }
+
+    // Подсказку показываем один раз: она больше не появится после закрытия окна или первого перетаскивания
+    function dmHintSeen() {
+      try { localStorage.setItem('acc_dash_hint', '1'); } catch (e) { /* без хранилища подсказка покажется снова */ }
+      qs('dashCfgCoach').hidden = true;
+      var pulsing = qs('dashCfgList').querySelectorAll('.dmGrip.pulse');
+      for (var i = 0; i < pulsing.length; i++) pulsing[i].classList.remove('pulse');
+    }
+    function dmCloseCfg() { dmHintSeen(); qs('dashCfgOverlay').classList.remove('open'); }
     qs('dashCfgBtn').addEventListener('click', dmOpenCfg);
     qs('dashCfgClose').addEventListener('click', dmCloseCfg);
     qs('dashCfgDone').addEventListener('click', dmCloseCfg);
     qs('dashCfgOverlay').addEventListener('click', function (e) { if (e.target === qs('dashCfgOverlay')) dmCloseCfg(); });
     dmApplyBlocks();
 
+
+    // Закрытие любого окна свайпом вниз (кнопки-крестики скрыты). Порог маленький, чтобы хватало лёгкого движения
+    (function () {
+      var st = null;
+      var DIST = 40;        // px: достаточно потянуть вниз на 40 пикселей
+      var FLICK_DIST = 14;  // px и быстрое движение тоже закрывает
+      var FLICK_SPEED = 0.3; // px/мс
+
+      function parts(target) {
+        var ov = target.closest ? target.closest('.sheetOverlay.open, .mTxOverlay.open') : null;
+        if (!ov) return null;
+        var sh = ov.querySelector('.sheet, .mTxSheet');
+        var cl = ov.querySelector('.xbtn, .mTxClose, #accTxClose');
+        if (!sh || !cl || !sh.contains(target)) return null;
+        return { ov: ov, sh: sh, cl: cl };
+      }
+      function scrolled(target, sh) {
+        for (var el = target; el; el = el.parentElement) {
+          if (el.scrollTop > 0) return true;
+          if (el === sh) break;
+        }
+        return false;
+      }
+
+      document.addEventListener('touchstart', function (e) {
+        st = null;
+        if (e.touches.length !== 1) return;
+        var t = e.target;
+        if (t.closest && t.closest('input[type=range], .dmGrip')) return;
+        var pt = parts(t);
+        if (!pt) return;
+        st = { ov: pt.ov, sh: pt.sh, cl: pt.cl, target: t, x: e.touches[0].clientX, y: e.touches[0].clientY, t: Date.now(), dy: 0, drag: false };
+      }, { passive: true });
+
+      document.addEventListener('touchmove', function (e) {
+        if (!st) return;
+        var tc = e.touches[0];
+        var dy = tc.clientY - st.y, dx = tc.clientX - st.x;
+        if (!st.drag) {
+          if (dy < -6 || Math.abs(dx) > Math.abs(dy) + 6) { st = null; return; }
+          if (dy > 6 && !scrolled(st.target, st.sh)) { st.drag = true; st.sh.style.transition = 'none'; }
+          else return;
+        }
+        st.dy = Math.max(0, dy);
+        st.sh.style.transform = 'translateY(' + st.dy + 'px)';
+        st.ov.style.background = 'rgba(0,0,0,' + (0.35 * (1 - Math.min(1, st.dy / Math.max(1, st.sh.offsetHeight)))) + ')';
+        e.preventDefault();
+      }, { passive: false });
+
+      function finish() {
+        if (!st) return;
+        var cur = st; st = null;
+        if (!cur.drag) return;
+        var speed = cur.dy / Math.max(1, Date.now() - cur.t);
+        var close = cur.dy > DIST || (cur.dy > FLICK_DIST && speed > FLICK_SPEED);
+        cur.sh.style.transition = 'transform .18s ease-out';
+        if (close) {
+          cur.sh.style.transform = 'translateY(100%)';
+          setTimeout(function () {
+            cur.cl.click();
+            cur.sh.style.transition = '';
+            cur.sh.style.transform = '';
+            cur.ov.style.background = '';
+          }, 170);
+        } else {
+          cur.sh.style.transform = 'translateY(0)';
+          cur.ov.style.background = '';
+          setTimeout(function () { cur.sh.style.transition = ''; cur.sh.style.transform = ''; }, 190);
+        }
+      }
+      document.addEventListener('touchend', finish, { passive: true });
+      document.addEventListener('touchcancel', finish, { passive: true });
+    })();
     qs('dashRange').addEventListener('click', function (e) {
       var btn = e.target.closest('button[data-r]');
       if (!btn) return;
@@ -11319,8 +11365,8 @@
     // ---------------------------------------------------------------
     // «Ещё»: сводка и переходы
     // ---------------------------------------------------------------
-    var APP_VERSION = '2.9.2';
-    var APP_BUILD = '20261106-1700';
+    var APP_VERSION = '2.9.3';
+    var APP_BUILD = '20261106-1730';
 
     // Проверка новой версии: читаем свежий index.html с сервера и сравниваем номер сборки.
     // Если сборка новее, на главном экране появляется уведомление с кнопкой «обновить».
