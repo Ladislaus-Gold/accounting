@@ -5287,6 +5287,10 @@
   .dmCoach b{display:block;font-size:14px;color:#7C2D12;margin-bottom:2px}
   .dmGrip{position:relative}
   .dmGrip.pulse::after{content:"";position:absolute;left:50%;top:50%;width:10px;height:10px;margin:-5px 0 0 -5px;border-radius:50%;background:#C2410C;animation:dmPulse 1.4s ease-out infinite}
+  .dmFinger{position:absolute;left:50%;top:50%;width:0;height:0;pointer-events:none;z-index:5;animation:dmFing 2.6s ease-in-out infinite}
+  .dmFinger::before{content:"";position:absolute;left:-18px;top:-18px;width:36px;height:36px;border-radius:50%;background:rgba(194,65,12,.22);border:2px solid #C2410C;box-sizing:border-box}
+  .dmFinger::after{content:"👆";position:absolute;left:-4px;top:2px;font-size:30px;line-height:1}
+  @keyframes dmFing{0%{transform:translateY(0) scale(1.35);opacity:0}14%{transform:translateY(0) scale(1);opacity:1}28%{transform:translateY(0) scale(.88);opacity:1}72%{transform:translateY(54px) scale(.88);opacity:1}88%{transform:translateY(54px) scale(1);opacity:1}100%{transform:translateY(54px) scale(1);opacity:0}}
   @keyframes dmPulse{0%{box-shadow:0 0 0 0 rgba(194,65,12,.55)}100%{box-shadow:0 0 0 16px rgba(194,65,12,0)}}
   /* обучение: всё затемнено, кроме первой строки и подсказки */
   #dashCfgOverlay .sheet.dmTour .sheetTitle,#dashCfgOverlay .sheet.dmTour .dmCfgRow:not(:first-child),#dashCfgOverlay .sheet.dmTour .dmCfgRow:first-child .dmCfgName,#dashCfgOverlay .sheet.dmTour .dmCfgRow:first-child .dmSwitch,#dashCfgOverlay .sheet.dmTour #dashCfgDone{opacity:.22;transition:opacity .2s}
@@ -10905,7 +10909,7 @@
       try { seen = localStorage.getItem('acc_dash_hint') === '1'; } catch (e) { seen = false; }
       qs('dashCfgCoach').hidden = seen;
       var firstGrip = box.querySelector('.dmGrip');
-      if (firstGrip && !seen) firstGrip.classList.add('pulse');
+      if (firstGrip && !seen) { firstGrip.classList.add('pulse'); var fg = document.createElement('span'); fg.className = 'dmFinger'; firstGrip.appendChild(fg); }
       qs('dashCfgOverlay').querySelector('.sheet').classList.toggle('dmTour', !seen);
       qs('dashCfgOverlay').classList.add('open');
     }
@@ -10917,6 +10921,8 @@
       qs('dashCfgOverlay').querySelector('.sheet').classList.remove('dmTour');
       var pulsing = qs('dashCfgList').querySelectorAll('.dmGrip.pulse');
       for (var i = 0; i < pulsing.length; i++) pulsing[i].classList.remove('pulse');
+      var fingers = qs('dashCfgList').querySelectorAll('.dmFinger');
+      for (var j = 0; j < fingers.length; j++) fingers[j].remove();
     }
     function dmCloseCfg() { dmHintSeen(); qs('dashCfgOverlay').classList.remove('open'); }
     qs('dashCfgBtn').addEventListener('click', dmOpenCfg);
@@ -11368,8 +11374,8 @@
     // ---------------------------------------------------------------
     // «Ещё»: сводка и переходы
     // ---------------------------------------------------------------
-    var APP_VERSION = '2.9.4';
-    var APP_BUILD = '20261106-1800';
+    var APP_VERSION = '2.9.5';
+    var APP_BUILD = '20261106-1830';
 
     // Проверка новой версии: читаем свежий index.html с сервера и сравниваем номер сборки.
     // Если сборка новее, на главном экране появляется уведомление с кнопкой «обновить».
